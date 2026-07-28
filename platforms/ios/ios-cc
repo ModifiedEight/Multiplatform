@@ -1,0 +1,29 @@
+#!/bin/sh
+
+scriptroot="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+
+if [ -z "$NBC_TARGET" ]; then
+    printf 'Do not run this script directly!\n'
+    exit 1
+fi
+
+case $0 in
+    *++) cc="mcpe-clang++" ;;
+    *)   cc="mcpe-clang"   ;;
+esac
+
+# Force libc++ for the iOS port. The iOS 8.0 SDK ships libc++ (libc++.dylib /
+# libc++.1.dylib) and its C++11 headers, while its libstdc++ is ancient and
+# lacks proper C++11 support. The decomp core is C++11, so libc++ is required.
+# (NBCraft used libstdc++ for armv7-ios; we deliberately override that here.)
+stdlib=libc++
+
+exec "$cc" \
+    -mlinker-version=762 \
+    -stdlib="$stdlib" \
+    -I "$scriptroot/libcxx" \
+    "$@" \
+    -isysroot "$NBC_SDK" \
+    -target "$NBC_TARGET" \
+    -fuse-ld=ld64 \
+    -Wno-unused-command-line-argument

@@ -1,0 +1,27 @@
+// iOS cross-compile shim for the host libc++ headers.
+//
+// The host's libc++ headers (e.g. libc++-18) ship a __config_site that defines
+// _LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS (it is a generic/non-vendor
+// build). With that macro set, <__availability> takes the "no vendor" branch
+// and unconditionally enables the additional iostream explicit instantiations
+// (_LIBCPP_AVAILABILITY_HAS_ADDITIONAL_IOSTREAM_EXPLICIT_INSTANTIATIONS_1 == 1).
+//
+// That makes <sstream> emit `extern template` declarations for
+// basic_stringbuf / basic_stringstream / basic_ostringstream, i.e. it tells the
+// compiler "do NOT emit these vtables / str() locally — they live in the shared
+// libc++.dylib". But the iOS 8.0 SDK's libc++.dylib (2014) does NOT export them.
+// Result: a wall of link errors at 100% — undefined `vtable for
+// basic_stringstream`, `VTT for ...`, `basic_stringbuf::str() const`, etc.
+//
+// Undefining the macro pushes <__availability> into the __APPLE__ branch, where
+// the iostream instantiations are gated on the iOS deployment target (< 15.0
+// disables them). For our armv7-apple-ios6.0 floor that disables the extern
+// templates, so the stream vtables are emitted locally (weak) in our objects
+// and the link succeeds against the old SDK dylib.
+//
+// We pull in the real host __config_site first, then flip just that one knob.
+#include_next <__config_site>
+
+#ifdef _LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS
+#undef _LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS
+#endif

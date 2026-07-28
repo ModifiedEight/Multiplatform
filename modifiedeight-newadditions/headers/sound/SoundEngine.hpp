@@ -1,0 +1,39 @@
+#pragma once
+#include <_types.h>
+#if defined(__WIN32__)
+#include <sound/SoundSystemDirectSound.hpp>
+#define SS_SUPER_CLASS SoundSystemDirectSound
+#elif (not defined(ANDROID) and defined(__linux__)) or defined(MCPE_IOS) or defined(__APPLE__)
+#include <sound/SoundSystemAL.hpp>
+#define SS_SUPER_CLASS SoundSystemAL
+#else
+#include <sound/SoundSystemSL.hpp>
+#define SS_SUPER_CLASS SoundSystemSL
+#endif
+
+#include <util/Random.hpp>
+#include <sound/SoundRepository.hpp>
+
+struct SoundEngine : public SS_SUPER_CLASS{
+	struct Options* options;
+	int32_t field_40;
+	Random randomInstance;
+	float field_A14;
+	float field_A18;
+	float field_A1C;
+	float field_A20;
+	float field_A24;
+	SoundRepository sounds;
+	struct Minecraft* minecraft;
+
+	SoundEngine(float);
+	float _getVolumeMult(float, float, float);
+	void destroy(void);
+	virtual void enable(bool_t);
+	void init(struct Minecraft*, struct Options*);
+	void play(const std::string&, float, float, float, float, float);
+	void playUI(const std::string&, float, float);
+	void update(struct Mob*, float);
+	void updateOptions(void);
+	~SoundEngine();
+};

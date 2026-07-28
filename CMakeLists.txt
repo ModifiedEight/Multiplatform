@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.16)
+
+if(ANDROID)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+endif()
+if(WIN32)
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
+endif()
+
+project(modifiedeight)
+set(CMAKE_CXX_STANDARD 11)
+include_directories(stb)
+include_directories(glm)
+include_directories(OpenAES/inc/)
+include_directories(RakNet/Source/)
+
+OPTION(JSONCPP_WITH_TESTS "Compile and run JsonCpp test executables" ON)
+OPTION(JSONCPP_WITH_POST_BUILD_UNITTEST "Automatically run unit-tests as a post build step" ON)
+SET(JSONCPP_WITH_TESTS OFF)
+SET(JSONCPP_WITH_POST_BUILD_UNITTEST OFF)
+
+include_directories(jsoncpp/jsoncpp/include)
+add_subdirectory(jsoncpp/jsoncpp)
+include_directories(jsoncpp/jsoncpp/src/lib_json/)
+
+include_directories(utf8proc)
+
+add_subdirectory(RakNet)
+add_subdirectory(utf8proc)
+add_subdirectory(OpenAES)
+
+if(MCPE_IOS)
+    if(DEFINED NBC_CLIENT AND NBC_CLIENT STREQUAL "newadditions")
+        add_subdirectory(modifiedeight-newadditions)
+    else()
+        add_subdirectory(modifiedeight)
+    endif()
+else()
+    add_subdirectory(modifiedeight)
+    add_subdirectory(modifiedeight-newadditions)
+endif()
