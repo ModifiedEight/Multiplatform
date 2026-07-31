@@ -1,4 +1,5 @@
 #include <level/storage/RegionFile.hpp>
+#include <util/Util.hpp>
 #include <BitStream.h>
 #include <string.h>
 #include <zlib.h>
@@ -45,7 +46,7 @@ RegionFileInfo* RegionFile::getRegion(int32_t chunkX, int32_t chunkZ) {
 	if (rx == 0 && rz == 0) {
 		rInfo->path = this->folderPath + "/chunks.dat";
 	} else {
-		rInfo->path = this->folderPath + "/chunks_r." + std::to_string(rx) + "." + std::to_string(rz) + ".dat";
+		rInfo->path = this->folderPath + "/chunks_r." + Util::toString(rx) + "." + Util::toString(rz) + ".dat";
 	}
 
 	rInfo->fileRaw = fopen(rInfo->path.c_str(), "r+b");

@@ -99,12 +99,77 @@ bool_t AppPlatform::hasBuyButtonWhenInvalidLicense(void){
 void AppPlatform::uploadPlatformDependentData(int32_t, void*){
 
 }
+static AssetFile readTexturePackFile(const std::string& path) {
+	std::vector<std::string> baseDirs;
+	const char* home = getenv("HOME");
+	if (home) {
+		baseDirs.push_back(std::string(home) + "/.minecraftpe");
+	}
+	baseDirs.push_back(".");
+	baseDirs.push_back("/sdcard");
+	baseDirs.push_back("/sdcard/games/com.mojang");
+	baseDirs.push_back("/storage/emulated/0");
+	baseDirs.push_back("/storage/emulated/0/games/com.mojang");
+
+	std::string activeName = "";
+	for (const auto& dir : baseDirs) {
+		std::string activeFile = dir + "/saved_textures/_active.txt";
+		FILE* af = fopen(activeFile.c_str(), "r");
+		if (af) {
+			char name[256] = {0};
+			if (fgets(name, sizeof(name), af)) {
+				name[strcspn(name, "\r\n")] = 0;
+				activeName = name;
+			}
+			fclose(af);
+			if (!activeName.empty()) break;
+		}
+	}
+
+	if (activeName.empty()) return AssetFile(0, -1);
+
+	for (const auto& dir : baseDirs) {
+		std::string packDir = dir + "/saved_textures/" + activeName;
+		std::vector<std::string> cands = {
+			packDir + "/" + path,
+			packDir + "/assets/" + path
+		};
+		if (path.rfind("images/", 0) != 0) {
+			cands.push_back(packDir + "/images/" + path);
+		}
+		if (path.rfind("textures/", 0) != 0) {
+			cands.push_back(packDir + "/textures/" + path);
+		}
+
+		for (const auto& cand : cands) {
+			FILE* f = fopen(cand.c_str(), "rb");
+			if (f) {
+				fseek(f, 0, SEEK_END);
+				size_t size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				uint8_t* arr = new uint8_t[size];
+				size_t r = fread(arr, 1, size, f);
+				(void)r;
+				fclose(f);
+				return AssetFile(arr, size);
+			}
+		}
+	}
+
+	return AssetFile(0, -1);
+}
+
 AssetFile AppPlatform::readAssetFile(const std::string& path){
+	AssetFile packFile = readTexturePackFile(path);
+	if (packFile.bytes && packFile.length > 0) {
+		return packFile;
+	}
 	FILE* f = fopen(path.c_str(), "rb");
 	if(f){
 		int32_t size = getRemainingFileSize(f);
 		uint8_t* arr = new uint8_t[size];
-		fread(arr, 1, size, f);
+		size_t r = fread(arr, 1, size, f);
+		(void)r;
 		fclose(f);
 		return AssetFile(arr, size);
 	}else{
@@ -239,7 +304,7 @@ TextureData AppPlatform::loadTexture(const std::string& a3, bool_t a4){
 				}
 			}
 		}
-		if (g_terrainAtlasPixels != nullptr) {
+		if (g_terrainAtlasPixels != nullptr && g_terrainAtlasWidth > 0 && g_terrainAtlasHeight > 0) {
 			TextureData data;
 			data.width = g_terrainAtlasWidth;
 			data.height = g_terrainAtlasHeight;
@@ -280,7 +345,7 @@ TextureData AppPlatform::loadTexture(const std::string& a3, bool_t a4){
 				}
 			}
 		}
-		if (g_itemsAtlasPixels != nullptr) {
+		if (g_itemsAtlasPixels != nullptr && g_itemsAtlasWidth > 0 && g_itemsAtlasHeight > 0) {
 			TextureData data;
 			data.width = g_itemsAtlasWidth;
 			data.height = g_itemsAtlasHeight;
@@ -310,29 +375,22 @@ TextureData AppPlatform::loadTexture(const std::string& a3, bool_t a4){
 
 	this->loadImage(data, a3, a4);
 
-	if(data.pixels){
-
-		data.field_18 = 0;
-		int v9 = a3.find('.');
-		std::string v17 = a3.substr(v9, -1);
-		std::string v18 = a3.substr(0, a3.size()-v17.size());
-
-		if(AppPlatform::TEXTURE_MAX_LEVEL){
-			while(1){
-				++v5;
-				ImageData v20;
-				memset(&v20, 0, 16+sizeof(void*));
-				v20.lod = v5;
-				std::string v19 = v18;
-				v19 += "_mip";
-				v19 += (v5 + '/');
-				v19 += v17;
-				this->loadImage(v20, v19, a4);
-				if(!v20.pixels) break;
-				data.images.emplace_back(v20);
-			}
+	if (data.pixels == nullptr || data.width == 0 || data.height == 0) {
+		if (a3 == "terrain-atlas.tga") {
+			this->loadImage(data, "terrain.png", a4);
+		} else if (a3 == "items-opaque.png") {
+			this->loadImage(data, "gui/items.png", a4);
 		}
+	}
 
+	if (data.pixels == nullptr || data.width == 0 || data.height == 0) {
+		data.width = 16;
+		data.height = 16;
+		data.pixels = (uint8_t*)calloc(16 * 16 * 4, 1);
+	}
+
+	if(data.pixels){
+		data.field_18 = 0;
 	}
 
 	return data;

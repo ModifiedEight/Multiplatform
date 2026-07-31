@@ -1,0 +1,108 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace 'com.mojang.minecraftpe'
+    compileSdk 34
+    ndkVersion '16.1.4479499'
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    defaultConfig {
+        minSdk 14
+        targetSdk 34
+        versionCode 5
+        versionName "1.5.1"
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+            }
+        }
+    }
+
+    flavorDimensions = ["version"]
+    productFlavors {
+        classic {
+            dimension "version"
+            applicationId "net.eqozqq.modifiedeight.classic"
+            resValue "string", "app_name", "ModifiedEight Classic"
+            resValue "string", "app_name_short", "ModifiedEightCL"
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCLIENT_TYPE=classic"
+                }
+            }
+        }
+        newadditions {
+            dimension "version"
+            applicationId "net.eqozqq.modifiedeight.newadditions"
+            resValue "string", "app_name", "ModifiedEight New Additions"
+            resValue "string", "app_name_short", "ModifiedEightNA"
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCLIENT_TYPE=newadditions"
+                }
+            }
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/com/android/build/**"
+            excludes += "META-INF/version-control-info.textproto"
+            excludes += "org/apache/**"
+            excludes += "mozilla/*"
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include "armeabi", "arm64-v8a", "armeabi-v7a", "x86_64", "x86"
+            universalApk false
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def flavorName = variant.flavorName
+            def versionName = variant.versionName
+            def abiName = output.getFilter(com.android.build.OutputFile.ABI)
+            def prefix = (flavorName == "classic") ? "ModifiedEightClassic" : "ModifiedEightNewAdditions"
+            if (abiName != null) {
+                outputFileName = "${prefix}_${versionName}_${abiName}.apk"
+            } else {
+                outputFileName = "${prefix}_${versionName}.apk"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+}

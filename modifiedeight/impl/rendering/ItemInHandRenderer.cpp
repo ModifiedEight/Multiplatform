@@ -94,6 +94,7 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 		icon = a3.getIcon(0, 0);
 	}
 
+	if (!icon) return v7;
 
 	float width = icon->width;
 	float v16 = width * icon->minX;
@@ -102,6 +103,7 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	float v19 = height * icon->minY;
 	int v20 = (int)(float)(height * icon->maxY);
 	TextureData* td = this->minecraft->texturesPtr->loadAndGetTextureData(v7->field_2C);
+	if (!td || !td->pixels) return v7;
 
 	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, Color4::WHITE);
 	v7->field_4 = textes.tesselate();

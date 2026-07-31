@@ -41,6 +41,10 @@ std::string AppPlatform_iOS::getImagePath(const std::string& name, bool_t) {
 }
 
 AssetFile AppPlatform_iOS::readAssetFile(const std::string& path) {
+	AssetFile packFile = AppPlatform::readAssetFile(path);
+	if (packFile.bytes && packFile.length > 0) {
+		return packFile;
+	}
 	return AppPlatform::readAssetFile(bundlePath + "assets/" + path);
 }
 

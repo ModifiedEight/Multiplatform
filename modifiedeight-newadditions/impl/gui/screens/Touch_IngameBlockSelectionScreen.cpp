@@ -162,9 +162,10 @@ void Touch::IngameBlockSelectionScreen::buttonClicked(Button* a2) {
 	}
 }
 void Touch::IngameBlockSelectionScreen::mouseClicked(int32_t a2, int32_t a3, int32_t a4) {
-	bool_t v8; // r0
-
-	v8 = this->field_60->field_23C->isInside((float)a2, (float)a3);
+	bool_t v8 = 0;
+	if(this->field_60 && this->field_60->field_23C) {
+		v8 = this->field_60->field_23C->isInside((float)a2, (float)a3);
+	}
 	this->field_5C = v8;
 	if(!v8) {
 		this->minecraft->gui.handleClick(1, Mouse::getX(), Mouse::getY());
@@ -172,21 +173,18 @@ void Touch::IngameBlockSelectionScreen::mouseClicked(int32_t a2, int32_t a3, int
 	}
 }
 void Touch::IngameBlockSelectionScreen::mouseReleased(int32_t a2, int32_t a3, int32_t a4) {
-	if(this->field_5C && this->field_60->field_23C->isInside((float)a2, (float)a3)) {
+	if(this->field_5C && this->field_60 && this->field_60->field_23C && this->field_60->field_23C->isInside((float)a2, (float)a3)) {
 		this->minecraft->setScreen(0);
 	} else {
 		Screen::mouseReleased(a2, a3, a4);
 	}
 }
 bool_t Touch::IngameBlockSelectionScreen::addItem(const InventoryPane* a2, int32_t a3) {
-	int32_t v3;			  // r6
-	Inventory* inventory; // r4
-	int32_t lsfi;		  // r7
-
-	v3 = a3 + 9;
-	inventory = this->minecraft->player->inventory;
-	if(inventory->getItem(a3 + 9)) {
-		lsfi = inventory->getLinkedSlotForItem(v3);
+	int32_t v3 = a3 + 9;
+	if(!this->minecraft || !this->minecraft->player || !this->minecraft->player->inventory) return 0;
+	Inventory* inventory = this->minecraft->player->inventory;
+	if(a3 >= 0 && v3 < (int32_t)inventory->getContainerSize() && inventory->getItem(v3)) {
+		int32_t lsfi = inventory->getLinkedSlotForItem(v3);
 		if(lsfi < 0 || lsfi >= this->minecraft->gui.getNumSlots() - 1) {
 			inventory->moveToSelectionSlot(inventory->selectedSlot, v3);
 		} else {

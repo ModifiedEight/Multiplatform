@@ -6,6 +6,7 @@
 #include <gui/pane/IItemPaneCallback.hpp>
 #include <rendering/Font.hpp>
 #include <rendering/Tesselator.hpp>
+#include <rendering/Textures.hpp>
 #include <rendering/entity/ItemRenderer.hpp>
 #include <util/IntRectangle.hpp>
 #include <util/Util.hpp>
@@ -83,6 +84,7 @@ void ItemPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2, float a3, f
 		glEnable(0xC11u);
 		v9 = this->field_24;
 		glScissor((uint32_t)(float)(v9 * (float)this->field_2C.minX), this->field_230 - (uint32_t)(float)(v9 * (float)(this->field_2C.height + this->field_2C.minY)), (uint32_t)(float)(v9 * (float)this->field_2C.width), (uint32_t)(float)(v9 * (float)this->field_2C.height));
+		if(this->textures) this->textures->loadAndBindTexture("gui/spritesheet.png");
 		Tesselator::instance.beginOverride();
 		while(v8 < a2.size()) {
 			v10 = &a2[v8];
@@ -97,6 +99,7 @@ void ItemPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2, float a3, f
 			v11->draw(Tesselator::instance, v38, v12);
 		}
 		v13 = 0;
+		if(this->textures) this->textures->loadAndBindTexture("gui/spritesheet.png");
 		Tesselator::instance.endOverrideAndDraw();
 		while(1) {
 			if(v13 >= a2.size()) {
@@ -111,6 +114,7 @@ void ItemPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2, float a3, f
 			ItemRenderer::renderGuiItemNew(textures, v37, 0, v39, v17, 1.0, 1.0, 1.0);
 		}
 		v19 = 0;
+		if(this->font && this->textures) this->textures->loadAndBindTexture(this->font->field_1820.file);
 		Tesselator::instance.beginOverride();
 		while(v19 < a2.size()) {
 			v20 = &a2[v19];
@@ -140,6 +144,7 @@ void ItemPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2, float a3, f
 			++v19;
 			Tesselator::instance.resetScale();
 		}
+		if(this->font && this->textures) this->textures->loadAndBindTexture(this->font->field_1820.file);
 		Tesselator::instance.endOverrideAndDraw();
 		v32 = (uint8_t)this->field_234;
 		minX = this->field_2C.minX;

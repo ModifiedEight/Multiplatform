@@ -96,38 +96,36 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 	bool is_terrain = (this->path.find("terrain.meta") != std::string::npos);
 	int atlas_w = is_terrain ? g_terrainAtlasWidth : g_itemsAtlasWidth;
 	int atlas_h = is_terrain ? g_terrainAtlasHeight : g_itemsAtlasHeight;
-
 	bool is_classic = (mc && mc->options.classicTextures);
 
-	if (is_classic) {
-		std::string altPath = is_terrain ? "images/terrain-atlas.tga" : "images/items-opaque.png";
-		AssetFile f = mc->platform()->readAssetFile(altPath);
-		if (!f.bytes) {
-			altPath = is_terrain ? "terrain-atlas.tga" : "items-opaque.png";
-			f = mc->platform()->readAssetFile(altPath);
-		}
-		if (!f.bytes) {
-			altPath = is_terrain ? "terrain.png" : "gui/items.png";
-			f = mc->platform()->readAssetFile(altPath);
-		}
-		if (f.bytes && f.length > 0) {
-			int w, h, ch;
-			uint8_t* px = stbi_load_from_memory(f.bytes, f.length, &w, &h, &ch, STBI_rgb_alpha);
-			delete[] f.bytes;
-			if (px) {
-				if (is_terrain) {
-					if (g_terrainAtlasPixels) free(g_terrainAtlasPixels);
-					g_terrainAtlasPixels = px;
-					g_terrainAtlasWidth = w;
-					g_terrainAtlasHeight = h;
-				} else {
-					if (g_itemsAtlasPixels) free(g_itemsAtlasPixels);
-					g_itemsAtlasPixels = px;
-					g_itemsAtlasHeight = h;
-				}
-				atlas_w = w;
-				atlas_h = h;
+	std::string altPath = is_terrain ? "images/terrain-atlas.tga" : "images/items-opaque.png";
+	AssetFile f = mc->platform()->readAssetFile(altPath);
+	if (!f.bytes) {
+		altPath = is_terrain ? "terrain-atlas.tga" : "items-opaque.png";
+		f = mc->platform()->readAssetFile(altPath);
+	}
+	if (!f.bytes) {
+		altPath = is_terrain ? "terrain.png" : "gui/items.png";
+		f = mc->platform()->readAssetFile(altPath);
+	}
+	if (f.bytes && f.length > 0) {
+		int w, h, ch;
+		uint8_t* px = stbi_load_from_memory(f.bytes, f.length, &w, &h, &ch, STBI_rgb_alpha);
+		delete[] f.bytes;
+		if (px) {
+			if (is_terrain) {
+				if (g_terrainAtlasPixels) free(g_terrainAtlasPixels);
+				g_terrainAtlasPixels = px;
+				g_terrainAtlasWidth = w;
+				g_terrainAtlasHeight = h;
+			} else {
+				if (g_itemsAtlasPixels) free(g_itemsAtlasPixels);
+				g_itemsAtlasPixels = px;
+				g_itemsAtlasWidth = w;
+				g_itemsAtlasHeight = h;
 			}
+			atlas_w = w;
+			atlas_h = h;
 		}
 	} else {
 		uint8_t* atlas_pixels = (uint8_t*)malloc(atlas_w * atlas_h * 4);
@@ -136,9 +134,13 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 		if (is_terrain) {
 			if (g_terrainAtlasPixels) free(g_terrainAtlasPixels);
 			g_terrainAtlasPixels = atlas_pixels;
+			g_terrainAtlasWidth = atlas_w;
+			g_terrainAtlasHeight = atlas_h;
 		} else {
 			if (g_itemsAtlasPixels) free(g_itemsAtlasPixels);
 			g_itemsAtlasPixels = atlas_pixels;
+			g_itemsAtlasWidth = atlas_w;
+			g_itemsAtlasHeight = atlas_h;
 		}
 	}
 
@@ -164,8 +166,13 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 			std::vector<TextureUVCoordinateSet> v29;
 
 			TextureUVCoordinateSet main_uv;
+			bool has_valid_uv = (v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6 && v32["uv"][2].asFloat() > 0.0001f);
 
-			if (is_classic && v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6) {
+			if (is_classic) {
+				if (v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6) {
+					main_uv = _parseJSON(v32["uv"]);
+				}
+			} else if (has_valid_uv) {
 				main_uv = _parseJSON(v32["uv"]);
 			} else {
 				std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
@@ -205,7 +212,13 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				int add_count = v6.size();
 				for (int i = 0; i < add_count; ++i) {
 					TextureUVCoordinateSet add_uv;
-					if (is_classic && v6[i].isArray() && v6[i].size() >= 6) {
+					bool has_valid_add_uv = (v6[i].isArray() && v6[i].size() >= 6 && v6[i][2].asFloat() > 0.0001f);
+
+					if (is_classic) {
+						if (v6[i].isArray() && v6[i].size() >= 6) {
+							add_uv = _parseJSON(v6[i]);
+						}
+					} else if (has_valid_add_uv) {
 						add_uv = _parseJSON(v6[i]);
 					} else {
 						char num_buf[16];
@@ -213,6 +226,11 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 						std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
 						std::string add_img_path = base_path + name + "_" + num_buf + ".png";
 						uint8_t* add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
+						if (!add_pixels) {
+							sprintf(num_buf, "%d", i);
+							add_img_path = base_path + name + "_" + num_buf + ".png";
+							add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
+						}
 
 						int add_x = (slot_idx % slots_per_row) * 16;
 						int add_y = (slot_idx / slots_per_row) * 16;

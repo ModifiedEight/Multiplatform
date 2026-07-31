@@ -22,7 +22,7 @@ You must also have original 0.8.1 apk file to extract sounds(won't compile witho
 * the output should be `build/modifiedeight/build` and `build/modifiedeight-newadditions/build`
 
 ### Android
-Use https://github.com/ModifiedEight/Android
+See [platforms/android/README.md](platforms/android/README.md)
 
 ### Windows
 Windows version does not require OpenAL(it uses DirectSound instead). See [.github/workflows/main.yml](https://github.com/oldminecraftcommunity/MCPE-0.8.1/blob/master/.github/workflows/main.yml#L37) for a way to compile it for Windows. 

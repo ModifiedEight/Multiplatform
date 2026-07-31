@@ -200,7 +200,10 @@ void TexturesScreen::refreshSavedTextures() {
   activeTexturePack = "";
 
   std::string dataPath = this->minecraft->dataPathMaybe;
-  std::string activeFile = dataPath + "/saved_textures/_active.txt";
+  std::string path = dataPath + "/saved_textures";
+  makeDirs(path);
+
+  std::string activeFile = path + "/_active.txt";
   FILE *af = fopen(activeFile.c_str(), "r");
   if (af) {
     char name[256] = {0};
@@ -211,8 +214,44 @@ void TexturesScreen::refreshSavedTextures() {
     fclose(af);
   }
 
-  std::string path = dataPath + "/saved_textures";
-  makeDirs(path);
+  std::vector<std::string> packDirs = {
+      dataPath + "/resource_packs",
+      dataPath + "/games/com.mojang/resource_packs",
+      "/sdcard/games/com.mojang/resource_packs",
+      "/sdcard/Download"
+  };
+
+  for (const auto &pdir : packDirs) {
+    if (!isDirExists(pdir)) continue;
+    DIR *pd = opendir(pdir.c_str());
+    if (!pd) continue;
+    struct dirent *pe;
+    while ((pe = readdir(pd))) {
+      std::string zname = pe->d_name;
+      if (zname.size() > 4 && zname.substr(zname.size() - 4) == ".zip") {
+        std::string title = zname.substr(0, zname.size() - 4);
+        std::string targetExtDir = path + "/" + title;
+        if (!isDirExists(targetExtDir)) {
+          std::string fullZip = pdir + "/" + zname;
+          std::string tmpExt = dataPath + "/_texture_ext";
+          FileUtil::RemoveDirectory(tmpExt);
+          makeDirs(tmpExt);
+          makeDirs(targetExtDir);
+          if (CrossPlatform_ExtractZip(fullZip, tmpExt)) {
+            std::string imagesDir = FileUtil::FindDirRecursively(tmpExt, "images");
+            if (imagesDir.empty()) {
+              imagesDir = FileUtil::FindDirRecursively(tmpExt, "gui");
+            }
+            std::string srcDir = imagesDir.empty() ? tmpExt : imagesDir.substr(0, imagesDir.find_last_of('/'));
+            FileUtil::CopyDirectory(srcDir, targetExtDir);
+          }
+          FileUtil::RemoveDirectory(tmpExt);
+        }
+      }
+    }
+    closedir(pd);
+  }
+
   DIR *d = opendir(path.c_str());
   if (d) {
     struct dirent *ep;
@@ -325,21 +364,10 @@ void TexturesScreen::importTexturePack() {
 void TexturesScreen::applySavedTexture(const std::string &path,
                                        const std::string &title) {
   std::string dataPath = this->minecraft->dataPathMaybe;
-  std::string backupDir = dataPath + "/assets_backup";
-  char cwd[1024];
-  if (getcwd(cwd, sizeof(cwd)) == NULL)
-    cwd[0] = '\0';
-  std::string assetsDir = std::string(cwd) + "/assets";
+  std::string savedDir = dataPath + "/saved_textures";
+  makeDirs(savedDir);
 
-  if (!isDirExists(backupDir)) {
-    FileUtil::CopyDirectory(assetsDir, backupDir);
-  }
-
-  FileUtil::RemoveDirectory(assetsDir);
-  FileUtil::CopyDirectory(backupDir, assetsDir);
-  FileUtil::CopyDirectory(path, assetsDir);
-
-  std::string activeFile = dataPath + "/saved_textures/_active.txt";
+  std::string activeFile = savedDir + "/_active.txt";
   FILE *af = fopen(activeFile.c_str(), "w");
   if (af) {
     fputs(title.c_str(), af);
@@ -365,6 +393,13 @@ void TexturesScreen::applySavedTexture(const std::string &path,
 }
 
 void TexturesScreen::deleteSavedTexture(const std::string &path) {
+  if (!path.empty()) {
+    size_t slash = path.find_last_of("/\\");
+    std::string title = (slash != std::string::npos) ? path.substr(slash + 1) : path;
+    if (title == activeTexturePack) {
+      restoreDefaultTextures();
+    }
+  }
   FileUtil::RemoveDirectory(path);
   statusMsg = "Texture Pack deleted.";
   needsRefresh = true;
@@ -372,20 +407,6 @@ void TexturesScreen::deleteSavedTexture(const std::string &path) {
 
 void TexturesScreen::restoreDefaultTextures() {
   std::string dataPath = this->minecraft->dataPathMaybe;
-  std::string backupDir = dataPath + "/assets_backup";
-  char cwd[1024];
-  if (getcwd(cwd, sizeof(cwd)) == NULL)
-    cwd[0] = '\0';
-  std::string assetsDir = std::string(cwd) + "/assets";
-
-  if (isDirExists(backupDir)) {
-    FileUtil::RemoveDirectory(assetsDir);
-    FileUtil::CopyDirectory(backupDir, assetsDir);
-    statusMsg = "Default textures restored!";
-  } else {
-    statusMsg = "Default textures are already active.";
-  }
-
   std::string activeFile = dataPath + "/saved_textures/_active.txt";
   remove(activeFile.c_str());
   activeTexturePack = "";
@@ -402,6 +423,7 @@ void TexturesScreen::restoreDefaultTextures() {
     }
   }
 
+  statusMsg = "Default textures restored!";
   needsRefresh = true;
 }
 

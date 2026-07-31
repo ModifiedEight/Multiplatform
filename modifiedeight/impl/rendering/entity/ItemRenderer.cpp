@@ -242,7 +242,9 @@ void ItemRenderer::renderGuiItemCorrect(Font* a1, Textures* a2, const ItemInstan
 		} else if(a3->itemClass) {
 			a2->loadAndBindTexture(a3->tileClass ? "terrain.png" : "gui/items.png");
 			icon = a3->getIcon(0, 0);
-			ItemRenderer::blit((float)a4, (float)a5, icon->minX * icon->width, icon->minY * icon->height, 16.0, 16.0);
+			if (icon) {
+				ItemRenderer::blit((float)a4, (float)a5, icon->minX * icon->width, icon->minY * icon->height, 16.0, 16.0);
+			}
 		}
 	}
 }

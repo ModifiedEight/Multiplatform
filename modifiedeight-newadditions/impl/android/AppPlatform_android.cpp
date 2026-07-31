@@ -305,6 +305,10 @@ void AppPlatform_android::uploadPlatformDependentData(int32_t a2, void* a3){
 	}
 }
 AssetFile AppPlatform_android::readAssetFile(const std::string& a3){
+	AssetFile packFile = AppPlatform::readAssetFile(a3);
+	if (packFile.bytes && packFile.length > 0) {
+		return packFile;
+	}
 	if(this->initialized && this->_jniGetFileDataBytes != 0){
 		JVMAttacher v14(this->jvm);
 		jbyteArray v10 = (jbyteArray) v14.env->CallObjectMethod(this->mainActivityRef, this->_jniGetFileDataBytes, v14.env->NewStringUTF(a3.c_str()));

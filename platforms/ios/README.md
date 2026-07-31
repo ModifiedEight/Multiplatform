@@ -157,9 +157,3 @@ Platform header selection (see the matching guards in the tree):
 - networking: `CurlRestRequestJob` is excluded on iOS (no libcurl in the public SDK) — a native rest job is a TODO,
 - `_types.h`: on Apple does `#include_next <_types.h>` so the SDK's Darwin
   typedefs survive being shadowed by the core's own `_types.h`.
-
-## Still TODO (runtime, not build)
-
-1. Ship real `assets/` so the app runs past launch.
-2. Native networking backend to replace the excluded curl rest job.
-3. Test the fat binary on real armv7 + arm64 devices.

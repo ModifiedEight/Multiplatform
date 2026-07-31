@@ -6,6 +6,7 @@ if(MCPE_IOS)
 endif()
 
 if(ANDROID)
+    set(ZLIB_LIBRARIES z)
 elseif(MCPE_IOS)
     find_package(ZLIB REQUIRED)
 else()
@@ -64,13 +65,13 @@ if(ANDROID)
     if(NOT TARGET native_app_glue)
         add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
     endif()
-    add_library(modifiedeight-newadditions SHARED ${IMPLCPP} ${IMPLC} ${HEADC} ${HEADCPP})
-    target_include_directories(modifiedeight-newadditions PUBLIC
+    add_library(minecraftpe SHARED ${IMPLCPP} ${IMPLC} ${HEADC} ${HEADCPP})
+    target_include_directories(minecraftpe PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/headers"
         "${ANDROID_NDK}/sources/android/native_app_glue"
     )
-    target_link_libraries(modifiedeight-newadditions PRIVATE ${ZLIB_LIBRARIES} EGL GLESv1_CM OpenSLES oaes_lib RakNetStatic native_app_glue jsoncpp_lib utf8proc log android)
-    set_target_properties(modifiedeight-newadditions PROPERTIES
+    target_link_libraries(minecraftpe PRIVATE z EGL GLESv1_CM OpenSLES oaes_lib RakNetStatic native_app_glue jsoncpp_lib utf8proc log android)
+    set_target_properties(minecraftpe PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
     )
 elseif(MCPE_IOS)

@@ -282,8 +282,9 @@ LABEL_16:;
 	}
 }
 void FurnaceScreen::updateResult(const ItemInstance* a2) {
+	if(!this->tileEntity) return;
 	ItemInstance* v4 = this->tileEntity->getItem(2);
-	if(!v4->isNull()) {
+	if(v4 && !v4->isNull()) {
 		int32_t id = v4->getId();
 		if(id == this->resultIdMaybe) return;
 		this->field_68 = I18n::getDescriptionString(*v4);
@@ -312,7 +313,6 @@ FurnaceScreen::~FurnaceScreen() {
 	if(this->field_214) delete this->field_214;
 	if(this->field_218) delete this->field_218;
 	if(this->field_50) delete this->field_50;
-	if(this->tileEntity->field_34) delete this->tileEntity;
 }
 void FurnaceScreen::render(int32_t a2, int32_t a3, float a4) {
 	StopwatchNLast _swlast(5);

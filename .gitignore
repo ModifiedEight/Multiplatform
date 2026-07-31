@@ -5,3 +5,14 @@ build/
 CMakeLists.txt.user
 assets/*
 faq/
+
+.gradle/
+.cxx/
+local.properties
+*.apk
+*.aab
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/

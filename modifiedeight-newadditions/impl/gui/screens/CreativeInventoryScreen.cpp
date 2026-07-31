@@ -83,17 +83,17 @@ int32_t CreativeInventoryScreen::getCategoryFromPanel(const Touch::InventoryPane
 ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 	switch(a3) {
 		case 2:
-			return ItemInstance(Tile::bookshelf);
+			return Tile::bookshelf ? ItemInstance(Tile::bookshelf) : ItemInstance();
 		case 3:
-			return ItemInstance(Item::sword_iron);
+			return Item::sword_iron ? ItemInstance(Item::sword_iron) : ItemInstance();
 		case 4:
-			return ItemInstance(Item::seeds_wheat);
+			return Item::seeds_wheat ? ItemInstance(Item::seeds_wheat) : ItemInstance();
 		case 5:
-			return ItemInstance(Tile::rose);
+			return Tile::rose ? ItemInstance(Tile::rose) : ItemInstance();
 		case 6:
-			return ItemInstance(Tile::coloredPlanks, 1, 6);
+			return Tile::coloredPlanks ? ItemInstance(Tile::coloredPlanks, 1, 6) : ItemInstance();
 		default:
-			return ItemInstance(Tile::redBrick);
+			return Tile::redBrick ? ItemInstance(Tile::redBrick) : ItemInstance();
 	}
 }
 void CreativeInventoryScreen::populateFilteredItems() {

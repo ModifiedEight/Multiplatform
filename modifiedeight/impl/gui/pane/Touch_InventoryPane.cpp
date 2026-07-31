@@ -144,10 +144,10 @@ void Touch::InventoryPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2,
 	Tesselator::instance.endOverrideAndDraw();
 
 	ScrollingPane::GridItem* v35 = 0;
-	float v36, v37;
+	float v36 = 0, v37 = 0;
 	for(int v12 = 0; v12 < a2.size(); ++v12) {
 		ScrollingPane::GridItem* v13 = &a2[v12];
-		if(v40[v13->field_0]) {
+		if(v13->field_0 >= 0 && v13->field_0 < (int32_t)v40.size() && v40[v13->field_0]) {
 			int v34 = v13->field_0;
 			float v32 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_C) + 4.0);
 			float v14 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_10) + 4.0);
@@ -193,14 +193,16 @@ void Touch::InventoryPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2,
 		Tesselator::instance.scale2d(Gui::InvGuiScale + Gui::InvGuiScale, Gui::InvGuiScale + Gui::InvGuiScale);
 		for(int v22 = 0; v22 < a2.size(); ++v22) { //should be uint??
 			ScrollingPane::GridItem* v24 = &a2[v22];
-			const ItemInstance* v25 = v40[v24->field_0];
-			if(v25) {
-				char v42[64];
-				memset(v42, 0, sizeof(v42));
-				Gui::itemCountItoa(v42, v25->count);
+			if(v24->field_0 >= 0 && v24->field_0 < (int32_t)v40.size()) {
+				const ItemInstance* v25 = v40[v24->field_0];
+				if(v25) {
+					char v42[64];
+					memset(v42, 0, sizeof(v42));
+					Gui::itemCountItoa(v42, v25->count);
 				float v33 = Gui::floorAlignToScreenPixel(v23 * (float)((float)((float)this->field_264 + v24->field_C) + 3.0));
 				float v26 = Gui::floorAlignToScreenPixel(v23 * (float)((float)((float)this->field_264 + v24->field_10) + 3.0));
 				this->minecraft->gui.renderSlotText(v25, v33, v26, 1, 1);
+				}
 			}
 		}
 		Tesselator::instance.resetScale();
@@ -211,10 +213,12 @@ void Touch::InventoryPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2,
 		EnableClientState v39(32886);
 		for(int v27 = 0; v27 < a2.size(); ++v27) {
 			ScrollingPane::GridItem* v28 = &a2[v27];
-			const ItemInstance* v29 = v40[v28->field_0];
-			if(v29) {
-				if(!v29->isNull() && v29->isDamaged()) {
-					ItemRenderer::renderGuiItemDecorations(v29, v28->field_C + 7.0, v28->field_10 + 11.0);
+			if(v28->field_0 >= 0 && v28->field_0 < (int32_t)v40.size()) {
+				const ItemInstance* v29 = v40[v28->field_0];
+				if(v29) {
+					if(!v29->isNull() && v29->isDamaged()) {
+						ItemRenderer::renderGuiItemDecorations(v29, v28->field_C + 7.0, v28->field_10 + 11.0);
+					}
 				}
 			}
 		}

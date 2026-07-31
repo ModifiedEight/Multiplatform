@@ -204,7 +204,7 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.showcoordinates.desc") { a2 = "Shows the player coordinates on screen"; return 1; }
 	if (a1 == "options.classictextures") { a2 = "Classic texture loader"; return 1; }
 	if (a1 == "options.classictextures.desc") { a2 = "Loads textures from terrain-atlas / items-opaque"; return 1; }
-	if (a1 == "options.marketplace") { a2 = "Marketplace Button"; return 1; }
+	if (a1 == "options.marketplace") { a2 = "Texture Packs button"; return 1; }
 	if (a1 == "options.fogenabled") { a2 = "Fog"; return 1; }
 	if (a1 == "tile.grassPath.name") { a2 = "Grass Path"; return 1; }
 	if (translateWoodVariant(a1, a2)) { return 1; }
@@ -234,7 +234,7 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "options.showcoordinates.desc") return "Shows the player coordinates on screen";
 	if (a2 == "options.classictextures") return "Classic texture loader";
 	if (a2 == "options.classictextures.desc") return "Loads textures from terrain-atlas / items-opaque";
-	if (a2 == "options.marketplace") return "Marketplace Button";
+	if (a2 == "options.marketplace") return "Texture Packs button";
 	if (a2 == "options.fogenabled") return "Fog";
 	if (a2 == "options.showfps") return "Show FPS";
 	if (a2 == "options.debugscreen") return "Debug Screen";

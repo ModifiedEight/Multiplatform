@@ -17,6 +17,7 @@
 #include <stb_image.h>
 #include <utils.h>
 
+#include <item/Item.hpp>
 #include <tile/Tile.hpp>
 
 static void performPickBlock(Minecraft *mc) {
@@ -37,7 +38,28 @@ static void performPickBlock(Minecraft *mc) {
 
   Tile *tile = Tile::tiles[tileId];
   if (tile) {
-    if (tile == Tile::farmland) {
+    if (tile == Tile::sign || tile == Tile::wallSign) {
+      pickId = Item::sign ? Item::sign->itemID : 323;
+      pickData = 0;
+    } else if (tile == Tile::door_wood) {
+      pickId = Item::door_wood ? Item::door_wood->itemID : 324;
+      pickData = 0;
+    } else if (Tile::door_iron && tile == Tile::door_iron) {
+      pickId = Item::door_iron ? Item::door_iron->itemID : 330;
+      pickData = 0;
+    } else if (Tile::bed && tile == Tile::bed) {
+      pickId = Item::bed ? Item::bed->itemID : 355;
+      pickData = 0;
+    } else if (Tile::reeds && tile == Tile::reeds) {
+      pickId = Item::reeds ? Item::reeds->itemID : 338;
+      pickData = 0;
+    } else if (Tile::cake && tile == Tile::cake) {
+      pickId = Item::cake ? Item::cake->itemID : 354;
+      pickData = 0;
+    } else if (Tile::crops && tile == Tile::crops) {
+      pickId = Item::seeds_wheat ? Item::seeds_wheat->itemID : 295;
+      pickData = 0;
+    } else if (tile == Tile::farmland) {
       pickId = Tile::dirt->blockID;
       pickData = 0;
     } else if (Tile::redStoneOre_lit && tile == Tile::redStoneOre_lit) {
@@ -53,6 +75,24 @@ static void performPickBlock(Minecraft *mc) {
       pickId = Tile::water->blockID;
     } else if (tile == Tile::lava || tile == Tile::calmLava) {
       pickId = Tile::lava->blockID;
+    } else if (Tile::stoneSlab &&
+               (tile == Tile::stoneSlab || tile == Tile::stoneSlabHalf)) {
+      pickId = Tile::stoneSlabHalf ? Tile::stoneSlabHalf->blockID : 44;
+      pickData = data & 7;
+    } else if (Tile::woodSlab &&
+               (tile == Tile::woodSlab || tile == Tile::woodSlabHalf)) {
+      pickId = Tile::woodSlabHalf ? Tile::woodSlabHalf->blockID : 158;
+      pickData = data & 7;
+    } else if (Tile::treeTrunk && tile == Tile::treeTrunk) {
+      pickData = data & 3;
+    } else if (Tile::leaves && tile == Tile::leaves) {
+      pickData = data & 3;
+    } else if (Tile::sapling && tile == Tile::sapling) {
+      pickData = data & 7;
+    } else if (Tile::cloth && tile == Tile::cloth) {
+      pickData = data & 15;
+    } else if (Tile::wood && tile == Tile::wood) {
+      pickData = data & 15;
     }
   }
 
@@ -63,7 +103,7 @@ static void performPickBlock(Minecraft *mc) {
     inv->selectSlot(existingHotbarSlot);
   } else {
     ItemInstance *newInst =
-        new ItemInstance(pickId, inv->field_20 ? 5 : 1, pickData);
+        new ItemInstance(pickId, inv->field_20 ? 64 : 1, pickData);
     if (inv->field_20) {
       int targetIdx = selSlot + 9;
       inv->linkSlot(selSlot, targetIdx);
@@ -78,12 +118,9 @@ static void performPickBlock(Minecraft *mc) {
           break;
         }
       }
-      if (foundSlot < 0) {
-        inv->items.push_back(newInst);
-        foundSlot = (int)inv->items.size() - 1;
+      if (foundSlot >= 0) {
+        inv->linkSlot(selSlot, foundSlot);
       }
-      inv->linkSlot(selSlot, foundSlot);
-      inv->replaceSlot(selSlot, newInst);
     }
   }
   mc->gui.inventoryUpdated();
@@ -137,7 +174,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("Minecraft PE 0.8.1 | ModifiedEight Classic 1.5.0", 0);
+  SDL_WM_SetCaption("Minecraft PE 0.8.1 | ModifiedEight Classic 1.5.1", 0);
 
   {
     int w, h, ch;
@@ -388,7 +425,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight Classic 1.5.0",
+            "ModifiedEight Classic 1.5.1",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -438,7 +475,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight Classic 1.5.0",
+              details, "icon", "ModifiedEight Classic 1.5.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

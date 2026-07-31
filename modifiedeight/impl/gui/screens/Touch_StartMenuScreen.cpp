@@ -1,9 +1,9 @@
 #include <Minecraft.hpp>
 #include <gui/buttons/ImageWithBackground.hpp>
 #include <gui/screens/InvalidLicenseScreen.hpp>
-#include <gui/screens/TexturesScreen.hpp>
 #include <gui/screens/OptionsScreen.hpp>
 #include <gui/screens/PlayScreen.hpp>
+#include <gui/screens/TexturesScreen.hpp>
 #include <gui/screens/Touch_StartMenuScreen.hpp>
 #include <network/mco/MojangConnector.hpp>
 #include <rendering/Font.hpp>
@@ -484,7 +484,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->playOnRealmsButton);
   this->field_2C.emplace_back(&this->marketplaceButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
-  this->field_138 = "\x0fMojang AB, ModifiedEight Classic 1.5.0 by eqozqq";
+  this->field_138 = "\x0fMojang AB, ModifiedEight Classic 1.5.1 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;
