@@ -19,8 +19,13 @@
 #include <network/RestService.hpp>
 #include <network/mco/MCOParser.hpp>
 
-#include <netdb.h>
-#include <arpa/inet.h>
+#ifdef _WIN32
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+#else
+  #include <netdb.h>
+  #include <arpa/inet.h>
+#endif
 
 static std::string resolveHost(const std::string& host) {
 	if (host.empty()) return "";

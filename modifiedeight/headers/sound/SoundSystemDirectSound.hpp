@@ -1,7 +1,10 @@
 #pragma once
-#ifdef __WIN32__
-#include <_types.h>
+#ifdef _WIN32
+  #include <windows.h>
+  #include <mmsystem.h>
+#endif
 #include <dsound.h>
+#include <_types.h>
 #include <sound/SoundSystem.hpp>
 
 struct SoundSystemDirectSound: public SoundSystem
@@ -26,4 +29,3 @@ struct SoundSystemDirectSound: public SoundSystem
 	virtual void stop(const std::string&);
 	virtual void playAt(const struct SoundDesc&, float, float, float, float, float);
 };
-#endif

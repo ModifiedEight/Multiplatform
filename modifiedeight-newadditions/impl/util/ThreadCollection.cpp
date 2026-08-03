@@ -1,12 +1,23 @@
+#ifdef _WIN32
+  #include <windows.h>
+#else
+  #include <unistd.h>
+#endif
+
 #include <util/ThreadCollection.hpp>
 #include <util/Job.hpp>
-#include <unistd.h>
 #include <util/Worker.hpp>
 
 static int sub_D66E4980() {
-	int v0; // r0
-	v0 = sysconf(97);
-	return v0 & ~(v0 >> 31);
+    int v0; // r0
+#ifdef _WIN32
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    v0 = (int)sysinfo.dwNumberOfProcessors;
+#else
+    v0 = sysconf(97);
+#endif
+    return v0 & ~(v0 >> 31);
 }
 ThreadCollection::ThreadCollection(uint32_t maxthreads) {
 
