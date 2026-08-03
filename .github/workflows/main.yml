@@ -36,60 +36,60 @@ jobs:
           build/modifiedeight/build/modifiedeight
           build/modifiedeight-newadditions/build/modifiedeight-newadditions
 
-#  build-windows:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#    - uses: actions/checkout@v4
-#      with:
-#        submodules: recursive
-#
-#    - name: install pkgs
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get install -y --no-install-recommends \
-#          g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64 libz-mingw-w64-dev cmake make ccache
-#
-#    - name: Cache ccache
-#      uses: actions/cache@v4
-#      with:
-#        path: ~/.cache/ccache
-#        key: win64-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
-#        restore-keys: |
-#          win64-build-${{ runner.os }}-
-#
-#    - name: Build Windows Executables
-#      run: |
-#        mkdir build/
-#        cd build/
-#        ccache -z || true
-#        cmake .. -DDYNAMICSOUNDS=ON \
-#          -DCMAKE_SYSTEM_NAME=Windows \
-#          -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
-#          -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
-#          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-#          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-#          -DCMAKE_EXE_LINKER_FLAGS="-static" \
-#          -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-#          -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-#          -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-#          -DSDL_LIBRARY="$PWD/../prebuilt/win64/lib/SDL.dll" \
-#          -DSDL_INCLUDE_DIR="$PWD/../prebuilt/win64/include/" \
-#          -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32/
-#        make -j$(nproc)
-#        ccache -s || true
-#        cp modifiedeight/build/modifiedeight.exe . 2>/dev/null || true
-#        cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
-#        cp ../prebuilt/win64/lib/SDL.dll .
-#
-#    - name: upload stuff
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: build-windows
-#        path: |
-#          build/modifiedeight.exe
-#          build/modifiedeight-newadditions.exe
-#          build/SDL.dll
+  build-windows:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: install pkgs
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64 libz-mingw-w64-dev cmake make ccache
+
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ccache
+        key: win64-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          win64-build-${{ runner.os }}-
+
+    - name: Build Windows Executables
+      run: |
+        mkdir build/
+        cd build/
+        ccache -z || true
+        cmake .. -DDYNAMICSOUNDS=ON \
+          -DCMAKE_SYSTEM_NAME=Windows \
+          -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+          -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_EXE_LINKER_FLAGS="-static" \
+          -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+          -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+          -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+          -DSDL_LIBRARY="$PWD/../prebuilt/win64/lib/SDL.dll" \
+          -DSDL_INCLUDE_DIR="$PWD/../prebuilt/win64/include/" \
+          -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32/
+        make -j$(nproc)
+        ccache -s || true
+        cp modifiedeight/build/modifiedeight.exe . 2>/dev/null || true
+        cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
+        cp ../prebuilt/win64/lib/SDL.dll .
+
+    - name: upload stuff
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-windows
+        path: |
+          build/modifiedeight.exe
+          build/modifiedeight-newadditions.exe
+          build/SDL.dll
 
   build-ios:
     runs-on: ubuntu-24.04
@@ -186,5 +186,7 @@ jobs:
     - name: Upload Android Artifacts
       uses: actions/upload-artifact@v4
       with:
+        name: build-android-apk
+        path: platforms/android/app/build/outputs/apk/*/*/*.apk      with:
         name: build-android-apk
         path: platforms/android/app/build/outputs/apk/*/*/*.apk
