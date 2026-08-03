@@ -173,20 +173,8 @@ jobs:
       working-directory: platforms/android
       run: ./gradlew assembleRelease
 
-    - name: Sign APKs
-      run: |
-        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-        BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | tail -n 1)
-        for APK in platforms/android/app/build/outputs/apk/*/*/*.apk; do
-          if [ -f "$APK" ]; then
-            $BUILD_TOOLS/apksigner sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android "$APK"
-          fi
-        done
-
     - name: Upload Android Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-android-apk
-        path: platforms/android/app/build/outputs/apk/*/*/*.apk      with:
-        name: build-android-apk
-        path: platforms/android/app/build/outputs/apk/*/*/*.apk
+  uses: actions/upload-artifact@v4
+  with:
+    name: build-android-apk
+    path: platforms/android/app/build/outputs/apk/*/*/*.apk
