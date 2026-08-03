@@ -1,7 +1,14 @@
+#ifdef _WIN32
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+#else
+  #include <arpa/inet.h>
+  #include <netdb.h>
+#endif
+
 #include <ExternalServer.hpp>
 #include <ExternalServerFile.hpp>
 #include <Minecraft.hpp>
-#include <arpa/inet.h>
 #include <gui/Gui.hpp>
 #include <gui/buttons/ImageWithBackground.hpp>
 #include <gui/buttons/Touch_TButton.hpp>
@@ -16,7 +23,6 @@
 #include <level/LevelSettings.hpp>
 #include <level/LevelSummary.hpp>
 #include <math.h>
-#include <netdb.h>
 #include <network/PingedCompatibleServer.hpp>
 #include <network/RakNetInstance.hpp>
 #include <rendering/Font.hpp>

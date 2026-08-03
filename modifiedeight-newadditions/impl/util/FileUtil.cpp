@@ -2,17 +2,17 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
+#include <dirent.h>
 
 #if defined(_WIN32) || defined(WIN32)
-#include <direct.h>
-#include <io.h>
-#include <windows.h>
-#define mkdir(dir, mode) _mkdir(dir)
-#define rmdir(dir) _rmdir(dir)
-#define unlink(file) _unlink(file)
+  #include <direct.h>
+  #include <io.h>
+  #include <windows.h>
+  #define mkdir(dir, mode) _mkdir(dir)
+  #define rmdir(dir) _rmdir(dir)
+  #define unlink(file) _unlink(file)
 #else
-#include <dirent.h>
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 namespace FileUtil {
