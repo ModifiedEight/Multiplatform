@@ -2,9 +2,9 @@ name: Build ModifiedEight (Linux, Windows, iOS, Android)
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   workflow_dispatch: {}
 
 jobs:
@@ -12,169 +12,207 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: install pkgs
-      run: |
-        sudo apt update
-        sudo apt install -y libsdl1.2-dev libopenal-dev libgl1-mesa-dev zlib1g-dev libcurl4-openssl-dev
+      - name: install pkgs
+        run: |
+          sudo apt update
+          sudo apt install -y libsdl1.2-dev libopenal-dev libgl1-mesa-dev zlib1g-dev libcurl4-openssl-dev
 
-    - name: do cmake stuff
-      run: |
-        mkdir build/
-        cd build/
-        cmake .. -DDYNAMICSOUNDS=ON
-        make -j8
+      - name: do cmake stuff
+        run: |
+          mkdir build/
+          cd build/
+          cmake .. -DDYNAMICSOUNDS=ON
+          make -j8
 
-    - name: upload stuff
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-linux
-        path: |
-          build/modifiedeight/build/modifiedeight
-          build/modifiedeight-newadditions/build/modifiedeight-newadditions
+      - name: upload stuff
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: |
+            build/modifiedeight/build/modifiedeight
+            build/modifiedeight-newadditions/build/modifiedeight-newadditions
 
   build-windows:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: install pkgs
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64 libz-mingw-w64-dev cmake make ccache
+      - name: install pkgs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++-mingw-w64-x86-64 \
+            gcc-mingw-w64-x86-64 \
+            libz-mingw-w64-dev \
+            cmake \
+            make \
+            ccache
 
-    - name: Cache ccache
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/ccache
-        key: win64-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
-        restore-keys: |
-          win64-build-${{ runner.os }}-
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: win64-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            win64-build-${{ runner.os }}-
 
-    - name: Build Windows Executables
-      run: |
-        mkdir build/
-        cd build/
-        ccache -z || true
-        cmake .. -DDYNAMICSOUNDS=ON \
-          -DCMAKE_SYSTEM_NAME=Windows \
-          -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
-          -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-          -DCMAKE_EXE_LINKER_FLAGS="-static" \
-          -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-          -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-          -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-          -DSDL_LIBRARY="$PWD/../prebuilt/win64/lib/SDL.dll" \
-          -DSDL_INCLUDE_DIR="$PWD/../prebuilt/win64/include/" \
-          -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32/
-        make -j$(nproc)
-        ccache -s || true
-        cp modifiedeight/build/modifiedeight.exe . 2>/dev/null || true
-        cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
-        cp ../prebuilt/win64/lib/SDL.dll .
+      - name: Build Windows Executables
+        run: |
+          mkdir build/
+          cd build/
+          ccache -z || true
 
-    - name: upload stuff
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-windows
-        path: |
-          build/modifiedeight.exe
-          build/modifiedeight-newadditions.exe
-          build/SDL.dll
+          cmake .. -DDYNAMICSOUNDS=ON \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_EXE_LINKER_FLAGS="-static" \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DSDL_LIBRARY="$PWD/../prebuilt/win64/lib/SDL.dll" \
+            -DSDL_INCLUDE_DIR="$PWD/../prebuilt/win64/include/" \
+            -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32/
+
+          make -j$(nproc)
+
+          ccache -s || true
+
+          cp modifiedeight/build/modifiedeight.exe . 2>/dev/null || true
+          cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
+          cp ../prebuilt/win64/lib/SDL.dll .
+
+      - name: upload stuff
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows
+          path: |
+            build/modifiedeight.exe
+            build/modifiedeight-newadditions.exe
+            build/SDL.dll
 
   build-ios:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: install pkgs
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          clang-14 llvm-14 llvm-14-dev libc++-14-dev libc++abi-14-dev \
-          cmake make wget tar zip xz-utils libssl-dev ccache \
-          libplist-utils libplist-dev pkg-config git python3
+      - name: install pkgs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang-14 \
+            llvm-14 \
+            llvm-14-dev \
+            libc++-14-dev \
+            libc++abi-14-dev \
+            cmake \
+            make \
+            wget \
+            tar \
+            zip \
+            xz-utils \
+            libssl-dev \
+            ccache \
+            libplist-utils \
+            libplist-dev \
+            pkg-config \
+            git \
+            python3
 
-    - name: Cache ccache & iOS SDK/Toolchain
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/ccache
-          platforms/ios/build/work
-        key: ios-build-${{ runner.os }}-${{ hashFiles('platforms/ios/build.sh') }}
-        restore-keys: |
-          ios-build-${{ runner.os }}-
+      - name: Cache ccache & iOS SDK/Toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ccache
+            platforms/ios/build/work
+          key: ios-build-${{ runner.os }}-${{ hashFiles('platforms/ios/build.sh') }}
+          restore-keys: |
+            ios-build-${{ runner.os }}-
 
-    - name: Build iOS IPAs
-      working-directory: platforms/ios
-      run: |
-        ccache -z || true
-        chmod +x build.sh build-ipa.sh
-        ./build.sh classic
-        ./build.sh newadditions
-        ccache -s || true
+      - name: Build iOS IPAs
+        working-directory: platforms/ios
+        run: |
+          ccache -z || true
+          chmod +x build.sh build-ipa.sh
+          ./build.sh classic
+          ./build.sh newadditions
+          ccache -s || true
 
-    - name: upload iOS artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-ios-ipa
-        path: |
-          platforms/ios/build/ModifiedEight.ipa
-          platforms/ios/build/ModifiedEight-NewAdditions.ipa
+      - name: upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-ios-ipa
+          path: |
+            platforms/ios/build/ModifiedEight.ipa
+            platforms/ios/build/ModifiedEight-NewAdditions.ipa
 
   build-android:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
 
-    - name: Install NDK Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libncurses5 libtinfo5 lib32z1 libc6-i386 lib32stdc++6 2>/dev/null || true
-        if [ ! -f /usr/lib/x86_64-linux-gnu/libncurses.so.5 ]; then
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libncurses.so.6 /usr/lib/x86_64-linux-gnu/libncurses.so.5
-        fi
-        if [ ! -f /usr/lib/x86_64-linux-gnu/libtinfo.so.5 ]; then
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
-        fi
+      - name: Install NDK Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libncurses5 \
+            libtinfo5 \
+            lib32z1 \
+            libc6-i386 \
+            lib32stdc++6 2>/dev/null || true
 
-    - name: Setup Android NDK and SDK
-      run: |
-        SDKMANAGER=$(which sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
-        yes | $SDKMANAGER --licenses || true
-        $SDKMANAGER "ndk;16.1.4479499" "cmake;3.22.1" "build-tools;34.0.0"
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libncurses.so.5 ]; then
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libncurses.so.6 \
+              /usr/lib/x86_64-linux-gnu/libncurses.so.5
+          fi
 
-    - name: Make gradlew executable
-      working-directory: platforms/android
-      run: chmod +x gradlew
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libtinfo.so.5 ]; then
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 \
+              /usr/lib/x86_64-linux-gnu/libtinfo.so.5
+          fi
 
-    - name: Build Release APKs
-      working-directory: platforms/android
-      run: ./gradlew assembleRelease
+      - name: Setup Android NDK and SDK
+        run: |
+          SDKMANAGER=$(which sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
 
-    - name: Upload Android Artifacts
-  uses: actions/upload-artifact@v4
-  with:
-    name: build-android-apk
-    path: platforms/android/app/build/outputs/apk/*/*/*.apk
+          yes | $SDKMANAGER --licenses || true
+
+          $SDKMANAGER \
+            "ndk;16.1.4479499" \
+            "cmake;3.22.1" \
+            "build-tools;34.0.0"
+
+      - name: Make gradlew executable
+        working-directory: platforms/android
+        run: chmod +x gradlew
+
+      - name: Build Release APKs
+        working-directory: platforms/android
+        run: ./gradlew assembleRelease
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-android-apk
+          path: platforms/android/app/build/outputs/apk/**/*.apk
