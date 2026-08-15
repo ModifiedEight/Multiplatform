@@ -98,13 +98,15 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 }
 void CreativeInventoryScreen::populateFilteredItems() {
 	for(auto&& it: CreativeInventoryScreen::items) {
-		int32_t f54;
+		int32_t f54 = 1;
 		if(it.tileClass) {
 			f54 = it.tileClass->field_54;
-		} else {
+		} else if(it.itemClass) {
 			f54 = it.itemClass->field_34;
 		}
-		CreativeInventoryScreen::filteredItems[f54-1].emplace_back(it);
+		if (f54 >= 1 && f54 <= 6) {
+			CreativeInventoryScreen::filteredItems[f54-1].emplace_back(it);
+		}
 	}
 }
 void CreativeInventoryScreen::populateItem(Item* a1, int32_t a2, int32_t a3) {
@@ -233,6 +235,8 @@ void CreativeInventoryScreen::populateItems() {
 		CreativeInventoryScreen::populateItem(Item::bed, 1, 14);
 	}
 	CreativeInventoryScreen::populateItem(Tile::tnt, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::lever, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::redstoneLampOff, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::flower, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::rose, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::mushroom1, 1, 0);

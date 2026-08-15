@@ -3,6 +3,7 @@
 #include <tile/entity/ChestTileEntity.hpp>
 #include <tile/entity/NetherReactorTileEntity.hpp>
 #include <tile/entity/SignTileEntity.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 
 TileEntity* TileEntityFactory::createTileEntity(int32_t type) {
 	switch(type) {
@@ -14,6 +15,8 @@ TileEntity* TileEntityFactory::createTileEntity(int32_t type) {
 			return new NetherReactorTileEntity();
 		case 4:
 			return new SignTileEntity();
+		case 5:
+			return new MixedSlabTileEntity();
 		default:
 			return 0;
 	}

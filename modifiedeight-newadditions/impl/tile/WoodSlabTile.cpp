@@ -1,47 +1,206 @@
 #include <tile/WoodSlabTile.hpp>
+#include <tile/MixedSlabTile.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 #include <tile/material/Material.hpp>
 #include <level/Level.hpp>
+
+static bool isAnyHalfSlabTile(int32_t id) {
+	return (id == Tile::stoneSlabHalf->blockID ||
+	        id == Tile::woodSlabHalf->blockID ||
+	        (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
+	        (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
+	        (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
+	        (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID));
+}
 
 WoodSlabTile::Item::~Item(){
 
 }
 bool_t WoodSlabTile::Item::useOn(ItemInstance* a2, Player* a3, Level* a4, int32_t x, int32_t y, int32_t z, int32_t face, float a9, float a10, float a11) {
-	int32_t AuxValue; // r11
-	uint32_t meta;	  // r0
-	uint32_t v16;	  // r10
-	int32_t v17;	  // r3
-	const AABB* v18;  // r0
-	int32_t id;		  // [sp+14h] [bp-44h]
+	if (a2->count == 0) return 0;
 
-	if(a2->count) {
-		id = a4->getTile(x, y, z);
-		AuxValue = a2->getAuxValue();
-		meta = a4->getData(x, y, z);
-		v16 = meta;
-		v17 = (meta >> 3) & 1;
-		if(face == 1) {
-			if(v17) {
-				return TileItem::useOn(a2, a3, a4, x, y, z, face, a9, a10, a11);
+	int32_t id = a4->getTile(x, y, z);
+	uint32_t meta = a4->getData(x, y, z);
+
+	if (id == Tile::mixedSlab->blockID) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(x, y, z);
+		if (te) {
+			bool combined = false;
+			if (te->mode == 0) {
+				if (te->bottomTileId == 0 && te->topTileId != 0) {
+					if (face == 0 || (face >= 2 && a10 <= 0.5f)) {
+						te->bottomTileId = Tile::woodSlabHalf->blockID;
+						te->bottomAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				} else if (te->topTileId == 0 && te->bottomTileId != 0) {
+					if (face == 1 || (face >= 2 && a10 > 0.5f)) {
+						te->topTileId = Tile::woodSlabHalf->blockID;
+						te->topAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				}
+			} else if (te->mode == 1) {
+				if (te->bottomTileId == 0 && te->topTileId != 0) {
+					if (face == 2 || (face != 3 && a11 <= 0.5f)) {
+						te->bottomTileId = Tile::woodSlabHalf->blockID;
+						te->bottomAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				} else if (te->topTileId == 0 && te->bottomTileId != 0) {
+					if (face == 3 || (face != 2 && a11 > 0.5f)) {
+						te->topTileId = Tile::woodSlabHalf->blockID;
+						te->topAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				}
+			} else if (te->mode == 2) {
+				if (te->bottomTileId == 0 && te->topTileId != 0) {
+					if (face == 4 || (face != 5 && a9 <= 0.5f)) {
+						te->bottomTileId = Tile::woodSlabHalf->blockID;
+						te->bottomAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				} else if (te->topTileId == 0 && te->bottomTileId != 0) {
+					if (face == 5 || (face != 4 && a9 > 0.5f)) {
+						te->topTileId = Tile::woodSlabHalf->blockID;
+						te->topAux = a2->getAuxValue() & 7;
+						combined = true;
+					}
+				}
 			}
-		} else if(face || !v17) {
-			return TileItem::useOn(a2, a3, a4, x, y, z, face, a9, a10, a11);
+			if (combined) {
+				a4->sendTileUpdated(x, y, z);
+				a4->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0f) * 0.5f, Tile::woodSlab->soundType->field_4 * 0.8f);
+				--a2->count;
+				return 1;
+			}
 		}
-		if(id == Tile::woodSlabHalf->blockID) {
-			if((meta ^ AuxValue) << 29) {
-				return 0;
+	}
+
+	int32_t isUpper = (meta >> 3) & 1;
+	if (isAnyHalfSlabTile(id)) {
+		bool_t canCombine = 0;
+		int32_t bTileId = 0, bAux = 0;
+		int32_t tTileId = 0, tAux = 0;
+
+		if (face == 1 && !isUpper) {
+			canCombine = 1;
+			bTileId = id; bAux = meta & 7;
+			tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7;
+		} else if (face == 0 && isUpper) {
+			canCombine = 1;
+			bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7;
+			tTileId = id; tAux = meta & 7;
+		} else if (face >= 2) {
+			if (a10 > 0.5f && !isUpper) {
+				canCombine = 1;
+				bTileId = id; bAux = meta & 7;
+				tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7;
+			} else if (a10 <= 0.5f && isUpper) {
+				canCombine = 1;
+				bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7;
+				tTileId = id; tAux = meta & 7;
 			}
-			v18 = Tile::woodSlab->getAABB(a4, x, y, z);
-			if(a4->isUnobstructed(*v18)) {
-				if(a4->setTileAndData(x, y, z, Tile::woodSlab->blockID, v16 | AuxValue, 3)) {
-					a4->playSound((float)x + 0.5, (float)y + 0.5, (float)z + 0.5, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0) * 0.5, Tile::woodSlab->soundType->field_4 * 0.8);
+		}
+
+		if (canCombine) {
+			AABB fullBox = {(float)x, (float)y, (float)z, (float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f};
+			if (a4->isUnobstructed(fullBox)) {
+				if (a4->setTileAndData(x, y, z, Tile::mixedSlab->blockID, 0, 3)) {
+					MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(x, y, z);
+					if (te) {
+						te->mode = 0;
+						te->bottomTileId = bTileId;
+						te->bottomAux = bAux;
+						te->topTileId = tTileId;
+						te->topAux = tAux;
+					}
+					a4->sendTileUpdated(x, y, z);
+					a4->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0f) * 0.5f, Tile::woodSlab->soundType->field_4 * 0.8f);
 					--a2->count;
 				}
 			}
 			return 1;
 		}
-		return TileItem::useOn(a2, a3, a4, x, y, z, face, a9, a10, a11);
 	}
-	return 0;
+
+	if (face >= 2) {
+		int32_t targetX = x;
+		int32_t targetY = y;
+		int32_t targetZ = z;
+		if (face == 2) --targetZ;
+		else if (face == 3) ++targetZ;
+		else if (face == 4) --targetX;
+		else if (face == 5) ++targetX;
+
+		if (a4->mayPlace(Tile::mixedSlab->blockID, targetX, targetY, targetZ, 0, face)) {
+			int32_t mode = 0;
+			int32_t bTileId = 0, bAux = 0;
+			int32_t tTileId = 0, tAux = 0;
+
+			if (id == Tile::mixedSlab->blockID) {
+				MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(x, y, z);
+				if (te && (te->mode == 1 || te->mode == 2)) {
+					mode = te->mode;
+					if (te->bottomTileId != 0 && te->topTileId == 0) {
+						bTileId = Tile::woodSlabHalf->blockID;
+						bAux = a2->getAuxValue() & 7;
+					} else if (te->topTileId != 0 && te->bottomTileId == 0) {
+						tTileId = Tile::woodSlabHalf->blockID;
+						tAux = a2->getAuxValue() & 7;
+					} else {
+						if (mode == 1) {
+							if (a11 < 0.5f) { bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7; }
+							else { tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7; }
+						} else {
+							if (a9 < 0.5f) { bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7; }
+							else { tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7; }
+						}
+					}
+				}
+			}
+
+			if (mode == 0) {
+				if (face == 2 || face == 3) {
+					mode = 2;
+					if (a9 < 0.5f) {
+						bTileId = Tile::woodSlabHalf->blockID;
+						bAux = a2->getAuxValue() & 7;
+					} else {
+						tTileId = Tile::woodSlabHalf->blockID;
+						tAux = a2->getAuxValue() & 7;
+					}
+				} else {
+					mode = 1;
+					if (a11 < 0.5f) {
+						bTileId = Tile::woodSlabHalf->blockID;
+						bAux = a2->getAuxValue() & 7;
+					} else {
+						tTileId = Tile::woodSlabHalf->blockID;
+						tAux = a2->getAuxValue() & 7;
+					}
+				}
+			}
+
+			if (a4->setTileAndData(targetX, targetY, targetZ, Tile::mixedSlab->blockID, 0, 3)) {
+				MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(targetX, targetY, targetZ);
+				if (te) {
+					te->mode = mode;
+					te->bottomTileId = bTileId;
+					te->bottomAux = bAux;
+					te->topTileId = tTileId;
+					te->topAux = tAux;
+				}
+				a4->sendTileUpdated(targetX, targetY, targetZ);
+				a4->playSound((float)targetX + 0.5f, (float)targetY + 0.5f, (float)targetZ + 0.5f, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0f) * 0.5f, Tile::woodSlab->soundType->field_4 * 0.8f);
+				--a2->count;
+				return 1;
+			}
+		}
+	}
+
+	return TileItem::useOn(a2, a3, a4, x, y, z, face, a9, a10, a11);
 }
 
 WoodSlabTile::WoodSlabTile(int32_t a2, bool_t a3)

@@ -128,3 +128,16 @@ bool_t Region::isSolidBlockingTile(int32_t x, int32_t y, int32_t z) {
 Biome* Region::getBiome(int32_t x, int32_t z) {
 	return this->level->getBiome(x, z);
 }
+
+TileEntity* Region::getTileEntity(int32_t x, int32_t y, int32_t z) {
+	int32_t cx = (x >> 4) - this->minCX;
+	int32_t cz = (z >> 4) - this->minCZ;
+	if (cx >= 0 && cx < this->sizeX && cz >= 0 && cz < this->sizeZ && this->chunks) {
+		LevelChunk* chunk = this->chunks[cx][cz];
+		if (chunk) {
+			return chunk->getTileEntity(x & 0xF, y, z & 0xF);
+		}
+	}
+	if (this->level) return this->level->getTileEntity(x, y, z);
+	return 0;
+}

@@ -1,6 +1,7 @@
 #include <item/Item.hpp>
 #include <rendering/TextureAtlas.hpp>
 #include <item/StoneSlabTileItem.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <I18n.hpp>
 #include <item/ShovelItem.hpp>
 #include <item/PickaxeItem.hpp>
@@ -124,6 +125,8 @@ Item* Item::egg;
 Item* Item::compass;
 Item* Item::clock;
 Item* Item::yellowDust;
+Item* Item::lever;
+Item* Item::redstoneLamp;
 Item* Item::dye_powder;
 Item* Item::bone;
 Item* Item::sugar;
@@ -415,6 +418,11 @@ bool_t Item::useOn(struct ItemInstance*, struct Level*, int32_t, int32_t, int32_
 }
 bool_t Item::useOn(struct ItemInstance*, struct Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float hitX, float hitY, float hitZ) {
 	if(this == Item::paper) {
+		if (BlockColorRegistry::hasBlockColor(x, y, z)) {
+			BlockColorRegistry::clearBlockColor(x, y, z);
+			level->sendTileUpdated(x, y, z);
+			return 1;
+		}
 		int32_t tileId = level->getTile(x, y, z);
 		int32_t data = level->getData(x, y, z);
 		if(tileId == Tile::cloth->blockID || tileId == Tile::woolCarpet->blockID) {

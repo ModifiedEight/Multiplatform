@@ -20,6 +20,7 @@ void TileEntity::initTileEntities() {
 	TileEntity::setId(2, "Chest");
 	TileEntity::setId(3, "NetherReactor");
 	TileEntity::setId(4, "Sign");
+	TileEntity::setId(5, "MixedSlab");
 }
 void TileEntity::teardownTileEntities() {
 }

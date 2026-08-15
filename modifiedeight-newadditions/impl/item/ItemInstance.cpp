@@ -50,7 +50,7 @@ bool_t ItemInstance::_setItem(int32_t itemID) {
 		itemClass = Item::items[itemID];
 	}
 	this->itemClass = itemClass;
-	if(itemClass) {
+	if(itemClass || (itemID < 256 && Tile::tiles[itemID])) {
 		result = 1;
 	} else {
 		result = itemID == 0;

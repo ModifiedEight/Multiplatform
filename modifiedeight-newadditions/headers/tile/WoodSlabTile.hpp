@@ -6,7 +6,7 @@
 
 struct WoodSlabTile : SlabTile{
 	struct Item : AuxDataTileItem{
-		//TODO constructor
+		Item(int32_t id, Tile* tile) : AuxDataTileItem(id, tile) {}
 		virtual ~Item();
 		virtual bool_t useOn(ItemInstance*, Player*, Level*, int32_t, int32_t, int32_t, int32_t, float, float, float);
 	};

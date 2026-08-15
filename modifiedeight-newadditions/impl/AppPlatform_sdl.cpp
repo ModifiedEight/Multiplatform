@@ -20,6 +20,7 @@
 
 #include <item/Item.hpp>
 #include <tile/Tile.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 
 static void performPickBlock(Minecraft *mc) {
   if (!mc || !mc->player || !mc->level || !mc->player->inventory)
@@ -39,7 +40,31 @@ static void performPickBlock(Minecraft *mc) {
 
   Tile *tile = Tile::tiles[tileId];
   if (tile) {
-    if (tile == Tile::sign || tile == Tile::wallSign) {
+    if (tile == Tile::mixedSlab) {
+      MixedSlabTileEntity *te = (MixedSlabTileEntity *)mc->level->getTileEntity(x, y, z);
+      if (te) {
+        int mode = te->mode;
+        float hitCoord = 0.5f;
+        if (mode == 1) {
+          hitCoord = mc->selectedObject.hitVec.z - (float)z;
+        } else if (mode == 2) {
+          hitCoord = mc->selectedObject.hitVec.x - (float)x;
+        } else {
+          hitCoord = mc->selectedObject.hitVec.y - (float)y;
+        }
+        bool hitTop = (hitCoord >= 0.5f);
+        if (te->bottomTileId > 0 && te->topTileId == 0) hitTop = false;
+        if (te->topTileId > 0 && te->bottomTileId == 0) hitTop = true;
+
+        if (hitTop && te->topTileId > 0) {
+          pickId = te->topTileId;
+          pickData = te->topAux;
+        } else if (te->bottomTileId > 0) {
+          pickId = te->bottomTileId;
+          pickData = te->bottomAux;
+        }
+      }
+    } else if (tile == Tile::sign || tile == Tile::wallSign) {
       pickId = Item::sign ? Item::sign->itemID : 323;
       pickData = 0;
     } else if (tile == Tile::door_wood) {
@@ -186,7 +211,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.0", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.0.1", 0);
 
   {
     int w, h, ch;
@@ -491,7 +516,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.0",
+              details, "icon", "ModifiedEight New Additions 1.6.0.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

@@ -1,4 +1,5 @@
 #include <tile/GrassTile.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <level/Level.hpp>
 #include <tile/material/Material.hpp>
 #include <rendering/TextureAtlasTextureItem.hpp>
@@ -170,6 +171,9 @@ int32_t GrassTile::getResource(int32_t, Random* a3) {
 int32_t GrassTile::getColor(int32_t) {
 	return 0x87CD49;
 }
-int32_t GrassTile::getColor(LevelSource*, int32_t, int32_t, int32_t) {
+int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
+		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	}
 	return this->getColor(0);
 }

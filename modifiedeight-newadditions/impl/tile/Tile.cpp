@@ -1,4 +1,8 @@
 #include <tile/Tile.hpp>
+#include <tile/BlockColorRegistry.hpp>
+#include <tile/LeverTile.hpp>
+#include <tile/RedstoneLampTile.hpp>
+#include <tile/MixedSlabTile.hpp>
 #include <entity/ItemEntity.hpp>
 #include <entity/Player.hpp>
 #include <cstdio>
@@ -211,6 +215,9 @@ Tile* Tile::trapdoor;
 Tile* Tile::stoneBrickSmooth;
 Tile* Tile::ironFence;
 Tile* Tile::thinGlass;
+Tile* Tile::lever;
+Tile* Tile::redstoneLampOff;
+Tile* Tile::redstoneLampOn;
 Tile* Tile::melon;
 Tile* Tile::pumpkinStem;
 Tile* Tile::melonStem;
@@ -231,6 +238,7 @@ Tile* Tile::quartzBlock;
 Tile* Tile::stairs_quartz;
 Tile* Tile::woodSlab;
 Tile* Tile::woodSlabHalf;
+Tile* Tile::mixedSlab;
 Tile* Tile::hayBlock;
 Tile* Tile::woolCarpet;
 Tile* Tile::coalBlock;
@@ -303,6 +311,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Tile::ironBlock = (new MetalTile(42, "iron_block"))->init()->setDestroyTime(5.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_METAL)->setCategory(2, 8)->setDescriptionId("blockIron");
 	Tile::stoneSlab = (new StoneSlabTile(43, 1))->init()->setDestroyTime(2.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("stoneSlab");
 	Tile::stoneSlabHalf = (new StoneSlabTile(44, 0))->init()->setDestroyTime(2.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("stoneSlab");
+	Tile::mixedSlab = (new MixedSlabTile(251))->init()->setDestroyTime(2.0f)->setExplodeable(10.0f)->setSoundType(Tile::SOUND_STONE)->setDescriptionId("mixedSlab");
 	Tile::redBrick = (new Tile(45, "brick", Material::stone))->init()->setDestroyTime(2.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("brick");
 	Tile::tnt = (new TntTile(46, "tnt_side"))->init()->setDestroyTime(0.0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 1)->setDescriptionId("tnt");
 	
@@ -338,6 +347,9 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Tile::stairs_stone = (new StairTile(67, Tile::stoneBrick, 0))->init()->setCategory(1, 1)->setDescriptionId("stairsStone");
 	Tile::wallSign = (new SignTile(68, 0))->init()->setDestroyTime(1.0)->setSoundType(Tile::SOUND_WOOD)->setCategory(2, 8)->setDescriptionId("sign");
 	Tile::door_iron = (new DoorTile(71, Material::metal))->init()->setDestroyTime(5.0)->setSoundType(Tile::SOUND_METAL)->setCategory(2, 1)->setDescriptionId("doorIron");
+	Tile::lever = (new LeverTile(69))->init()->setDestroyTime(0.5f)->setSoundType(Tile::SOUND_WOOD)->setCategory(2, 1)->setDescriptionId("lever");
+	Tile::redstoneLampOff = (new RedstoneLampTile(123, 0))->init()->setDestroyTime(0.3f)->setLightBlock(0)->setSoundType(Tile::SOUND_GLASS)->setCategory(2, 1)->setDescriptionId("redstoneLamp");
+	Tile::redstoneLampOn = (new RedstoneLampTile(124, 1))->init()->setDestroyTime(0.3f)->setLightEmission(1.0f)->setLightBlock(0)->setSoundType(Tile::SOUND_GLASS)->setCategory(2, 1)->setDescriptionId("redstoneLamp");
 	Tile::redStoneOre = (new RedStoneOreTile(73, "redstone_ore", 0))->init()->setDestroyTime(3.0)->setExplodeable(5.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 8)->setDescriptionId("oreRedstone");
 	Tile::redStoneOre_lit = (new RedStoneOreTile(74, "redstone_ore", 1))->init()->setDestroyTime(3.0)->setLightEmission(0.625)->setExplodeable(5.0)->setSoundType(Tile::SOUND_STONE)->setCategory(2, 8)->setDescriptionId("oreRedstone");
 	Tile::topSnow = (new TopSnowTile(78, "snow", Material::topSnow))->init()->setDestroyTime(0.1)->setSoundType(Tile::SOUND_CLOTH)->setCategory(2, 1)->setDescriptionId("snow");
@@ -441,8 +453,8 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 
 	// Colored logs
 	int log_ids[16] = {
-		115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125,
-		129, 130, 131, 132, 133
+		115, 116, 117, 118, 119, 120, 121, 122, 125, 127,
+		129, 130, 131, 132, 133, 137
 	};
 	for (int i = 0; i < 16; i++) {
 		char buf[16];
@@ -509,7 +521,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Item::items[Tile::sapling->blockID] = (new SaplingTileItem(Tile::sapling->blockID - 256))->setCategory(2, 1)->setDescriptionId("sapling");
 	Item::items[Tile::leaves->blockID] = (new LeafTileItem(Tile::leaves->blockID - 256))->setCategory(2, 8)->setDescriptionId("leaves");
 	Item::items[Tile::sandStone->blockID] = (new AuxDataTileItem(Tile::sandStone->blockID - 256, Tile::sandStone))->setCategory(1, 1)->setDescriptionId("sandStone");
-	Item::items[Tile::woodSlabHalf->blockID] = (new AuxDataTileItem(Tile::woodSlabHalf->blockID - 256, Tile::woodSlabHalf))->setCategory(1, 1)->setDescriptionId("woodSlab");
+	Item::items[Tile::woodSlabHalf->blockID] = (new WoodSlabTile::Item(Tile::woodSlabHalf->blockID - 256, Tile::woodSlabHalf))->setCategory(1, 1)->setDescriptionId("woodSlab");
 	Item::items[Tile::wood->blockID] = (new AuxDataTileItem(Tile::wood->blockID - 256, Tile::wood))->setCategory(1, 1)->setDescriptionId("wood");
 	Item::items[Tile::quartzBlock->blockID] = (new AuxDataTileItem(Tile::quartzBlock->blockID - 256, Tile::quartzBlock))->setCategory(1, 1)->setDescriptionId("quartzBlock");
 	Item::items[Tile::cobbleWall->blockID] = (new AuxDataTileItem(Tile::cobbleWall->blockID - 256, Tile::cobbleWall))->setCategory(2, 1)->setDescriptionId("cobbleWall");
@@ -536,6 +548,15 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 		++bid;
 		++actualItemID;
 	} while(bid != 256);
+
+	if (!Item::items[Tile::lever->blockID]) {
+		Item::items[Tile::lever->blockID] = (new TileItem(Tile::lever->blockID - 256))->setCategory(2, 1)->setDescriptionId("lever");
+	}
+	if (!Item::items[Tile::redstoneLampOff->blockID]) {
+		Item::items[Tile::redstoneLampOff->blockID] = (new TileItem(Tile::redstoneLampOff->blockID - 256))->setCategory(2, 1)->setDescriptionId("redstoneLamp");
+	}
+	Item::lever = Item::items[Tile::lever->blockID];
+	Item::redstoneLamp = Item::items[Tile::redstoneLampOff->blockID];
 }
 void Tile::teardownTiles() {
 	for(int32_t i = 0; i != 256; ++i) {
@@ -783,7 +804,7 @@ bool_t Tile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t 
 	} else if(face == 1) {
 		if(this->maxY < 1) return 1;
 	} else if(face == 2) {
-		if(this->minX > 0) return 1;
+		if(this->minZ > 0) return 1;
 	} else if(face == 3) {
 		if(this->maxZ < 1) return 1;
 	} else if(face == 4) {
@@ -890,7 +911,8 @@ void Tile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_
 }
 void Tile::onPlace(Level*, int32_t, int32_t, int32_t) {
 }
-void Tile::onRemove(Level*, int32_t, int32_t, int32_t) {
+void Tile::onRemove(Level* level, int32_t x, int32_t y, int32_t z) {
+	BlockColorRegistry::clearBlockColor(x, y, z);
 }
 void Tile::onGraphicsModeChanged(bool_t a2) {
 	this->goodGraphics = a2;
@@ -1163,7 +1185,10 @@ void Tile::handleEntityInside(Level*, int32_t, int32_t, int32_t, Entity*, Vec3&)
 int32_t Tile::getColor(int32_t) {
 	return 0xffffffff;
 }
-int32_t Tile::getColor(LevelSource*, int32_t, int32_t, int32_t) {
+int32_t Tile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
+		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	}
 	return 0xffffff;
 }
 float Tile::getThickness() {

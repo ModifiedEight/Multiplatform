@@ -1,11 +1,12 @@
 #include <I18n.hpp>
 #include <item/ItemInstance.hpp>
+#include <item/Item.hpp>
 #include <tile/Tile.hpp>
 #include <util/Util.hpp>
 #include <AppPlatform.hpp>
 #include <_AssetFile.hpp>
 #include <sstream>
-#include <cstdlib> // Для atoi
+#include <cstdlib>
 
 std::map<std::string, std::string> I18n::_strings;
 
@@ -18,6 +19,20 @@ void I18n::loadLanguage(struct AppPlatform* a1, const std::string& a2) {
 }
 
 const char_t* _d6e03d98[] = {"wood", "iron", "stone", "diamond", "gold", "brick", "emerald", "lapis", "cloth"};
+
+static bool translateCustomDesc(const std::string& key, std::string& out) {
+	if (key == "desc.redstonelamp") { out = "A light source that can be turned on and off with Lever."; return true; }
+	if (key == "desc.doorspruce") { out = "Spruce door."; return true; }
+	if (key == "desc.doorbirch") { out = "Birch door."; return true; }
+	if (key == "desc.bed" || key.find("desc.bed.") == 0) { out = "Used to sleep until dawn. Changes your spawn point to the bed's position."; return true; }
+	if (key == "desc.wood" || key.find("desc.wood.") == 0 || key.find("desc.coloredplanks.") == 0 || key == "desc.coloredplanks") { out = "Used as a building material and can be crafted into many things."; return true; }
+	if (key == "desc.stairs" || key.find("desc.stairswood") == 0 || key.find("desc.coloredstairs.") == 0 || key == "desc.coloredstairs") { out = "Used for compact staircases."; return true; }
+	if (key == "desc.fence" || key.find("desc.fence_") == 0 || key.find("desc.coloredfence.") == 0 || key == "desc.coloredfence") { out = "Used as a barrier that cannot be jumped over."; return true; }
+	if (key == "desc.slab" || key.find("desc.coloredslab") == 0 || key.find("desc.coloredbrickslab") == 0) { out = "Used for making long staircases."; return true; }
+	if (key == "desc.doorwood") { out = "Wooden doors are activated by using, hitting them or with Redstone."; return true; }
+	if (key == "desc.dooriron") { out = "Iron doors can only be opened by Redstone, buttons or switches."; return true; }
+	return false;
+}
 
 std::string I18n::getDescriptionString(const struct ItemInstance& a2) {
 	std::string v15 = a2.getDescriptionId();
@@ -34,6 +49,39 @@ std::string I18n::getDescriptionString(const struct ItemInstance& a2) {
 	}
 	if(Tile::stoneSlabHalf == a2.tileClass && a2.tileClass) {
 		return I18n::get("desc.slab");
+	}
+	if(Tile::woodSlabHalf == a2.tileClass && a2.tileClass) {
+		return I18n::get("desc.slab");
+	}
+	if((Tile::coloredSlabHalf1 && a2.tileClass == Tile::coloredSlabHalf1) ||
+	   (Tile::coloredSlabHalf2 && a2.tileClass == Tile::coloredSlabHalf2) ||
+	   (Tile::coloredBrickSlabHalf1 && a2.tileClass == Tile::coloredBrickSlabHalf1) ||
+	   (Tile::coloredBrickSlabHalf2 && a2.tileClass == Tile::coloredBrickSlabHalf2)) {
+		return I18n::get("desc.slab");
+	}
+	if(Item::bed && a2.itemClass == Item::bed) {
+		return I18n::get("desc.bed");
+	}
+	if(Item::door_spruce && a2.itemClass == Item::door_spruce) {
+		return I18n::get("desc.doorspruce");
+	}
+	if(Item::door_birch && a2.itemClass == Item::door_birch) {
+		return I18n::get("desc.doorbirch");
+	}
+	if((Item::redstoneLamp && a2.itemClass == Item::redstoneLamp) ||
+	   (Tile::redstoneLampOff && a2.tileClass == Tile::redstoneLampOff)) {
+		return I18n::get("desc.redstonelamp");
+	}
+	if((Tile::wood && a2.tileClass == Tile::wood) ||
+	   (Tile::coloredPlanks && a2.tileClass == Tile::coloredPlanks)) {
+		return I18n::get("desc.wood");
+	}
+	if((Tile::fence_spruce && a2.tileClass == Tile::fence_spruce) ||
+	   (Tile::fence_birch && a2.tileClass == Tile::fence_birch)) {
+		return I18n::get("desc.fence");
+	}
+	if(Tile::stairs_wood && a2.tileClass == Tile::stairs_wood) {
+		return I18n::get("desc.stairs");
 	}
 	v16 = Util::toLower(v16);
 	if(v16[0] == 't') {
@@ -207,6 +255,7 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.marketplace") { a2 = "Texture Packs button"; return 1; }
 	if (a1 == "options.fogenabled") { a2 = "Fog"; return 1; }
 	if (a1 == "tile.grassPath.name") { a2 = "Grass Path"; return 1; }
+	if (translateCustomDesc(a1, a2)) { return 1; }
 	if (translateWoodVariant(a1, a2)) { return 1; }
 
 	auto&& v3 = I18n::_strings.find(a1);
@@ -242,6 +291,7 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "tile.grassPath.name") return "Grass Path";
 
 	std::string out;
+	if (translateCustomDesc(a2, out)) return out;
 	if (translateWoodVariant(a2, out)) return out;
 
 	auto&& v3 = I18n::_strings.find(a2);

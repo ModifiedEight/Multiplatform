@@ -1,4 +1,5 @@
 #include <level/chunk/LevelChunk.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <string.h>
 #include <entity/Entity.hpp>
 #include <level/Level.hpp>
@@ -429,6 +430,7 @@ bool_t LevelChunk::setTile(int32_t x, int32_t y, int32_t z, int32_t id) {
 	if(oldID == id) return 0;
 	int32_t worldX = x + this->chunkXworld;
 	int32_t worldZ = z + this->chunkZworld;
+	BlockColorRegistry::clearBlockColor(worldX, y, worldZ);
 	this->tiles[v10] = id;
 	if(oldID) Tile::tiles[oldID]->onRemove(this->level, worldX, y, worldZ);
 	this->tileMeta.set(x, y, z, 0);
@@ -459,6 +461,9 @@ bool_t LevelChunk::setTileAndData(int32_t x, int32_t y, int32_t z, int32_t id, i
 	}
 	int32_t v18 = this->chunkXworld + x;
 	int32_t v19 = this->chunkZworld + z;
+	if(oldid != id) {
+		BlockColorRegistry::clearBlockColor(v18, y, v19);
+	}
 	this->tiles[v9] = id;
 	if(oldid) {
 		Tile::tiles[oldid]->onRemove(this->level, v18, y, v19);

@@ -104,6 +104,8 @@ Recipes::Recipes() {
 
 	this->addShapedRecipe(ItemInstance(Item::paper, 3), "###", definition<Item*>('#', Item::reeds));
 	this->addShapedRecipe(ItemInstance(Item::dye_powder, 1, 15), "###", "###", "###", definition<Item*>('#', Item::bone));
+	this->addShapedRecipe(ItemInstance(Item::lever, 1), "#", "X", definition<Item*, Tile*>('#', Item::stick, 'X', Tile::stoneBrick));
+	this->addShapedRecipe(ItemInstance(Item::redstoneLamp, 1), " I ", "ITI", " I ", definition<Item*, Tile*>('I', Item::ironIngot, 'T', Tile::torch));
 	
 	for(int i = 0; i < 16; i++) {
 		int dyeMeta = (~i) & 0xF;

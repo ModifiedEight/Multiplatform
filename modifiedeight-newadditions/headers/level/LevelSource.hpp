@@ -3,6 +3,7 @@
 
 struct Material;
 struct Biome;
+struct TileEntity;
 
 struct LevelSource{
 	virtual ~LevelSource();
@@ -14,4 +15,5 @@ struct LevelSource{
 	virtual bool_t isSolidRenderTile(int32_t, int32_t, int32_t) = 0;
 	virtual bool_t isSolidBlockingTile(int32_t, int32_t, int32_t) = 0;
 	virtual Biome* getBiome(int32_t, int32_t) = 0;
+	virtual TileEntity* getTileEntity(int32_t, int32_t, int32_t);
 };

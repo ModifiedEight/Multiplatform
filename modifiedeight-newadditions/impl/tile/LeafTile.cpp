@@ -1,4 +1,5 @@
 #include <tile/LeafTile.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <util/Random.hpp>
 #include <level/Level.hpp>
 #include <entity/Player.hpp>
@@ -204,6 +205,9 @@ int32_t LeafTile::getRenderLayer() {
 	return 3;
 }
 int32_t LeafTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
+		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	}
 	int32_t v5;		// r3
 	int32_t result; // r0
 

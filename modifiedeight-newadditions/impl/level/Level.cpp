@@ -1601,13 +1601,9 @@ bool_t Level::mayPlace(int32_t blockID, int32_t x, int32_t y, int32_t z, bool_t 
 	}
 }
 void Level::neighborChanged(int32_t x, int32_t y, int32_t z, int32_t a5, int32_t a6, int32_t a7, int32_t a8) {
-	Tile* v12; // r0
-
-	if(!this->isClientMaybe) {
-		v12 = Tile::tiles[this->getTile(x, y, z)];
-		if(v12) {
-			v12->neighborChanged(this, x, y, z, a5, a6, a7, a8);
-		}
+	Tile* v12 = Tile::tiles[this->getTile(x, y, z)];
+	if(v12) {
+		v12->neighborChanged(this, x, y, z, a5, a6, a7, a8);
 	}
 }
 void Level::playSound(struct Entity* e, const std::string& s, float a4, float a5) {

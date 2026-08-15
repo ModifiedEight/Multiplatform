@@ -21,4 +21,5 @@ struct Region: LevelSource
 	virtual bool_t isSolidRenderTile(int32_t, int32_t, int32_t);
 	virtual bool_t isSolidBlockingTile(int32_t, int32_t, int32_t);
 	virtual Biome* getBiome(int32_t, int32_t);
+	virtual TileEntity* getTileEntity(int32_t, int32_t, int32_t);
 };

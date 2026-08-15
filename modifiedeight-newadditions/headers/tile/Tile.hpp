@@ -85,6 +85,7 @@ struct Tile{
 	static Tile* ironBlock;
 	static Tile* stoneSlab;
 	static Tile* stoneSlabHalf;
+	static Tile* mixedSlab;
 	static Tile* redBrick;
 	static Tile* tnt;
 	static Tile* bookshelf;
@@ -159,6 +160,9 @@ struct Tile{
 	static Tile* info_updateGame2;
 	static Tile* info_reserved6;
 	static Tile* fire;
+	static Tile* lever;
+	static Tile* redstoneLampOff;
+	static Tile* redstoneLampOn;
 
 	static Tile::SoundType SOUND_NORMAL;
 	static Tile::SoundType SOUND_WOOD;

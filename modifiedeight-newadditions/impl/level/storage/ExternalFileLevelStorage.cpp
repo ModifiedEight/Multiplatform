@@ -1,4 +1,5 @@
 #include <level/storage/ExternalFileLevelStorage.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <GetTime.h>
 #include <cpputils.hpp>
 #include <level/Level.hpp>
@@ -48,6 +49,7 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a2, const 
 		}
 		this->levelData = 0;
 	}
+	BlockColorRegistry::load(this->anotherDataFolder);
 }
 bool_t ExternalFileLevelStorage::readLevelData(const std::string& a1, LevelData& a2) {
 	std::string filename = a1 + "/" + "level.dat";
@@ -125,6 +127,7 @@ void ExternalFileLevelStorage::readPlayerData(const std::string& a1, LevelData& 
 	}
 }
 void ExternalFileLevelStorage::saveLevelData(const std::string& a1, LevelData& a2, std::vector<Player*>* a3) {
+	BlockColorRegistry::save(a1);
 	std::string v5 = a1 + '/';
 	std::string v6 = v5 + "level.dat_new";
 	std::string old = v5 + "level.dat";

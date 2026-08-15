@@ -47,6 +47,7 @@ struct TileRenderer
 	bool_t tesselateInWorld(Tile*, int32_t, int32_t, int32_t, const struct TextureUVCoordinateSet&);
 	bool_t tesselateInWorldNoCulling(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateLadderInWorld(Tile*, int32_t, int32_t, int32_t);
+	bool_t tesselateMixedSlabInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateRailInWorld(struct BaseRailTile*, int32_t, int32_t, int32_t);
 	bool_t tesselateRowInWorld(Tile*, int32_t, int32_t, int32_t);
 	void tesselateRowTexture(Tile*, int32_t, float, float, float);
@@ -58,6 +59,7 @@ struct TileRenderer
 	void tesselateTorch(Tile*, float, float, float, float, float);
 	bool_t tesselateTorchInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateTreeInWorld(Tile*, int32_t, int32_t, int32_t);
+	bool_t tesselateLeverInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWallInWorld(struct WallTile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWaterInWorld(Tile*, int32_t, int32_t, int32_t);
 };

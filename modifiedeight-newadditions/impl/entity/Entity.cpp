@@ -1,5 +1,6 @@
 #include <entity/Entity.hpp>
 #include <tile/Tile.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 #include <math/Mth.hpp>
 #include <level/Level.hpp>
 #include <math.h>
@@ -1149,20 +1150,32 @@ bool_t Entity::isFree(float x, float y, float z) {
 	return cubes->size() == 0 && !this->level->containsAnyLiquid(v17);
 }
 bool_t Entity::isInWall() {
-	int32_t x; // r0
-	float _y; // s16
-	int32_t _x; // r7
-	float hh; // r0
-	int32_t y; // r6
-	int32_t z; // r0
-
-	x = Mth::floor(this->posX);
-	_y = this->posY;
-	_x = x;
-	hh = this->getHeadHeight();
-	y = Mth::floor(_y + hh);
-	z = Mth::floor(this->posZ);
-	return this->level->isSolidBlockingTile(_x, y, z);
+	int32_t x = Mth::floor(this->posX);
+	float _y = this->posY;
+	float hh = this->getHeadHeight();
+	int32_t y = Mth::floor(_y + hh);
+	int32_t z = Mth::floor(this->posZ);
+	int32_t tileId = this->level->getTile(x, y, z);
+	if (Tile::mixedSlab && tileId == Tile::mixedSlab->blockID) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)this->level->getTileEntity(x, y, z);
+		if (te) {
+			float hx = this->posX - (float)x;
+			float hy = (_y + hh) - (float)y;
+			float hz = this->posZ - (float)z;
+			if (te->mode == 1) {
+				if (te->bottomTileId > 0 && hz >= 0.0f && hz <= 0.5f) return 1;
+				if (te->topTileId > 0 && hz >= 0.5f && hz <= 1.0f) return 1;
+			} else if (te->mode == 2) {
+				if (te->bottomTileId > 0 && hx >= 0.0f && hx <= 0.5f) return 1;
+				if (te->topTileId > 0 && hx >= 0.5f && hx <= 1.0f) return 1;
+			} else {
+				if (te->bottomTileId > 0 && hy >= 0.0f && hy <= 0.5f) return 1;
+				if (te->topTileId > 0 && hy >= 0.5f && hy <= 1.0f) return 1;
+			}
+			return 0;
+		}
+	}
+	return this->level->isSolidBlockingTile(x, y, z);
 }
 bool_t Entity::isInWater(){
 	float maxY; // s11
