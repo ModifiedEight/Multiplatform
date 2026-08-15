@@ -7,7 +7,6 @@
 #include <stb_image.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Options.hpp>
 
 extern uint8_t* g_terrainAtlasPixels;
 extern int g_terrainAtlasWidth;
@@ -96,52 +95,19 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 	bool is_terrain = (this->path.find("terrain.meta") != std::string::npos);
 	int atlas_w = is_terrain ? g_terrainAtlasWidth : g_itemsAtlasWidth;
 	int atlas_h = is_terrain ? g_terrainAtlasHeight : g_itemsAtlasHeight;
-	bool is_classic = (mc && mc->options.classicTextures);
+	uint8_t* atlas_pixels = (uint8_t*)malloc(atlas_w * atlas_h * 4);
+	memset(atlas_pixels, 0, atlas_w * atlas_h * 4);
 
-	std::string altPath = is_terrain ? "images/terrain-atlas.tga" : "images/items-opaque.png";
-	AssetFile f = mc->platform()->readAssetFile(altPath);
-	if (!f.bytes) {
-		altPath = is_terrain ? "terrain-atlas.tga" : "items-opaque.png";
-		f = mc->platform()->readAssetFile(altPath);
-	}
-	if (!f.bytes) {
-		altPath = is_terrain ? "terrain.png" : "gui/items.png";
-		f = mc->platform()->readAssetFile(altPath);
-	}
-	if (f.bytes && f.length > 0) {
-		int w, h, ch;
-		uint8_t* px = stbi_load_from_memory(f.bytes, f.length, &w, &h, &ch, STBI_rgb_alpha);
-		delete[] f.bytes;
-		if (px) {
-			if (is_terrain) {
-				if (g_terrainAtlasPixels) free(g_terrainAtlasPixels);
-				g_terrainAtlasPixels = px;
-				g_terrainAtlasWidth = w;
-				g_terrainAtlasHeight = h;
-			} else {
-				if (g_itemsAtlasPixels) free(g_itemsAtlasPixels);
-				g_itemsAtlasPixels = px;
-				g_itemsAtlasWidth = w;
-				g_itemsAtlasHeight = h;
-			}
-			atlas_w = w;
-			atlas_h = h;
+	if (is_terrain) {
+		if (g_terrainAtlasPixels) {
+			free(g_terrainAtlasPixels);
 		}
+		g_terrainAtlasPixels = atlas_pixels;
 	} else {
-		uint8_t* atlas_pixels = (uint8_t*)malloc(atlas_w * atlas_h * 4);
-		memset(atlas_pixels, 0, atlas_w * atlas_h * 4);
-
-		if (is_terrain) {
-			if (g_terrainAtlasPixels) free(g_terrainAtlasPixels);
-			g_terrainAtlasPixels = atlas_pixels;
-			g_terrainAtlasWidth = atlas_w;
-			g_terrainAtlasHeight = atlas_h;
-		} else {
-			if (g_itemsAtlasPixels) free(g_itemsAtlasPixels);
-			g_itemsAtlasPixels = atlas_pixels;
-			g_itemsAtlasWidth = atlas_w;
-			g_itemsAtlasHeight = atlas_h;
+		if (g_itemsAtlasPixels) {
+			free(g_itemsAtlasPixels);
 		}
+		g_itemsAtlasPixels = atlas_pixels;
 	}
 
 	Json::Reader reader;
@@ -165,102 +131,82 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 			std::string name = v32["name"].asString();
 			std::vector<TextureUVCoordinateSet> v29;
 
-			TextureUVCoordinateSet main_uv;
-			bool has_valid_uv = (v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6 && v32["uv"][2].asFloat() > 0.0001f);
-
-			if (is_classic) {
-				if (v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6) {
-					main_uv = _parseJSON(v32["uv"]);
-				}
-			} else if (has_valid_uv) {
-				main_uv = _parseJSON(v32["uv"]);
-			} else {
-				std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
-				std::string main_img_path = base_path + name + ".png";
-				uint8_t* main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
-				if (!main_pixels) {
-					main_img_path = base_path + name + "_0.png";
-					main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
-				}
-
-				int main_x = (slot_idx % slots_per_row) * 16;
-				int main_y = (slot_idx / slots_per_row) * 16;
-				slot_idx++;
-
-				if (main_pixels) {
-					paste_texture(is_terrain ? g_terrainAtlasPixels : g_itemsAtlasPixels, atlas_w, main_pixels, main_x, main_y, 16, 16);
-					free(main_pixels);
-				}
-
-				float main_min_x = main_x / (float)atlas_w;
-				float main_max_x = (main_x + 16) / (float)atlas_w;
-				float main_min_y = main_y / (float)atlas_h;
-				float main_max_y = (main_y + 16) / (float)atlas_h;
-				float main_inset_x = (main_max_x - main_min_x) * 0.002f;
-				float main_inset_y = (main_max_y - main_min_y) * 0.002f;
-
-				main_uv.width = atlas_w;
-				main_uv.height = atlas_h;
-				main_uv.minX = main_min_x + main_inset_x;
-				main_uv.maxX = main_max_x - main_inset_x;
-				main_uv.minY = main_min_y + main_inset_y;
-				main_uv.maxY = main_max_y - main_inset_y;
+			std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
+			std::string main_img_path = base_path + name + ".png";
+			uint8_t* main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
+			if (!main_pixels) {
+				main_img_path = base_path + name + "_0.png";
+				main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
 			}
+
+			int main_x = (slot_idx % slots_per_row) * 16;
+			int main_y = (slot_idx / slots_per_row) * 16;
+			slot_idx++;
+
+			if (main_pixels) {
+				paste_texture(atlas_pixels, atlas_w, main_pixels, main_x, main_y, 16, 16);
+				free(main_pixels);
+			}
+
+			float main_min_x = main_x / (float)atlas_w;
+			float main_max_x = (main_x + 16) / (float)atlas_w;
+			float main_min_y = main_y / (float)atlas_h;
+			float main_max_y = (main_y + 16) / (float)atlas_h;
+			float main_inset_x = (main_max_x - main_min_x) * 0.002f;
+			float main_inset_y = (main_max_y - main_min_y) * 0.002f;
+
+			TextureUVCoordinateSet main_uv;
+			main_uv.width = atlas_w;
+			main_uv.height = atlas_h;
+			main_uv.minX = main_min_x + main_inset_x;
+			main_uv.maxX = main_max_x - main_inset_x;
+			main_uv.minY = main_min_y + main_inset_y;
+			main_uv.maxY = main_max_y - main_inset_y;
 
 			if (v32.isMember("additonal_textures") && v32["additonal_textures"].isArray()) {
 				Json::Value v6 = v32["additonal_textures"];
 				int add_count = v6.size();
 				for (int i = 0; i < add_count; ++i) {
-					TextureUVCoordinateSet add_uv;
-					bool has_valid_add_uv = (v6[i].isArray() && v6[i].size() >= 6 && v6[i][2].asFloat() > 0.0001f);
-
-					if (is_classic) {
-						if (v6[i].isArray() && v6[i].size() >= 6) {
-							add_uv = _parseJSON(v6[i]);
-						}
-					} else if (has_valid_add_uv) {
-						add_uv = _parseJSON(v6[i]);
-					} else {
-						char num_buf[16];
-						sprintf(num_buf, "%d", i + 1);
-						std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
-						std::string add_img_path = base_path + name + "_" + num_buf + ".png";
-						uint8_t* add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
-						if (!add_pixels) {
-							sprintf(num_buf, "%d", i);
-							add_img_path = base_path + name + "_" + num_buf + ".png";
-							add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
-						}
-
-						int add_x = (slot_idx % slots_per_row) * 16;
-						int add_y = (slot_idx / slots_per_row) * 16;
-						slot_idx++;
-
-						if (add_pixels) {
-							paste_texture(is_terrain ? g_terrainAtlasPixels : g_itemsAtlasPixels, atlas_w, add_pixels, add_x, add_y, 16, 16);
-							free(add_pixels);
-						}
-
-						float add_min_x = add_x / (float)atlas_w;
-						float add_max_x = (add_x + 16) / (float)atlas_w;
-						float add_min_y = add_y / (float)atlas_h;
-						float add_max_y = (add_y + 16) / (float)atlas_h;
-						float add_inset_x = (add_max_x - add_min_x) * 0.002f;
-						float add_inset_y = (add_max_y - add_min_y) * 0.002f;
-
-						add_uv.width = atlas_w;
-						add_uv.height = atlas_h;
-						add_uv.minX = add_min_x + add_inset_x;
-						add_uv.maxX = add_max_x - add_inset_x;
-						add_uv.minY = add_min_y + add_inset_y;
-						add_uv.maxY = add_max_y - add_inset_y;
+					char num_buf[16];
+					sprintf(num_buf, "%d", i + 1);
+					std::string add_img_path = base_path + name + "_" + num_buf + ".png";
+					uint8_t* add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
+					if (!add_pixels) {
+						sprintf(num_buf, "%d", i);
+						add_img_path = base_path + name + "_" + num_buf + ".png";
+						add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
 					}
+
+					int add_x = (slot_idx % slots_per_row) * 16;
+					int add_y = (slot_idx / slots_per_row) * 16;
+					slot_idx++;
+
+					if (add_pixels) {
+						paste_texture(atlas_pixels, atlas_w, add_pixels, add_x, add_y, 16, 16);
+						free(add_pixels);
+					}
+
+					float add_min_x = add_x / (float)atlas_w;
+					float add_max_x = (add_x + 16) / (float)atlas_w;
+					float add_min_y = add_y / (float)atlas_h;
+					float add_max_y = (add_y + 16) / (float)atlas_h;
+					float add_inset_x = (add_max_x - add_min_x) * 0.002f;
+					float add_inset_y = (add_max_y - add_min_y) * 0.002f;
+
+					TextureUVCoordinateSet add_uv;
+					add_uv.width = atlas_w;
+					add_uv.height = atlas_h;
+					add_uv.minX = add_min_x + add_inset_x;
+					add_uv.maxX = add_max_x - add_inset_x;
+					add_uv.minY = add_min_y + add_inset_y;
+					add_uv.maxY = add_max_y - add_inset_y;
+
 					v29.emplace_back(add_uv);
 				}
 			}
 
 			this->field_4[name] = TextureAtlasTextureItem(name, main_uv, v29);
-			v27++;
+			++v27;
 		}
 	}
 }

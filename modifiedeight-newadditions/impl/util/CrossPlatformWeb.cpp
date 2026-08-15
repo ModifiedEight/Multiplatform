@@ -137,53 +137,57 @@ bool CrossPlatform_ExtractZip(const std::string &zipFile,
   jbyteArray buffer = env->NewByteArray(8192);
 
   while (true) {
+    if (env->PushLocalFrame(64) < 0) {
+      break;
+    }
     jobject zeObj = env->CallObjectMethod(zisObj, getNextEntry);
     if (env->ExceptionCheck() || !zeObj) {
       env->ExceptionClear();
+      env->PopLocalFrame(NULL);
       break;
     }
 
     jstring jName = (jstring)env->CallObjectMethod(zeObj, getName);
-    const char *nameStr = env->GetStringUTFChars(jName, 0);
-    std::string fullPath = outDir + "/" + nameStr;
-    env->ReleaseStringUTFChars(jName, nameStr);
-    env->DeleteLocalRef(jName);
+    if (jName) {
+      const char *nameStr = env->GetStringUTFChars(jName, 0);
+      if (nameStr) {
+        std::string fullPath = outDir + "/" + nameStr;
+        env->ReleaseStringUTFChars(jName, nameStr);
 
-    jboolean isDir = env->CallBooleanMethod(zeObj, isDirectory);
-    if (isDir) {
-      jstring jPath = env->NewStringUTF(fullPath.c_str());
-      jobject dirFile = env->NewObject(fileClass, fileInit, jPath);
-      env->CallBooleanMethod(dirFile, fileMkdirs);
-      env->DeleteLocalRef(dirFile);
-      env->DeleteLocalRef(jPath);
-    } else {
-      jstring jPath = env->NewStringUTF(fullPath.c_str());
-      jobject outFile = env->NewObject(fileClass, fileInit, jPath);
-      jobject parentFile = env->CallObjectMethod(outFile, fileGetParentFile);
-      if (parentFile) {
-        env->CallBooleanMethod(parentFile, fileMkdirs);
-        env->DeleteLocalRef(parentFile);
-      }
+        jboolean isDir = env->CallBooleanMethod(zeObj, isDirectory);
+        if (isDir) {
+          jstring jPath = env->NewStringUTF(fullPath.c_str());
+          jobject dirFile = env->NewObject(fileClass, fileInit, jPath);
+          if (dirFile) {
+            env->CallBooleanMethod(dirFile, fileMkdirs);
+          }
+        } else {
+          jstring jPath = env->NewStringUTF(fullPath.c_str());
+          jobject outFile = env->NewObject(fileClass, fileInit, jPath);
+          if (outFile) {
+            jobject parentFile = env->CallObjectMethod(outFile, fileGetParentFile);
+            if (parentFile) {
+              env->CallBooleanMethod(parentFile, fileMkdirs);
+            }
 
-      jobject fosObj = env->NewObject(fosClass, fosInit, jPath);
-      if (env->ExceptionCheck()) {
-        env->ExceptionClear();
-        continue;
+            jobject fosObj = env->NewObject(fosClass, fosInit, jPath);
+            if (!env->ExceptionCheck() && fosObj) {
+              while (true) {
+                jint bytesRead = env->CallIntMethod(zisObj, zisRead, buffer);
+                if (bytesRead <= 0)
+                  break;
+                env->CallVoidMethod(fosObj, fosWrite, buffer, 0, bytesRead);
+              }
+              env->CallVoidMethod(fosObj, fosClose);
+            } else {
+              env->ExceptionClear();
+            }
+          }
+        }
       }
-
-      while (true) {
-        jint bytesRead = env->CallIntMethod(zisObj, zisRead, buffer);
-        if (bytesRead <= 0)
-          break;
-        env->CallVoidMethod(fosObj, fosWrite, buffer, 0, bytesRead);
-      }
-      env->CallVoidMethod(fosObj, fosClose);
-      env->DeleteLocalRef(fosObj);
-      env->DeleteLocalRef(outFile);
-      env->DeleteLocalRef(jPath);
     }
     env->CallVoidMethod(zisObj, zisCloseEntry);
-    env->DeleteLocalRef(zeObj);
+    env->PopLocalFrame(NULL);
   }
 
   env->CallVoidMethod(zisObj, zisClose);

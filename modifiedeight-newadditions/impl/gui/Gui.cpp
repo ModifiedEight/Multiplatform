@@ -458,8 +458,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
           float startY = 2.0f;
           if (this->minecraftInst->gameMode->isSurvivalType() &&
               this->minecraftInst->useTouchscreen()) {
-            startY +=
-                35.0f; // offset for hearts and armor in touch survival mode
+            startY = 14.0f;
           }
 
           if (this->minecraftInst->options.debugScreen) {
@@ -475,7 +474,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight New Additions 1.5.1 (%d fps)",
+            sprintf(dbgText1, "ModifiedEight New Additions 1.6.0 (%d fps)",
                     fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
@@ -511,6 +510,25 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             sprintf(dbgTextBiome, "Biome: %s",
                     biome ? biome->biomeName : "Unknown");
             font->drawShadow(dbgTextBiome, 2.0f, startY, 0xFFFFFF);
+            startY += 10.0f;
+
+            int32_t seed = this->minecraftInst->level
+                               ? this->minecraftInst->level->getSeed()
+                               : 0;
+            char_t dbgTextSeed[128];
+            sprintf(dbgTextSeed, "Seed: %d", seed);
+            font->drawShadow(dbgTextSeed, 2.0f, startY, 0xFFFFFF);
+            startY += 10.0f;
+
+            float yaw = this->minecraftInst->player->yaw;
+            int dir = ((int)floorf(yaw * 4.0f / 360.0f + 0.5f)) & 3;
+            if (dir < 0)
+              dir = (dir % 4 + 4) % 4;
+            const char *dirNames[] = {"South (+Z)", "West (-X)", "North (-Z)",
+                                      "East (+X)"};
+            char_t dbgTextDir[128];
+            sprintf(dbgTextDir, "Facing: %s (yaw: %.1f)", dirNames[dir], yaw);
+            font->drawShadow(dbgTextDir, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
           } else {
             if (this->minecraftInst->options.showCoordinates) {

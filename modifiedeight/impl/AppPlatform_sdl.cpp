@@ -9,6 +9,7 @@
 #include <input/Mouse.hpp>
 #include <inventory/Inventory.hpp>
 #include <level/Level.hpp>
+#include <m8_icon.h>
 #include <main.hpp>
 #include <network/mco/LoginInformation.hpp>
 #include <rendering/Font.hpp>
@@ -144,8 +145,19 @@ AssetFile AppPlatform_sdl::readAssetFile(const std::string &path) {
 
 void AppPlatform_sdl::loadPNG(ImageData &data, const std::string &path,
                               bool_t t) {
-  // android uses jni to do it
   int32_t channels;
+  AssetFile file = this->readAssetFile(path);
+  if (file.bytes && file.length > 0) {
+    uint8_t *pixels =
+        stbi_load_from_memory(file.bytes, file.length, &data.width,
+                              &data.height, &channels, STBI_rgb_alpha);
+    delete[] file.bytes;
+    if (pixels) {
+      data.field_C = 0;
+      data.pixels = pixels;
+      return;
+    }
+  }
 
   uint8_t *pixels = stbi_load(path.c_str(), &data.width, &data.height,
                               &channels, STBI_rgb_alpha);
@@ -155,7 +167,7 @@ void AppPlatform_sdl::loadPNG(ImageData &data, const std::string &path,
   }
 
   printf("%d channels\n", channels);
-  data.field_C = 0; // force rgba channels == 3;
+  data.field_C = 0;
   data.pixels = pixels;
 }
 
@@ -174,11 +186,15 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("Minecraft PE 0.8.1 | ModifiedEight Classic 1.5.1", 0);
+  SDL_WM_SetCaption("ModifiedEight Classic 1.6.0", 0);
 
   {
     int w, h, ch;
-    unsigned char *pixels = stbi_load("icon.jpg", &w, &h, &ch, 4);
+    unsigned char *pixels = stbi_load_from_memory(
+        g_iconJpgData, (int)g_iconJpgSize, &w, &h, &ch, 4);
+    if (!pixels) {
+      pixels = stbi_load("icon.jpg", &w, &h, &ch, 4);
+    }
     if (pixels) {
       SDL_Surface *icon =
           SDL_CreateRGBSurfaceFrom(pixels, w, h, 32, w * 4, 0x000000FF,
@@ -425,7 +441,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight Classic 1.5.1",
+            "ModifiedEight Classic 1.6.0",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -475,7 +491,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight Classic 1.5.1",
+              details, "icon", "ModifiedEight Classic 1.6.0",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

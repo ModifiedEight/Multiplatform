@@ -127,6 +127,9 @@ void TexturesScreen::renderMenuBg32() {
 }
 
 std::string TexturesScreen::pickZipFile() {
+#if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(IPHONE)
+  return "";
+#else
   char path[1024] = {0};
 
   FILE *f = popen("zenity --file-selection --title=\"Select Texture Pack "
@@ -179,23 +182,24 @@ std::string TexturesScreen::pickZipFile() {
     return std::string(path);
 
   return "";
+#endif
 }
 
 void TexturesScreen::refreshSavedTextures() {
   for (auto btn : managedApplyButtons) {
-    buttons.erase(std::remove(buttons.begin(), buttons.end(), btn),
-                  buttons.end());
-    field_2C.erase(std::remove(field_2C.begin(), field_2C.end(), btn),
-                   field_2C.end());
+    auto it = std::find(buttons.begin(), buttons.end(), btn);
+    if (it != buttons.end()) buttons.erase(it);
+    auto it2 = std::find(field_2C.begin(), field_2C.end(), btn);
+    if (it2 != field_2C.end()) field_2C.erase(it2);
     delete btn;
   }
   managedApplyButtons.clear();
 
   for (auto btn : managedDeleteButtons) {
-    buttons.erase(std::remove(buttons.begin(), buttons.end(), btn),
-                  buttons.end());
-    field_2C.erase(std::remove(field_2C.begin(), field_2C.end(), btn),
-                   field_2C.end());
+    auto it = std::find(buttons.begin(), buttons.end(), btn);
+    if (it != buttons.end()) buttons.erase(it);
+    auto it2 = std::find(field_2C.begin(), field_2C.end(), btn);
+    if (it2 != field_2C.end()) field_2C.erase(it2);
     delete btn;
   }
   managedDeleteButtons.clear();
@@ -203,7 +207,13 @@ void TexturesScreen::refreshSavedTextures() {
   savedTextures.clear();
   activeTexturePack = "";
 
-  std::string dataPath = this->minecraft->dataPathMaybe;
+  std::string dataPath = this->minecraft ? this->minecraft->dataPathMaybe : "";
+  if (dataPath.empty()) {
+    const char* home = getenv("HOME");
+    if (home) dataPath = std::string(home) + "/.minecraftpe";
+    else dataPath = ".";
+  }
+
   std::string path = dataPath + "/saved_textures";
   makeDirs(path);
 
@@ -220,9 +230,7 @@ void TexturesScreen::refreshSavedTextures() {
 
   std::vector<std::string> packDirs = {
       dataPath + "/resource_packs",
-      dataPath + "/games/com.mojang/resource_packs",
-      "/sdcard/games/com.mojang/resource_packs",
-      "/sdcard/Download"
+      dataPath + "/games/com.mojang/resource_packs"
   };
 
   for (const auto &pdir : packDirs) {
@@ -231,17 +239,24 @@ void TexturesScreen::refreshSavedTextures() {
     if (!pd) continue;
     struct dirent *pe;
     while ((pe = readdir(pd))) {
+      if (!pe) break;
       std::string zname = pe->d_name;
-      if (zname.size() > 4 && zname.substr(zname.size() - 4) == ".zip") {
+      if (zname == "." || zname == "..") continue;
+      std::string fullItem = pdir + "/" + zname;
+      if (isDirExists(fullItem)) {
+        std::string targetExtDir = path + "/" + zname;
+        if (!isDirExists(targetExtDir)) {
+          FileUtil::CopyDirectory(fullItem, targetExtDir);
+        }
+      } else if (zname.size() > 4 && zname.substr(zname.size() - 4) == ".zip") {
         std::string title = zname.substr(0, zname.size() - 4);
         std::string targetExtDir = path + "/" + title;
         if (!isDirExists(targetExtDir)) {
-          std::string fullZip = pdir + "/" + zname;
           std::string tmpExt = dataPath + "/_texture_ext";
           FileUtil::RemoveDirectory(tmpExt);
           makeDirs(tmpExt);
           makeDirs(targetExtDir);
-          if (CrossPlatform_ExtractZip(fullZip, tmpExt)) {
+          if (CrossPlatform_ExtractZip(fullItem, tmpExt)) {
             std::string imagesDir = FileUtil::FindDirRecursively(tmpExt, "images");
             if (imagesDir.empty()) {
               imagesDir = FileUtil::FindDirRecursively(tmpExt, "gui");
@@ -261,13 +276,17 @@ void TexturesScreen::refreshSavedTextures() {
     struct dirent *ep;
     int idx = 0;
     while ((ep = readdir(d))) {
+      if (!ep) break;
       std::string name = ep->d_name;
       if (name == "." || name == ".." || name == "_active.txt" ||
           name[0] == '.')
         continue;
 
+      std::string packFullPath = path + "/" + name;
+      if (!isDirExists(packFullPath)) continue;
+
       SavedTexture st;
-      st.path = path + "/" + name;
+      st.path = packFullPath;
       st.title = name;
       savedTextures.push_back(st);
 
@@ -302,16 +321,40 @@ void TexturesScreen::importTexturePack() {
   installRunning = true;
   installDone = false;
   installMsg = "";
-  std::string dataPath = this->minecraft->dataPathMaybe;
+  std::string dataPath = this->minecraft ? this->minecraft->dataPathMaybe : "";
+  if (dataPath.empty()) {
+    const char* home = getenv("HOME");
+    if (home) dataPath = std::string(home) + "/.minecraftpe";
+    else dataPath = ".";
+  }
   auto aliveFlag = alive;
 
   std::thread([this, dataPath, aliveFlag]() {
     std::string zipPath = pickZipFile();
     if (zipPath.empty()) {
+      std::string resPacks = dataPath + "/resource_packs";
+      if (isDirExists(resPacks)) {
+        DIR *pd = opendir(resPacks.c_str());
+        if (pd) {
+          struct dirent *pe;
+          while ((pe = readdir(pd))) {
+            if (!pe) break;
+            std::string zname = pe->d_name;
+            if (zname.size() > 4 && zname.substr(zname.size() - 4) == ".zip") {
+              zipPath = resPacks + "/" + zname;
+              break;
+            }
+          }
+          closedir(pd);
+        }
+      }
+    }
+
+    if (zipPath.empty()) {
       std::lock_guard<std::mutex> lock(g_texture_mutex);
       if (!*aliveFlag)
         return;
-      installMsg = "Canceled";
+      installMsg = "Put .zip in resource_packs folder to import!";
       installRunning = false;
       installDone = true;
       return;
@@ -367,7 +410,12 @@ void TexturesScreen::importTexturePack() {
 
 void TexturesScreen::applySavedTexture(const std::string &path,
                                        const std::string &title) {
-  std::string dataPath = this->minecraft->dataPathMaybe;
+  std::string dataPath = this->minecraft ? this->minecraft->dataPathMaybe : "";
+  if (dataPath.empty()) {
+    const char* home = getenv("HOME");
+    if (home) dataPath = std::string(home) + "/.minecraftpe";
+    else dataPath = ".";
+  }
   std::string savedDir = dataPath + "/saved_textures";
   makeDirs(savedDir);
 
@@ -410,7 +458,12 @@ void TexturesScreen::deleteSavedTexture(const std::string &path) {
 }
 
 void TexturesScreen::restoreDefaultTextures() {
-  std::string dataPath = this->minecraft->dataPathMaybe;
+  std::string dataPath = this->minecraft ? this->minecraft->dataPathMaybe : "";
+  if (dataPath.empty()) {
+    const char* home = getenv("HOME");
+    if (home) dataPath = std::string(home) + "/.minecraftpe";
+    else dataPath = ".";
+  }
   std::string activeFile = dataPath + "/saved_textures/_active.txt";
   remove(activeFile.c_str());
   activeTexturePack = "";
@@ -432,11 +485,6 @@ void TexturesScreen::restoreDefaultTextures() {
 }
 
 void TexturesScreen::render(int32_t mx, int32_t my, float pt) {
-  if (needsRefresh) {
-    needsRefresh = false;
-    refreshSavedTextures();
-  }
-
   renderMenuBg32();
   setupPositions();
 

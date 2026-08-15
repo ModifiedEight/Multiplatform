@@ -5,6 +5,19 @@
 #include <rendering/EntityRenderDispatcher.hpp>
 #include <rendering/Font.hpp>
 #include <rendering/Tesselator.hpp>
+#include <thread>
+#include <mutex>
+#include <map>
+#include <util/CrossPlatformWeb.hpp>
+#include <stb_image.h>
+#include <rendering/Textures.hpp>
+
+#include <unigl.h>
+
+static std::map<std::string, bool> g_skinRequested;
+static std::map<std::string, unsigned char*> g_pendingSkinsData;
+static std::map<std::string, std::pair<int, int>> g_pendingSkinsDims;
+static std::mutex skinMutex;
 
 PlayerRenderer::PlayerRenderer(HumanoidModel* a2, float a3)
 	: HumanoidMobRenderer(a2, a3) {
@@ -21,13 +34,13 @@ static std::string _dword_D6E083C8_armorTextures[] = {"armor/cloth_1.png", "armo
 
 void PlayerRenderer::renderName(Entity* a2_, float a3) {
 	Player* a2 = (Player*)a2_;
-	Mob* cameraEntity; // r1
-	float v7;		   // s19
-	float v8;		   // s18
-	float v9;		   // s17
-	Font* font;		   // r7
-	int32_t v11;	   // kr00_4
-	float v12;		   // s16
+	Mob* cameraEntity;
+	float v7;
+	float v8;
+	float v9;
+	Font* font;
+	int32_t v11;
+	float v12;
 
 	cameraEntity = EntityRenderer::entityRenderDispatcher->cameraEntity;
 	if(a2 != cameraEntity && a2->distanceToSqr(cameraEntity) <= 1024.0) {
@@ -58,10 +71,10 @@ void PlayerRenderer::renderName(Entity* a2_, float a3) {
 }
 int32_t PlayerRenderer::prepareArmor(Mob* a2_, int32_t armour, float a4) {
 	Player* a2 = (Player*)a2_;
-	ItemInstance* armor;	// r4
-	HumanoidModel* hmodel2; // r4
-	bool_t v9;				// r3
-	bool_t v10;				// r5
+	ItemInstance* armor;
+	HumanoidModel* hmodel2;
+	bool_t v9;
+	bool_t v10;
 
 	armor = a2->getArmor(armour);
 	if(!ItemInstance::isArmorItem(armor)) {
@@ -87,6 +100,72 @@ int32_t PlayerRenderer::prepareArmor(Mob* a2_, int32_t armour, float a4) {
 }
 void PlayerRenderer::setupPosition(Entity* a2_, float a3, float a4, float a5) {
 	Player* a2 = (Player*)a2_;
+	if(a2 && !a2->username.empty()) {
+		bool requestSkin = false;
+		{
+			std::lock_guard<std::mutex> lock(skinMutex);
+			if (!g_skinRequested[a2->username]) {
+				g_skinRequested[a2->username] = true;
+				requestSkin = true;
+			}
+		}
+		
+		if (requestSkin) {
+			std::string nick = a2->username;
+			std::thread([nick]() {
+				std::string url = "https://raw.githubusercontent.com/gameherobrine2/test123/refs/heads/main/" + nick + ".png";
+				auto bin = CrossPlatform_DownloadBinary(url);
+				if (!bin.empty()) {
+					int w, h, ch;
+					unsigned char *px = stbi_load_from_memory(bin.data(), (int)bin.size(), &w, &h, &ch, STBI_rgb_alpha);
+					if (px) {
+						std::lock_guard<std::mutex> lock(skinMutex);
+						g_pendingSkinsData[nick] = px;
+						g_pendingSkinsDims[nick] = {w, h};
+					}
+				}
+			}).detach();
+		}
+		
+		{
+			std::lock_guard<std::mutex> lock(skinMutex);
+			auto it = g_pendingSkinsData.find(a2->username);
+			if (it != g_pendingSkinsData.end()) {
+				unsigned char* px = it->second;
+				int w = g_pendingSkinsDims[a2->username].first;
+				int h = g_pendingSkinsDims[a2->username].second;
+				if (h == 64) {
+					h = 32;
+				}
+				
+				GLuint skinTexId;
+				glGenTextures(1, &skinTexId);
+				glBindTexture(GL_TEXTURE_2D, skinTexId);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+				
+				TextureData td;
+				td.width = w;
+				td.height = h;
+				td.pixels = nullptr;
+				td.glTexId = skinTexId;
+				
+				std::string texName = a2->username + "_skin";
+				Textures* tex = EntityRenderer::entityRenderDispatcher->textures;
+				tex->textures.insert(std::map<std::string, TextureData>::value_type(texName, std::move(td)));
+				
+				stbi_image_free(px);
+				g_pendingSkinsData.erase(it);
+			}
+		}
+		
+		std::string texName = a2->username + "_skin";
+		if (EntityRenderer::entityRenderDispatcher->textures->textures.count(texName)) {
+			a2->skin = texName;
+		}
+	}
+
 	float v11, v12;
 	if(a2->isAlive() && a2->isSleeping()) {
 		v11 = a3 + a2->field_CC4;

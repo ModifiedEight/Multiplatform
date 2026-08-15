@@ -15,9 +15,31 @@ case "$ipaname" in *NewAdditions*|*newadditions*) nbcclient=newadditions ;; esac
 platformdir='platforms/ios'
 resdir="$platformdir/resources"
 builddir="$platformdir/build"
-# Game assets: default to platforms/ios/resources/assets (unpack the APK's
-# assets/ there), override with ASSET_DIR=/path/to/assets.
-assetdir="${ASSET_DIR:-$resdir/assets}"
+
+if [ "$nbcclient" = "newadditions" ]; then
+    target_sub="new-additions/assets"
+else
+    target_sub="classic/assets"
+fi
+
+if [ -n "$ASSET_DIR" ]; then
+    assetdir="$ASSET_DIR"
+elif [ -d "assets_repo/$target_sub" ]; then
+    assetdir="assets_repo/$target_sub"
+elif [ -d "$platformdir/build/assets_repo/$target_sub" ]; then
+    assetdir="$platformdir/build/assets_repo/$target_sub"
+elif [ -d "$resdir/assets" ] && [ -n "$(ls -A "$resdir/assets" 2>/dev/null | grep -v '^\.gitkeep$')" ]; then
+    assetdir="$resdir/assets"
+else
+    printf 'Cloning assets from https://github.com/ModifiedEight/assets.git...\n'
+    git clone --depth 1 https://github.com/ModifiedEight/assets.git "$platformdir/build/assets_repo" || true
+    if [ -d "$platformdir/build/assets_repo/$target_sub" ]; then
+        assetdir="$platformdir/build/assets_repo/$target_sub"
+    else
+        assetdir="$resdir/assets"
+    fi
+fi
+
 ipadir="$builddir/ipa"
 apppath="$ipadir/Payload/$execname.app"
 

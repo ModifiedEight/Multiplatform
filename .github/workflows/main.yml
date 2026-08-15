@@ -1,4 +1,4 @@
-name: Build ModifiedEight (Linux, Windows, iOS, Android)
+name: Build ModifiedEight
 
 on:
   push:
@@ -141,13 +141,17 @@ jobs:
           restore-keys: |
             ios-build-${{ runner.os }}-
 
+      - name: Fetch Assets
+        run: |
+          git clone --depth 1 https://github.com/ModifiedEight/assets.git assets_repo
+
       - name: Build iOS IPAs
         working-directory: platforms/ios
         run: |
           ccache -z || true
           chmod +x build.sh build-ipa.sh
-          ./build.sh classic
-          ./build.sh newadditions
+          ASSET_DIR="$PWD/../../assets_repo/classic/assets" ./build.sh classic
+          ASSET_DIR="$PWD/../../assets_repo/new-additions/assets" ./build.sh newadditions
           ccache -s || true
 
       - name: upload iOS artifacts
