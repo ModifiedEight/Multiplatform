@@ -333,3 +333,10 @@ void LiquidTileDynamic::onPlace(Level* level, int32_t x, int32_t y, int32_t z) {
 		level->addToTickNextTick(x, y, z, id, this->getTickDelay());
 	}
 }
+void LiquidTileDynamic::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t, int32_t, int32_t, int32_t) {
+	this->updateLiquid(level, x, y, z);
+	int32_t id = level->getTile(x, y, z);
+	if(id == this->blockID) {
+		level->addToTickNextTick(x, y, z, id, this->getTickDelay());
+	}
+}

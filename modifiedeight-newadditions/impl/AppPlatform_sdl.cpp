@@ -318,7 +318,9 @@ static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform, int sType =
     mkdir("assets/images/gui", 0755);
     mkdir("assets/images/gui/background", 0755);
 #endif
-    path = "assets/images/gui/background/panorama_" + std::to_string(index) + ".png";
+    char pBuf[128];
+    sprintf(pBuf, "assets/images/gui/background/panorama_%d.png", index);
+    path = pBuf;
   } else {
 #if defined(_WIN32) || defined(WIN32)
     _mkdir("screenshots");

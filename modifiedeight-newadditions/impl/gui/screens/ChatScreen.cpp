@@ -60,6 +60,19 @@ bool_t ChatScreen::guiMessagesUpdated() {
 	}
 	return 0;
 }
+template<typename T>
+static inline std::string toStr(const T& val) {
+	std::ostringstream oss;
+	oss << val;
+	return oss.str();
+}
+static inline float parseF(const std::string& s) {
+	return (float)atof(s.c_str());
+}
+static inline int parseI(const std::string& s) {
+	return atoi(s.c_str());
+}
+
 static bool executeCommand(Minecraft* mc, const std::string& line) {
 	if (line.empty() || line[0] != '/') return false;
 
@@ -77,12 +90,12 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 	if (cmd == "tp") {
 		if (args.size() == 3) {
 			try {
-				float px = (args[0] == "~") ? mc->player->posX : std::stof(args[0]);
-				float py = (args[1] == "~") ? mc->player->posY : std::stof(args[1]);
-				float pz = (args[2] == "~") ? mc->player->posZ : std::stof(args[2]);
+				float px = (args[0] == "~") ? mc->player->posX : parseF(args[0]);
+				float py = (args[1] == "~") ? mc->player->posY : parseF(args[1]);
+				float pz = (args[2] == "~") ? mc->player->posZ : parseF(args[2]);
 				mc->player->setPos(px, py, pz);
 				mc->player->resetPos(1);
-				mc->gui.addMessage("", "Teleported to " + std::to_string((int)px) + ", " + std::to_string((int)py) + ", " + std::to_string((int)pz), 200);
+				mc->gui.addMessage("", "Teleported to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
 			} catch (...) {
 				mc->gui.addMessage("", "Invalid coordinates", 200);
 			}
@@ -105,12 +118,12 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				return true;
 			}
 			try {
-				float px = (args[1] == "~") ? target->posX : std::stof(args[1]);
-				float py = (args[2] == "~") ? target->posY : std::stof(args[2]);
-				float pz = (args[3] == "~") ? target->posZ : std::stof(args[3]);
+				float px = (args[1] == "~") ? target->posX : parseF(args[1]);
+				float py = (args[2] == "~") ? target->posY : parseF(args[2]);
+				float pz = (args[3] == "~") ? target->posZ : parseF(args[3]);
 				target->setPos(px, py, pz);
 				target->resetPos(1);
-				mc->gui.addMessage("", "Teleported " + args[0] + " to " + std::to_string((int)px) + ", " + std::to_string((int)py) + ", " + std::to_string((int)pz), 200);
+				mc->gui.addMessage("", "Teleported " + args[0] + " to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
 			} catch (...) {
 				mc->gui.addMessage("", "Invalid coordinates", 200);
 			}
@@ -159,7 +172,7 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 		int maxRadius = 3000;
 		if (args.size() >= 2) {
 			try {
-				maxRadius = std::stoi(args[1]);
+				maxRadius = parseI(args[1]);
 				if (maxRadius < 100) maxRadius = 100;
 				if (maxRadius > 50000) maxRadius = 50000;
 			} catch (...) {
@@ -220,9 +233,9 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				int foundY = mc->level->getHeightmap(foundX, foundZ);
 				if (foundY <= 0) foundY = 70;
 				else foundY += 1;
-				mc->gui.addMessage("", "Located Village at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+				mc->gui.addMessage("", "Located Village at X: " + toStr(foundX) + ", Y: " + toStr(foundY) + ", Z: " + toStr(foundZ) + " (" + toStr(dist) + " blocks away)", 200);
 			} else {
-				mc->gui.addMessage("", "Village not found within " + std::to_string(maxRadius) + " blocks", 200);
+				mc->gui.addMessage("", "Village not found within " + toStr(maxRadius) + " blocks", 200);
 			}
 			return true;
 		}
@@ -272,9 +285,9 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				int foundY = mc->level->getHeightmap(foundX + 10, foundZ + 10);
 				if (foundY <= 0) foundY = 70;
 				else foundY += 1;
-				mc->gui.addMessage("", "Located Desert Temple at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+				mc->gui.addMessage("", "Located Desert Temple at X: " + toStr(foundX) + ", Y: " + toStr(foundY) + ", Z: " + toStr(foundZ) + " (" + toStr(dist) + " blocks away)", 200);
 			} else {
-				mc->gui.addMessage("", "Desert Temple not found within " + std::to_string(maxRadius) + " blocks", 200);
+				mc->gui.addMessage("", "Desert Temple not found within " + toStr(maxRadius) + " blocks", 200);
 			}
 			return true;
 		}
@@ -339,9 +352,9 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 			int foundY = mc->level->getHeightmap(foundX, foundZ);
 			if (foundY <= 0) foundY = 70;
 			else foundY += 1;
-			mc->gui.addMessage("", "Located " + args[0] + " at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+			mc->gui.addMessage("", "Located " + args[0] + " at X: " + toStr(foundX) + ", Y: " + toStr(foundY) + ", Z: " + toStr(foundZ) + " (" + toStr(dist) + " blocks away)", 200);
 		} else {
-			mc->gui.addMessage("", "Biome " + args[0] + " not found within " + std::to_string(maxRadius) + " blocks", 200);
+			mc->gui.addMessage("", "Biome " + args[0] + " not found within " + toStr(maxRadius) + " blocks", 200);
 		}
 		return true;
 	}
@@ -355,7 +368,7 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 			else if (args[1] == "midnight") timeVal = 18000;
 			else {
 				try {
-					timeVal = std::stoi(args[1]);
+					timeVal = parseI(args[1]);
 				} catch (...) {
 					mc->gui.addMessage("", "Invalid time value", 200);
 					return true;
@@ -364,16 +377,16 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 			if (mc->level) {
 				mc->level->setTime(timeVal);
 			}
-			mc->gui.addMessage("", "Set time to " + std::to_string(timeVal), 200);
+			mc->gui.addMessage("", "Set time to " + toStr(timeVal), 200);
 			return true;
 		}
 		if (args.size() >= 2 && args[0] == "add") {
 			try {
-				int addVal = std::stoi(args[1]);
+				int addVal = parseI(args[1]);
 				if (mc->level) {
 					mc->level->setTime(mc->level->getTime() + addVal);
 				}
-				mc->gui.addMessage("", "Added " + std::to_string(addVal) + " to time", 200);
+				mc->gui.addMessage("", "Added " + toStr(addVal) + " to time", 200);
 			} catch (...) {
 				mc->gui.addMessage("", "Invalid time value", 200);
 			}
@@ -395,7 +408,7 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				}
 			}
 		}
-		std::string result = "Players online (" + std::to_string(playerNames.size()) + "): ";
+		std::string result = "Players online (" + toStr(playerNames.size()) + "): ";
 		for (size_t i = 0; i < playerNames.size(); ++i) {
 			result += playerNames[i];
 			if (i + 1 < playerNames.size()) result += ", ";

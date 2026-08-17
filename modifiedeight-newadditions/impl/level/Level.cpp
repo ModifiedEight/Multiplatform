@@ -1855,16 +1855,14 @@ void Level::setTilesDirty(int32_t x1, int32_t y1, int32_t z1, int32_t x2, int32_
 	}
 }
 int32_t Level::setTime(int32_t newTime) { //long
-	int32_t v3;							  // r4
-	int32_t prevTimeSent;				  // r0
+	int32_t prevTimeSent;
 
-	v3 = newTime % 153600;
-	this->levelData.setTime(newTime % 153600);
+	this->levelData.setTime(newTime);
 	prevTimeSent = this->prevTimeSent;
-	if(prevTimeSent <= v3) {
-		return v3 - prevTimeSent;
+	if(prevTimeSent <= newTime) {
+		return newTime - prevTimeSent;
 	} else {
-		return 153600 - prevTimeSent + v3;
+		return newTime;
 	}
 }
 void Level::setUpdateLights(bool_t a2) {
@@ -2408,17 +2406,22 @@ void Level::tick() {
 bool_t Level::tickPendingTicks(bool_t a2) {
 	int32_t v4 = 0;
 	int32_t v5 = (this->tickDataTreeImpl.size() >= 100) ? 100 : this->tickDataTreeImpl.size();
+	int32_t curTime = this->levelData.getTime();
 
 	while(v4 < v5 && !this->tickDataTreeImpl.empty()) {
 		auto it = this->tickDataTreeImpl.begin();
-		if(!a2 && it->delay > this->levelData.getTime()) {
+		if(!a2 && it->delay > curTime) {
+			if(it->delay > curTime + 2000) {
+				this->tickDataTreeImpl.erase(it);
+				continue;
+			}
 			break;
 		}
 		TickNextTickData data = *it;
 		this->tickDataTreeImpl.erase(it);
 		++v4;
 
-		if(this->hasChunksAt(data.x - 8, data.y - 8, data.z - 8, data.x + 8, data.y + 8, data.z + 8)) {
+		if(this->hasChunkAt(data.x, data.y, data.z)) {
 			int32_t v10 = this->getTile(data.x, data.y, data.z);
 			if(v10 == data.field_10 && v10 > 0 && Tile::tiles[v10]) {
 				Tile::tiles[v10]->tick(this, data.x, data.y, data.z, &this->random);
@@ -2434,13 +2437,13 @@ void Level::addToTickNextTick(int32_t x, int32_t y, int32_t z, int32_t id, int32
 	TickNextTickData v17(x, y, z, id);
 
 	if(this->instantTick) {
-		if(this->hasChunksAt(v17.x - 8, v17.y - 8, v17.z - 8, v17.x + 8, v17.y + 8, v17.z + 8)) {
+		if(this->hasChunkAt(v17.x, v17.y, v17.z)) {
 			v10 = this->getTile(v17.x, v17.y, v17.z);
-			if(v10 == v17.field_10 && v10 > 0) {
+			if(v10 == v17.field_10 && v10 > 0 && Tile::tiles[v10]) {
 				Tile::tiles[v10]->tick(this, v17.x, v17.y, v17.z, &this->random);
 			}
 		}
-	} else if(this->hasChunksAt(x - 8, y - 8, z - 8, x + 8, y + 8, z + 8)) {
+	} else if(this->hasChunkAt(x, y, z)) {
 		if(id > 0) {
 			Time = this->levelData.getTime();
 			v17.setDelay(delay + Time);

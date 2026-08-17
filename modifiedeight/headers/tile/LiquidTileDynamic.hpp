@@ -18,5 +18,6 @@ struct LiquidTileDynamic: LiquidTile
 	virtual ~LiquidTileDynamic();
 	virtual void tick(Level*, int32_t, int32_t, int32_t, Random*);
 	virtual void onPlace(Level*, int32_t, int32_t, int32_t);
+	virtual void neighborChanged(Level*, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
 
 };

@@ -9,6 +9,7 @@ TickNextTickData::TickNextTickData(int32_t x, int32_t y, int32_t z, int32_t a5){
 	TickNextTickData::C += 1;
 	this->field_10 = a5;
 	this->id = TickNextTickData::C;
+	this->delay = 0;
 }
 
 int32_t TickNextTickData::hashCode(){
