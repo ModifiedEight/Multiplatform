@@ -249,6 +249,7 @@ char_t *gSplashes[] = {"Scientific!",
                        "Exploding creepers!",
                        "That's no moon!",
                        "l33t!",
+                       "No soul.",
                        "Create!",
                        "Survive!",
                        "Dungeon!",
@@ -485,7 +486,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->marketplaceButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
   this->field_138 =
-      "\x0fMojang AB, ModifiedEight New Additions 1.6.0.1 by eqozqq";
+      "\x0fMojang AB, ModifiedEight New Additions 1.6.1.1 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;

@@ -3,11 +3,18 @@
 #include <tile/LeverTile.hpp>
 #include <tile/RedstoneLampTile.hpp>
 #include <tile/MixedSlabTile.hpp>
+#include <tile/DoublePlantTile.hpp>
+#include <tile/WaterLilyTile.hpp>
+#include <tile/SeagrassTile.hpp>
+#include <tile/SpongeTile.hpp>
+#include <item/DoublePlantTileItem.hpp>
 #include <entity/ItemEntity.hpp>
 #include <entity/Player.hpp>
 #include <cstdio>
 #include <item/ClothTileItem.hpp>
 #include <item/LeafTileItem.hpp>
+#include <item/Item.hpp>
+#include <item/WaterLilyTileItem.hpp>
 #include <item/SaplingTileItem.hpp>
 #include <item/StoneSlabTileItem.hpp>
 #include <level/Level.hpp>
@@ -88,8 +95,9 @@
 #include <tile/TntTile.hpp>
 #include <tile/TopSnowTile.hpp>
 #include <tile/TorchTile.hpp>
-#include <tile/TrapDoorTile.hpp>
+#include <tile/TransparentTile.hpp>
 #include <tile/TreeTile.hpp>
+#include <tile/VineTile.hpp>
 #include <tile/WallTile.hpp>
 #include <tile/WebTile.hpp>
 #include <tile/WoodSlabTile.hpp>
@@ -143,6 +151,7 @@ Tile* Tile::bed;
 Tile* Tile::goldenRail;
 Tile* Tile::web;
 Tile* Tile::tallgrass;
+Tile* Tile::waterLily;
 Tile* Tile::fence_spruce;
 Tile* Tile::fence_birch;
 Tile* Tile::trapdoor_spruce;
@@ -166,6 +175,13 @@ Tile* Tile::coloredBrickSlabHalf2;
 Tile* Tile::coloredBrickSlab2;
 Tile* Tile::flower;
 Tile* Tile::rose;
+Tile* Tile::flowerPaeonia;
+Tile* Tile::flowerDaisy;
+Tile* Tile::flowerHoustonia;
+Tile* Tile::flowerOrchid;
+Tile* Tile::flowerAllium;
+Tile* Tile::doublePlant;
+Tile* Tile::vine;
 Tile* Tile::mushroom1;
 Tile* Tile::mushroom2;
 Tile* Tile::goldBlock;
@@ -250,6 +266,7 @@ Tile* Tile::info_updateGame1;
 Tile* Tile::info_updateGame2;
 Tile* Tile::info_reserved6;
 Tile* Tile::fire;
+Tile* Tile::seagrass;
 
 std::string Tile::TILE_DESCRIPTION_PREFIX = "tile.";
 
@@ -278,7 +295,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Tile::calmWater = (new LiquidTileStatic(9, Material::water, "still_water", "flowing_water"))->init()->setDestroyTime(100)->setLightBlock(3)->setCategory(1, 1)->setDescriptionId("water");
 	Tile::lava = (new LiquidTileDynamic(10, Material::lava, "still_lava", "flowing_lava"))->init()->setDestroyTime(0)->setLightEmission(1.0)->setLightBlock(255)->setCategory(1, 1)->setDescriptionId("lava");
 	Tile::calmLava = (new LiquidTileStatic(11, Material::lava, "still_lava", "flowing_lava"))->init()->setDestroyTime(100.0)->setLightEmission(1.0)->setLightBlock(255)->setCategory(1, 1)->setDescriptionId("lava");
-	Tile::calmLava->field_5C = 255; //TODO what is this and wheres this thing supposed to be called from
+	Tile::calmLava->field_5C = 255;
 	Tile::sand = (new HeavyTile(12, "sand"))->init()->setDestroyTime(0.5)->setSoundType(Tile::SOUND_SAND)->setCategory(1, 1)->setDescriptionId("sand");
 	Tile::sand->field_5C = 255;
 	Tile::gravel = (new GravelTile(0xD, "gravel"))->init()->setDestroyTime(0.6)->setSoundType(Tile::SOUND_GRAVEL)->setCategory(1, 1)->setDescriptionId("gravel");
@@ -287,7 +304,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Tile::coalOre = (new OreTile(16, "coal_ore"))->init()->setDestroyTime(3.0)->setExplodeable(5.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("oreCoal");
 	Tile::treeTrunk = (new TreeTile(17))->init()->setDestroyTime(2.0)->setSoundType(Tile::SOUND_WOOD)->setCategory(1, 1)->setDescriptionId("log");
 	Tile::leaves = (new LeafTile(18, "leaves"))->init()->setDestroyTime(0.2)->setLightBlock(1)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 1)->setDescriptionId("leaves");
-	Tile::sponge = (new Tile(19, "sponge", Material::dirt))->init()->setCategory(2, 1)->setDestroyTime(0.6)->setSoundType(Tile::SOUND_GRASS)->setDescriptionId("sponge");
+	Tile::sponge = (new SpongeTile(19))->init()->setCategory(2, 1)->setDestroyTime(0.6)->setSoundType(Tile::SOUND_GRASS)->setDescriptionId("sponge");
 	Tile::sponge->field_5C = 255;
 	Tile::glass = (new GlassTile(20, "glass", Material::glass))->init()->setDestroyTime(0.3)->setSoundType(Tile::SOUND_GLASS)->setCategory(2, 1)->setDescriptionId("glass");
 	Tile::stainedGlass = (new StainedGlassTile(195, "glass_white", Material::glass))->init()->setDestroyTime(0.3)->setSoundType(Tile::SOUND_GLASS)->setCategory(5, 1)->setDescriptionId("stainedGlass");
@@ -305,6 +322,19 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Tile::coloredBricks = (new ColoredBricksTile(238))->init()->setDestroyTime(2.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_STONE)->setCategory(6, 1)->setDescriptionId("coloredBricks");
 	Tile::flower = (new FlowerTile(37, "flower_dandelion"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flower");
 	Tile::rose = (new FlowerTile(38, "flower_rose_blue"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("rose");
+	Tile::doublePlant = (new DoublePlantTile(190, "double_plant"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("doublePlant");
+	Tile::flowerPaeonia = (new FlowerTile(191, "flower_paeonia"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flowerPaeonia");
+	Tile::flowerDaisy = (new FlowerTile(192, "flower_oxeye_daisy"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flowerDaisy");
+	Tile::flowerHoustonia = (new FlowerTile(239, "flower_houstonia"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flowerHoustonia");
+	Tile::flowerOrchid = (new FlowerTile(240, "flower_blue_orchid"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flowerOrchid");
+	Tile::flowerAllium = (new FlowerTile(241, "flower_allium"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("flowerAllium");
+	Tile::vine = (new VineTile(106, "vine"))->init()->setDestroyTime(0.2f)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("vine");
+	Tile::waterLily = (new WaterLilyTile(111, "waterlily"))->init()->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("waterlily");
+	Tile::solid[111] = 0;
+	Tile::lightBlock[111] = 0;
+	Tile::seagrass = (new SeagrassTile(252, "seagrass"))->init()->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("seagrass");
+	Tile::solid[252] = 0;
+	Tile::lightBlock[252] = 0;
 	Tile::mushroom1 = (new Mushroom(39, "mushroom_brown"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setLightEmission(0.125)->setCategory(2, 8)->setDescriptionId("mushroom");
 	Tile::mushroom2 = (new Mushroom(40, "mushroom_red"))->init()->setDestroyTime(0)->setSoundType(Tile::SOUND_GRASS)->setCategory(2, 8)->setDescriptionId("mushroom");
 	Tile::goldBlock = (new MetalTile(41, "gold_block"))->init()->setDestroyTime(3.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_METAL)->setCategory(2, 8)->setDescriptionId("blockGold");
@@ -527,9 +557,47 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	Item::items[Tile::cobbleWall->blockID] = (new AuxDataTileItem(Tile::cobbleWall->blockID - 256, Tile::cobbleWall))->setCategory(2, 1)->setDescriptionId("cobbleWall");
 	Item::items[Tile::tallgrass->blockID] = (new AuxDataTileItem(Tile::tallgrass->blockID - 256, Tile::tallgrass))->setCategory(2, 8)->setDescriptionId("tallgrass");
 	Item::items[Tile::woolCarpet->blockID] = (new AuxDataTileItem(Tile::woolCarpet->blockID - 256, Tile::woolCarpet))->setCategory(2, 8)->setDescriptionId("woolCarpet");
-	
+	Item::items[Tile::doublePlant->blockID] = (new DoublePlantTileItem(Tile::doublePlant->blockID - 256))->setCategory(2, 8)->setDescriptionId("doublePlant");
+	Item::items[Tile::flowerPaeonia->blockID] = (new TileItem(Tile::flowerPaeonia->blockID - 256))->setCategory(2, 8)->setDescriptionId("flowerPaeonia");
+	Item::items[Tile::flowerDaisy->blockID] = (new TileItem(Tile::flowerDaisy->blockID - 256))->setCategory(2, 8)->setDescriptionId("flowerDaisy");
+	Item::items[Tile::flowerHoustonia->blockID] = (new TileItem(Tile::flowerHoustonia->blockID - 256))->setCategory(2, 8)->setDescriptionId("flowerHoustonia");
+	Item::items[Tile::flowerOrchid->blockID] = (new TileItem(Tile::flowerOrchid->blockID - 256))->setCategory(2, 8)->setDescriptionId("flowerOrchid");
+	Item::items[Tile::flowerAllium->blockID] = (new TileItem(Tile::flowerAllium->blockID - 256))->setCategory(2, 8)->setDescriptionId("flowerAllium");
+	Item::items[Tile::waterLily->blockID] = (new WaterLilyTileItem(Tile::waterLily->blockID - 256))->setCategory(2, 8)->setDescriptionId("waterlily");
+	Item::items[Tile::seagrass->blockID] = (new TileItem(Tile::seagrass->blockID - 256))->setCategory(2, 8)->setDescriptionId("seagrass");
 	Item::items[Tile::stainedGlass->blockID] = (new AuxDataTileItem(Tile::stainedGlass->blockID - 256, Tile::stainedGlass))->setCategory(5, 1)->setDescriptionId("stainedGlass");
 	Item::items[Tile::stainedGlassPane->blockID] = (new AuxDataTileItem(Tile::stainedGlassPane->blockID - 256, Tile::stainedGlassPane))->setCategory(5, 1)->setDescriptionId("stainedGlassPane");
+
+	Tile::lightBlock[Tile::stairs_stone->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_wood->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_brick->blockID] = 0;
+	Tile::lightBlock[Tile::woodStairsDark->blockID] = 0;
+	Tile::lightBlock[Tile::woodStairsBirch->blockID] = 0;
+	Tile::lightBlock[Tile::woodStairsJungle->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_stoneBrickSmooth->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_netherBricks->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_sandStone->blockID] = 0;
+	Tile::lightBlock[Tile::stairs_quartz->blockID] = 0;
+	Tile::lightBlock[Tile::stoneSlabHalf->blockID] = 0;
+	Tile::lightBlock[Tile::woodSlabHalf->blockID] = 0;
+	Tile::lightBlock[Tile::mixedSlab->blockID] = 0;
+	Tile::lightBlock[Tile::coloredBrickSlabHalf1->blockID] = 0;
+	Tile::lightBlock[Tile::coloredBrickSlabHalf2->blockID] = 0;
+	Tile::lightBlock[Tile::coloredSlabHalf1->blockID] = 0;
+	Tile::lightBlock[Tile::coloredSlabHalf2->blockID] = 0;
+	Tile::lightBlock[Tile::fence->blockID] = 0;
+	Tile::lightBlock[Tile::fence_spruce->blockID] = 0;
+	Tile::lightBlock[Tile::fence_birch->blockID] = 0;
+	Tile::lightBlock[Tile::fenceGate->blockID] = 0;
+	Tile::lightBlock[Tile::ironFence->blockID] = 0;
+	Tile::lightBlock[Tile::thinGlass->blockID] = 0;
+	Tile::lightBlock[Tile::stainedGlassPane->blockID] = 0;
+	Tile::lightBlock[Tile::cobbleWall->blockID] = 0;
+	for (int i = 0; i < 16; i++) {
+		if (Tile::coloredStairs[i]) Tile::lightBlock[Tile::coloredStairs[i]->blockID] = 0;
+		if (Tile::coloredBrickStairs[i]) Tile::lightBlock[Tile::coloredBrickStairs[i]->blockID] = 0;
+		if (Tile::coloredFences[i]) Tile::lightBlock[Tile::coloredFences[i]->blockID] = 0;
+	}
 
 	int32_t bid = 0;
 	int32_t actualItemID = -256;

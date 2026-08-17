@@ -34,30 +34,35 @@ static bool_t chunkInRange(struct Level* level, int x, int z) {
 }
 
 bool_t ChunkCache::hasChunk(int32_t x, int32_t z) {
-	LevelChunk* result; // r0
+	LevelChunk* result;
 
 	bool_t isInfinite = (this->level && this->level->getLevelData() && (this->level->getLevelData()->getGeneratorVersion() != 0 && this->level->getLevelData()->getGeneratorVersion() != 4));
-	if((!isInfinite && !sub_D66664FE(x, z)) || (x == this->lastChunkX && z == this->lastChunkZ && this->lastChunk)) {
+	if((!isInfinite && !sub_D66664FE(x, z)) || (x == this->lastChunkX && z == this->lastChunkZ && this->lastChunk && this->lastChunk != this->emptyChunk)) {
 		return 1;
 	}
 	result = this->chunks[64 * (z & 0x3F) + (x & 0x3F)];
-	if(!result) {
+	if(!result || result == this->emptyChunk) {
 		return 0;
 	}
-	return result == this->emptyChunk || result->isAt(x, z);
+	return result->isAt(x, z);
 }
 LevelChunk* ChunkCache::getChunk(int32_t x, int32_t z) {
-	LevelChunk* result;			  // r0
-	int32_t v7;					  // r9
-	LevelChunk* v9;				  // r0
-	LevelChunk* v10;			  // r7
-	ChunkStorage* chunkStorage;	  // r0
-	ChunkStorage* v12;			  // r0
-	LevelChunk* emptyChunk;		  // r7
-	ChunkSource* generatorSource; // r0
-	LevelChunk* v16;			  // r0
+	LevelChunk* result;
+	int32_t v7;
+	LevelChunk* v9;
+	LevelChunk* v10;
+	ChunkStorage* chunkStorage;
+	ChunkStorage* v12;
+	LevelChunk* emptyChunk;
+	ChunkSource* generatorSource;
+	LevelChunk* v16;
 
-	if(x != this->lastChunkX || z != this->lastChunkZ || (result = this->lastChunk) == 0) {
+	LevelChunk* curC;
+	LevelChunk* cWest;
+	LevelChunk* cNorth;
+	LevelChunk* cNW;
+
+	if(x != this->lastChunkX || z != this->lastChunkZ || (result = this->lastChunk) == 0 || result == this->emptyChunk) {
 		if(!chunkInRange(this->level, x, z)) {
 			return this->emptyChunk;
 		}
@@ -66,7 +71,7 @@ LevelChunk* ChunkCache::getChunk(int32_t x, int32_t z) {
 			goto LABEL_48;
 		}
 		v9 = this->chunks[v7];
-		if(v9) {
+		if(v9 && v9 != this->emptyChunk) {
 			v9->unload();
 			v10 = this->chunks[v7];
 			if(this->chunkStorage) {
@@ -79,41 +84,49 @@ LevelChunk* ChunkCache::getChunk(int32_t x, int32_t z) {
 			}
 		}
 		v12 = this->chunkStorage;
+		emptyChunk = 0;
 		if(v12 && (chunkInRange(this->level, x, z))) {
 			emptyChunk = (LevelChunk*)v12->load(this->level, x, z);
-			if(!emptyChunk) {
-				goto LABEL_19;
+			if(emptyChunk) {
+				emptyChunk->field_250 = this->level->getTime();
 			}
-			emptyChunk->field_250 = this->level->getTime();
-		} else {
-			emptyChunk = this->emptyChunk;
-			if(!emptyChunk) {
-LABEL_19:
-				generatorSource = this->generatorSource;
-				if(generatorSource) {
-					emptyChunk = (LevelChunk*)generatorSource->getChunk(x, z);
-				} else {
-					emptyChunk = this->emptyChunk;
+		}
+		if(!emptyChunk) {
+			generatorSource = this->generatorSource;
+			if(generatorSource) {
+				emptyChunk = (LevelChunk*)generatorSource->getChunk(x, z);
+			} else {
+				emptyChunk = this->emptyChunk;
+			}
+		}
+		this->chunks[v7] = emptyChunk;
+		if(emptyChunk && emptyChunk != this->emptyChunk) {
+			emptyChunk->lightLava();
+			emptyChunk->load();
+		}
+		curC = this->chunks[v7];
+		if(curC && curC != this->emptyChunk) {
+			if(!curC->decorated && this->hasChunk(x + 1, z + 1) && this->hasChunk(x, z + 1) && this->hasChunk(x + 1, z)) {
+				this->postProcess(this, x, z);
+			}
+			if(this->hasChunk(x - 1, z) && this->hasChunk(x - 1, z + 1) && this->hasChunk(x, z + 1)) {
+				cWest = this->chunks[((x - 1) & 0x3F) + 64 * (z & 0x3F)];
+				if(cWest && cWest != this->emptyChunk && cWest->isAt(x - 1, z) && !cWest->decorated) {
+					this->postProcess(this, x - 1, z);
 				}
 			}
-		}
-		this->chunks[v7] = emptyChunk; // this->chunks[v7]
-		emptyChunk->lightLava();
-		v16 = this->chunks[v7];
-		if(v16) {
-			v16->load();
-		}
-		if(!this->chunks[v7]->decorated && this->hasChunk(x + 1, z + 1) && this->hasChunk(x, z + 1) && this->hasChunk(x + 1, z)) {
-			this->postProcess(this, x, z);
-		}
-		if(this->hasChunk(x - 1, z) && !this->getChunk(x - 1, z)->decorated && this->hasChunk(x - 1, z + 1) && this->hasChunk(x, z + 1) && this->hasChunk(x - 1, z)) {
-			this->postProcess(this, x - 1, z);
-		}
-		if(this->hasChunk(x, z - 1) && !this->getChunk(x, z - 1)->decorated && this->hasChunk(x + 1, z - 1) && this->hasChunk(x, z - 1) && this->hasChunk(x + 1, z)) {
-			this->postProcess(this, x, z - 1);
-		}
-		if(this->hasChunk(x - 1, z - 1) && !this->getChunk(x - 1, z - 1)->decorated && this->hasChunk(x - 1, z - 1) && this->hasChunk(x, z - 1) && this->hasChunk(x - 1, z)) {
-			this->postProcess(this, x - 1, z - 1);
+			if(this->hasChunk(x, z - 1) && this->hasChunk(x + 1, z - 1) && this->hasChunk(x + 1, z)) {
+				cNorth = this->chunks[(x & 0x3F) + 64 * ((z - 1) & 0x3F)];
+				if(cNorth && cNorth != this->emptyChunk && cNorth->isAt(x, z - 1) && !cNorth->decorated) {
+					this->postProcess(this, x, z - 1);
+				}
+			}
+			if(this->hasChunk(x - 1, z - 1) && this->hasChunk(x - 1, z) && this->hasChunk(x, z - 1)) {
+				cNW = this->chunks[((x - 1) & 0x3F) + 64 * ((z - 1) & 0x3F)];
+				if(cNW && cNW != this->emptyChunk && cNW->isAt(x - 1, z - 1) && !cNW->decorated) {
+					this->postProcess(this, x - 1, z - 1);
+				}
+			}
 		}
 LABEL_48:
 		this->lastChunkX = x;
@@ -163,9 +176,7 @@ void ChunkCache::saveAll(bool_t a2) {
 		for(int32_t i = 0; i < 4096; ++i) {
 			LevelChunk* chunk = this->chunks[i];
 			if(chunk && chunk != this->emptyChunk) {
-				if(!a2 || chunk->shouldSave(0)) {
-					v8.emplace_back(chunk);
-				}
+				v8.emplace_back(chunk);
 			}
 		}
 		this->chunkStorage->saveAll(this->level, v8);

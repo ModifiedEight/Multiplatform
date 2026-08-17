@@ -82,18 +82,17 @@ void RandomLevelSource::buildSurfaces(int32_t a2, int32_t a3, uint8_t* a4, struc
 
 	//taken from Minecraft013Server(which took it from some b1.4 mod+changes from 0.1.3)
 	//arm version produced weird results
-	//x86 version inlined random calls so the function is mess
 	for(int blockX = 0; blockX < 16; ++blockX) {
 		for(int blockZ = 0; blockZ < 16; ++blockZ) {
-			Biome* biome = a5[blockX + (blockZ * 16)];
-			bool z = this->field_72D4[blockX + (blockZ * 16)] + (this->random.nextFloat() * 0.2f) > 0.0f;
-			bool z2 = this->field_76D4[blockX + (blockZ * 16)] + (this->random.nextFloat() * 0.2f) > 3.0f;
-			int nextFloat = (int)((this->field_7AD4[blockX + (blockZ * 16)] / 3.0f) + 3.0f + (this->random.nextFloat() * 0.25f));
+			Biome* biome = a5[blockX * 16 + blockZ];
+			bool z = this->field_72D4[blockX * 16 + blockZ] + (this->random.nextFloat() * 0.2f) > 0.0f;
+			bool z2 = this->field_76D4[blockX * 16 + blockZ] + (this->random.nextFloat() * 0.2f) > 3.0f;
+			int nextFloat = (int)((this->field_7AD4[blockX * 16 + blockZ] / 3.0f) + 3.0f + (this->random.nextFloat() * 0.25f));
 			int i = -1;
 			int b = biome->topBlock;
 			int b2 = biome->fillerBlock;
 			for(int blockY = 127; blockY >= 0; --blockY) {
-				int index = (blockZ * 16 + blockX) * 128 + blockY;
+				int index = (blockX * 16 + blockZ) * 128 + blockY;
 				if((this->random.genrand_int32() % 5) >= blockY) {
 					a4[index] = Tile::unbreakable->blockID;
 				} else {
@@ -529,36 +528,14 @@ bool_t RandomLevelSource::hasChunk(int32_t x, int32_t z) {
 	return 1;
 }
 struct LevelChunk* RandomLevelSource::getChunk(int32_t chunkX, int32_t chunkZ) {
-	uint32_t v5;		// r10
-	int32_t v6;			// r2
-	int32_t v9;			// r10
-	LevelChunk* chunk;	// r6
-	uint8_t* chunkData; // r8
-	Biome** v16;		// r10
-
-	v5 = chunkZ & 0x7FFF | ((chunkX & 0x7FFF) << 16) | chunkX & 0x80000000;
-	if(chunkZ >= 0) {
-		v6 = 0;
-	} else {
-		v6 = 0x8000;
-	}
-	v9 = v5 | v6;
-	auto&& p = this->field_19E0.find(v9);
-	if(p != this->field_19E0.end()) {
-		return p->second;
-	}
-
 	this->random.setSeed(132899541 * chunkZ + 341872712 * chunkX);
-	chunkData = new uint8_t[0x8000u];
-	chunk = new LevelChunk(this->level, chunkData, chunkX, chunkZ);
-	this->field_19E0.insert({v9, chunk});
+	uint8_t* chunkData = new uint8_t[0x8000u];
+	LevelChunk* chunk = new LevelChunk(this->level, chunkData, chunkX, chunkZ);
 
-	v16 = this->level->getBiomeSource()->getBiomeBlock(16 * chunkX, 16 * chunkZ, 16, 16);
+	Biome** v16 = this->level->getBiomeSource()->getBiomeBlock(16 * chunkX, 16 * chunkZ, 16, 16);
 	this->prepareHeights(chunkX, chunkZ, chunkData, 0, this->level->getBiomeSource()->rainfallNoises);
 	this->buildSurfaces(chunkX, chunkZ, chunkData, v16);
-	if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 3) {
-		this->caveGenerator.apply(this, this->level, chunkX, chunkZ, chunkData, 0);
-	}
+	this->caveGenerator.apply(this, this->level, chunkX, chunkZ, chunkData, 0);
 	chunk->recalcHeightmap();
 	return chunk;
 }
@@ -725,7 +702,13 @@ void RandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, int3
 		FlowerFeature f(Tile::mushroom2->blockID);
 		f.place(this->level, a8, chunkXStart + (v89 & 0xF) + 8, v90 & 0x7F, chunkZStart + (v91 & 0xF) + 8);
 	}
-	for(int32_t v95 = 0; v95 < 10; ++v95) {
+	int32_t reedsCnt = 10;
+	if (biomeAtChunk == Biome::desert || biomeAtChunk == Biome::iceDesert) {
+		reedsCnt = 40;
+	} else if (biomeAtChunk == Biome::swampland) {
+		reedsCnt = 25;
+	}
+	for(int32_t v95 = 0; v95 < reedsCnt; ++v95) {
 		int8_t v96 = a8->genrand_int32();
 		int8_t v97 = a8->genrand_int32();
 		int8_t v98 = a8->genrand_int32();

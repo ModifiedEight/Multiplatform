@@ -1,6 +1,7 @@
 #include <tile/GrassTile.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <tile/material/Material.hpp>
 #include <rendering/TextureAtlasTextureItem.hpp>
 
@@ -41,43 +42,43 @@ bool_t GrassTile::_randomWalk(Level* level, int32_t& x, int32_t& y, int32_t& z, 
 GrassTile::~GrassTile() {
 }
 bool_t GrassTile::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {
-	Random* p_random; // r10
-	int32_t i;		  // r6
-	int32_t v10;	  // r8
-	int32_t v11;	  // r0
-	Tile* v12;		  // r5
-	int32_t v15;	  // [sp+1Ch] [bp-34h] BYREF
-	int32_t v16;	  // [sp+20h] [bp-30h] BYREF
-	int32_t v17;	  // [sp+24h] [bp-2Ch] OVERLAPPED BYREF
+	Random* p_random = &level->random;
+	int32_t v15;
+	int32_t v16;
+	int32_t v17;
 
-	p_random = &level->random;
-	for(i = 16; i != 64; ++i) {
+	for(int32_t i = 16; i != 64; ++i) {
 		v15 = x;
 		v16 = y + 1;
 		v17 = z;
 		if(this->_randomWalk(level, v15, v16, v17, i)) {
-			v10 = level->getTile(v15, v16, v17);
-			if(!v10) {
-				v11 = p_random->genrand_int32() & 0xF;
-				if(v11) {
-					if(v11 == 1) {
-						v12 = Tile::rose;
-						goto LABEL_11;
-					}
-					v12 = Tile::tallgrass;
-					if(v11 != 2) {
-						v10 = 1;
-LABEL_11:
-						if(v12->canSurvive(level, v15, v16, v17)) {
-							level->setTileAndData(v15, v16, v17, v12->blockID, v10, 3);
-						}
-						continue;
+			if(level->isEmptyTile(v15, v16, v17)) {
+				int32_t roll = p_random->genrand_int32() % 100;
+				if(roll < 12 && Tile::doublePlant && level->isEmptyTile(v15, v16 + 1, v17) && Tile::doublePlant->canSurvive(level, v15, v16, v17)) {
+					int32_t subtype = p_random->genrand_int32() % 4;
+					level->setTileAndData(v15, v16, v17, Tile::doublePlant->blockID, subtype, 3);
+					level->setTileAndData(v15, v16 + 1, v17, Tile::doublePlant->blockID, subtype | 8, 3);
+				} else if(roll < 35) {
+					Tile* flowers[] = {
+						Tile::flower,
+						Tile::rose,
+						Tile::flowerPaeonia,
+						Tile::flowerDaisy,
+						Tile::flowerHoustonia,
+						Tile::flowerOrchid,
+						Tile::flowerAllium
+					};
+					int32_t flowerIdx = p_random->genrand_int32() % 7;
+					Tile* fl = flowers[flowerIdx];
+					if(fl && fl->canSurvive(level, v15, v16, v17)) {
+						level->setTileAndData(v15, v16, v17, fl->blockID, 0, 3);
 					}
 				} else {
-					v12 = Tile::flower;
+					if(Tile::tallgrass && Tile::tallgrass->canSurvive(level, v15, v16, v17)) {
+						int32_t grassMeta = (p_random->genrand_int32() % 4 == 0) ? 2 : 1;
+						level->setTileAndData(v15, v16, v17, Tile::tallgrass->blockID, grassMeta, 3);
+					}
 				}
-				v10 = v11;
-				goto LABEL_11;
 			}
 		}
 	}
@@ -92,17 +93,29 @@ TextureUVCoordinateSet* GrassTile::getTexture(int32_t a2, int32_t a3) {
 	}
 	return &this->field_80;
 }
-TextureUVCoordinateSet* GrassTile::getTexture(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
-	Material* v8; // r0
+#include <level/LevelSource.hpp>
 
-	if(a6 == 1) {
-		return &this->field_98;
-	}
+static bool_t isSnowMaterialOrTile(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (!level) return 0;
+	Material* m = level->getMaterial(x, y, z);
+	if (m == Material::topSnow || m == Material::snow) return 1;
+	int32_t id = level->getTile(x, y, z);
+	return id == 78 || id == 80;
+}
+
+static bool_t isGrassTileSnowy(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (!level) return 0;
+	return isSnowMaterialOrTile(level, x, y + 1, z);
+}
+
+TextureUVCoordinateSet* GrassTile::getTexture(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
 	if(!a6) {
 		return &this->field_80;
 	}
-	v8 = level->getMaterial(x, y + 1, z);
-	if(v8 == Material::topSnow || v8 == Material::snow) {
+	if(a6 == 1) {
+		return &this->field_98;
+	}
+	if(isGrassTileSnowy(level, x, y, z)) {
 		return &this->field_C8;
 	} else {
 		return &this->field_B0;
@@ -116,17 +129,17 @@ TextureUVCoordinateSet* GrassTile::getCarriedTexture(int32_t a2, int32_t a3) {
 	}
 }
 void GrassTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* random) {
-	int32_t zr;	   // r6
-	Material* v10; // r0
-	int32_t xr;	   // r5
-	int32_t yr;	   // r9
-	int32_t v13;   // r10
-	int32_t v14;   // r9
-	Material* v15; // r0
-	Level* v16;	   // r0
-	int32_t v17;   // r1
-	int32_t v18;   // r2
-	int32_t za;	   // [sp+20h] [bp+0h]
+	int32_t zr;
+	Material* v10;
+	int32_t xr;
+	int32_t yr;
+	int32_t v13;
+	int32_t v14;
+	Material* v15;
+	Level* v16;
+	int32_t v17;
+	int32_t v18;
+	int32_t za;
 
 	zr = z;
 	if(!level->isClientMaybe) {
@@ -169,11 +182,41 @@ int32_t GrassTile::getResource(int32_t, Random* a3) {
 	return Tile::dirt->getResource(0, a3);
 }
 int32_t GrassTile::getColor(int32_t) {
-	return 0x87CD49;
+	return 0x8EB956;
 }
 int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
-		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	if (level) {
+		if (BlockColorRegistry::hasBlockColor(x, y, z)) {
+			return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+		}
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) {
+			return 0x6A7039;
+		}
+		if (b == Biome::plains) {
+			return 0x8EB956;
+		}
+		if (b == Biome::forest || b == Biome::seasonalForest) {
+			return 0x599E39;
+		}
+		if (b == Biome::birchForest) {
+			return 0x6AA644;
+		}
+		if (b == Biome::jungle || b == Biome::rainForest) {
+			return 0x489E28;
+		}
+		if (b == Biome::taiga) {
+			return 0x487A4C;
+		}
+		if (b == Biome::tundra || b == Biome::icePeaks) {
+			return 0x608E5A;
+		}
+		if (b == Biome::savanna) {
+			return 0x8FA842;
+		}
+		if (b == Biome::desert || b == Biome::iceDesert) {
+			return 0x949C4A;
+		}
 	}
 	return this->getColor(0);
 }

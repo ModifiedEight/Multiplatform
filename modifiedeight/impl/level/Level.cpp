@@ -1548,11 +1548,11 @@ void Level::loadEntities() {
 	if(this->levelStoragePtr) this->levelStoragePtr->loadEntities(this, 0);
 }
 void Level::loadPlayer(struct Player* player, bool_t a3) {
-	CompoundTag* tag; // r0
-	CompoundTag* v8;  // r5
-	Entity* entity;	  // r0
-	Entity* v11;	  // r5
-	CompoundTag* v12; // r5
+	CompoundTag* tag;
+	CompoundTag* v8;
+	Entity* entity;
+	Entity* v11;
+	CompoundTag* v12;
 
 	if(player) {
 		tag = this->levelData.getLoadedPlayerTag();
@@ -1572,7 +1572,6 @@ void Level::loadPlayer(struct Player* player, bool_t a3) {
 					player->ride(v11);
 				}
 			}
-			this->levelData.setLoadedPlayerTag(0);
 		} else {
 			this->levelData.setLoadedPlayerTo(player);
 		}
@@ -1601,13 +1600,9 @@ bool_t Level::mayPlace(int32_t blockID, int32_t x, int32_t y, int32_t z, bool_t 
 	}
 }
 void Level::neighborChanged(int32_t x, int32_t y, int32_t z, int32_t a5, int32_t a6, int32_t a7, int32_t a8) {
-	Tile* v12; // r0
-
-	if(!this->isClientMaybe) {
-		v12 = Tile::tiles[this->getTile(x, y, z)];
-		if(v12) {
-			v12->neighborChanged(this, x, y, z, a5, a6, a7, a8);
-		}
+	Tile* v12 = Tile::tiles[this->getTile(x, y, z)];
+	if(v12) {
+		v12->neighborChanged(this, x, y, z, a5, a6, a7, a8);
 	}
 }
 void Level::playSound(struct Entity* e, const std::string& s, float a4, float a5) {
@@ -2154,7 +2149,7 @@ LABEL_8:
 			return;
 		}
 
-		int v14 = (maxX - a3) / 2;
+		int v14 = (maxX + a3) / 2;
 		LevelChunk* chunk;
 		if(!this->hasChunkAt(v14, 64, (maxZ + minZ) / 2) || (chunk = this->getChunkAt(v14, (maxZ + minZ) / 2), chunk->isEmpty())) {
 			v13 = _D6E4DF94 - 1;
@@ -2411,35 +2406,27 @@ void Level::tick() {
 	}
 }
 bool_t Level::tickPendingTicks(bool_t a2) {
-	int32_t v4;	 // r6
-	int32_t v5;	 // r8
-	int32_t v10; // r0
+	int32_t v4 = 0;
+	int32_t v5 = (this->tickDataTreeImpl.size() >= 100) ? 100 : this->tickDataTreeImpl.size();
 
-	v4 = 0;
-	if(this->tickDataTreeImpl.size() >= 100) {
-		v5 = 100;
-	} else {
-		v5 = this->tickDataTreeImpl.size();
-	}
-
-	while(v4 < v5) {
-		auto&& v8 = this->tickDataTreeImpl.begin();
-		if(!a2) {
-			if(v8->delay > this->levelData.getTime()) {
-				break;
-			}
+	while(v4 < v5 && !this->tickDataTreeImpl.empty()) {
+		auto it = this->tickDataTreeImpl.begin();
+		if(!a2 && it->delay > this->levelData.getTime()) {
+			break;
 		}
-		if(this->hasChunksAt(v8->x - 8, v8->y - 8, v8->z - 8, v8->x + 8, v8->y + 8, v8->z + 8)) {
-			v10 = this->getTile(v8->x, v8->y, v8->z);
-			if(v10 == v8->field_10 && v10 > 0) {
-				Tile::tiles[v10]->tick(this, v8->x, v8->y, v8->z, &this->random);
-			}
-		}
-		this->tickDataTreeImpl.erase(v8);
+		TickNextTickData data = *it;
+		this->tickDataTreeImpl.erase(it);
 		++v4;
+
+		if(this->hasChunksAt(data.x - 8, data.y - 8, data.z - 8, data.x + 8, data.y + 8, data.z + 8)) {
+			int32_t v10 = this->getTile(data.x, data.y, data.z);
+			if(v10 == data.field_10 && v10 > 0 && Tile::tiles[v10]) {
+				Tile::tiles[v10]->tick(this, data.x, data.y, data.z, &this->random);
+			}
+		}
 	}
 
-	return this->tickDataTreeImpl.size() != 0;
+	return !this->tickDataTreeImpl.empty();
 }
 void Level::addToTickNextTick(int32_t x, int32_t y, int32_t z, int32_t id, int32_t delay) {
 	int32_t v10;  // r0

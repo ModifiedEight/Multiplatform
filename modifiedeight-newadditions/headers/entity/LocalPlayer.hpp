@@ -32,6 +32,7 @@ struct LocalPlayer: Player, IContainerListener
 
     void setSprinting(bool_t);
     virtual float getWalkingSpeedModifier();
+    virtual void travel(float, float);
 
 	LocalPlayer(Minecraft*, Level*, User*, int32_t, bool_t);
 	void _init();

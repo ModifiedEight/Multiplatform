@@ -39,6 +39,7 @@
 #include <rendering/PerfRenderer.hpp>
 #include <rendering/Textures.hpp>
 #include <sound/SoundEngine.hpp>
+#include <sound/MusicEngine.hpp>
 #include <tile/Tile.hpp>
 #include <util/CMutex.hpp>
 #include <util/CThread.hpp>
@@ -139,6 +140,7 @@ Minecraft::Minecraft()
 	this->rakNetInstance = new RakNetInstance();
 	this->soundEngine = new SoundEngine(20);
 	this->soundEngine->init(this, &this->options);
+	new MusicEngine();
 	this->cmutex = new CMutex();
 	this->field_D30 = new ServerCommandParser();
 }
@@ -936,6 +938,10 @@ void Minecraft::teardown(void) {
 
 	if(this->soundEngine) {
 		delete this->soundEngine;
+	}
+
+	if(MusicEngine::instance) {
+		delete MusicEngine::instance;
 	}
 
 	if(this->gameMode) {

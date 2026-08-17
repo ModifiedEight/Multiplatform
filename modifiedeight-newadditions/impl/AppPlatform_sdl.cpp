@@ -41,7 +41,8 @@ static void performPickBlock(Minecraft *mc) {
   Tile *tile = Tile::tiles[tileId];
   if (tile) {
     if (tile == Tile::mixedSlab) {
-      MixedSlabTileEntity *te = (MixedSlabTileEntity *)mc->level->getTileEntity(x, y, z);
+      MixedSlabTileEntity *te =
+          (MixedSlabTileEntity *)mc->level->getTileEntity(x, y, z);
       if (te) {
         int mode = te->mode;
         float hitCoord = 0.5f;
@@ -53,8 +54,10 @@ static void performPickBlock(Minecraft *mc) {
           hitCoord = mc->selectedObject.hitVec.y - (float)y;
         }
         bool hitTop = (hitCoord >= 0.5f);
-        if (te->bottomTileId > 0 && te->topTileId == 0) hitTop = false;
-        if (te->topTileId > 0 && te->bottomTileId == 0) hitTop = true;
+        if (te->bottomTileId > 0 && te->topTileId == 0)
+          hitTop = false;
+        if (te->topTileId > 0 && te->bottomTileId == 0)
+          hitTop = true;
 
         if (hitTop && te->topTileId > 0) {
           pickId = te->topTileId;
@@ -211,7 +214,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.0.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.1.1", 0);
 
   {
     int w, h, ch;
@@ -283,7 +286,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
 #include <unistd.h>
 #endif
 
-static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform) {
+static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform, int sType = 0) {
   if (!mc || !platform)
     return;
   int w = platform->screenWidth;
@@ -299,21 +302,39 @@ static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform) {
     memcpy(&flipped[y * w * 4], &pixels[(h - 1 - y) * w * 4], w * 4);
   }
 
+  std::string path;
+  if (sType == 2 || (mc->options.panoramaAngle > 0 && sType == 0)) {
+    int index = mc->options.panoramaAngle - 1;
+    if (index < 0)
+      index = 0;
 #if defined(_WIN32) || defined(WIN32)
-  _mkdir("screenshots");
+    _mkdir("assets");
+    _mkdir("assets/images");
+    _mkdir("assets/images/gui");
+    _mkdir("assets/images/gui/background");
 #else
-  mkdir("screenshots", 0755);
+    mkdir("assets", 0755);
+    mkdir("assets/images", 0755);
+    mkdir("assets/images/gui", 0755);
+    mkdir("assets/images/gui/background", 0755);
 #endif
+    path = "assets/images/gui/background/panorama_" + std::to_string(index) + ".png";
+  } else {
+#if defined(_WIN32) || defined(WIN32)
+    _mkdir("screenshots");
+#else
+    mkdir("screenshots", 0755);
+#endif
+    std::time_t t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    char filename[128];
+    std::strftime(filename, sizeof(filename), "screenshots/%Y-%m-%d_%H.%M.%S.png",
+                  &tm);
+    path = filename;
+  }
 
-  std::time_t t = std::time(nullptr);
-  std::tm tm = *std::localtime(&t);
-  char filename[128];
-  std::strftime(filename, sizeof(filename), "screenshots/%Y-%m-%d_%H.%M.%S.png",
-                &tm);
-
-  if (stbi_write_png(filename, w, h, 4, flipped.data(), w * 4)) {
-    std::string msg = "Saved screenshot as ";
-    msg += (filename + 12);
+  if (stbi_write_png(path.c_str(), w, h, 4, flipped.data(), w * 4)) {
+    std::string msg = "Saved screenshot as " + path;
     mc->gui.displayClientMessage(msg);
   }
 }
@@ -373,6 +394,9 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
     if (pressed) {
       takeScreenshot(mc, this);
     }
+  }
+  if ((key == SDLK_l || scancode == 46) && pressed && mc->player && !mc->currentScreen) {
+    takeScreenshot(mc, this, 2);
   }
   if (key == SDLK_F5 && mc->player && !mc->currentScreen && mc->mouseGrabbed) {
     if (pressed) {
@@ -466,7 +490,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight New Additions 1.6.0",
+            "ModifiedEight New Additions 1.6.1",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -516,7 +540,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.0.1",
+              details, "icon", "ModifiedEight New Additions 1.6.1.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

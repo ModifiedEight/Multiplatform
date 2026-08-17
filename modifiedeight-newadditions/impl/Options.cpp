@@ -48,12 +48,14 @@ Options::Option Options::Option::FOG_ENABLED{0, "options.fogenabled", 34};
 Options::Option Options::Option::SHOW_FPS{0, "options.showfps", 35};
 Options::Option Options::Option::DEBUG_SCREEN{0, "options.debugscreen", 36};
 Options::Option Options::Option::DISCORD_RPC{0, "options.discordrpc", 39};
+Options::Option Options::Option::PANORAMA_ANGLE{3, "options.panoramaAngle", 40};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 std::vector<int32_t> Options::CHAT_BG_COLOR_LEVELS = {0, 1, 2, 3, 4};
 std::vector<int32_t> Options::NEON_COLOR_THEME_LEVELS = {0, 1, 2, 3, 4};
 std::vector<int32_t> Options::NEW_ADDITIONS_LEVELS = {0, 1};
+std::vector<int32_t> Options::PANORAMA_ANGLE_LEVELS = {0, 1, 2, 3, 4, 5, 6};
 
 void Options::update() {
 	std::vector<std::string> v13 = this->settingFolderPath.getOptionStrings();
@@ -136,6 +138,8 @@ void Options::update() {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
 							this->readInt(v13[i + 1], this->chatBgColor);
+						} else if(v13[i] == "options.panoramaangle") {
+							this->readInt(v13[i + 1], this->panoramaAngle);
 						} else if(v13[i] == OptionStrings::Game_ThirdPerson) {
 							this->readBool(v13[i + 1], this->thirdPerson);
 						} else if(v13[i] == OptionStrings::Controls_UseTouchScreen) {
@@ -254,6 +258,8 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->debugScreen ^= 1u;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		this->discordIntegration ^= 1u;
+	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
+		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
 		this->limitFramerate ^= 1u;
 	} else if(a2 == &Options::Option::DIFFICULTY) {
@@ -291,6 +297,8 @@ void Options::set(const Options::Option* a2, int32_t a3) {
 		this->neonColorTheme = a3;
 	} else if(a2 == &Options::Option::NEW_ADDITIONS) {
 		this->newAdditions = a3;
+	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
+		this->panoramaAngle = a3;
 	}
 	this->notifyOptionUpdate(a2, a3);
 }
@@ -342,6 +350,7 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.discordrpc", this->discordIntegration);
 	this->addOptionToSaveOutput(v4, "options.chatcolor", this->chatColor);
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
+	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
 	this->addOptionToSaveOutput(v4, OptionStrings::Last_Game_Version_Major, this->major);
@@ -431,6 +440,7 @@ void Options::initDefaultValues(void) {
 	this->discordIntegration = 1;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
+	this->panoramaAngle = 0;
 	this->field_F4 = 1.0;
 	this->field_F8 = 1.0;
 	this->fov = 70.0f;
@@ -531,6 +541,9 @@ std::vector<int> Options::getValues(const Options::Option* a2) {
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return Options::NEW_ADDITIONS_LEVELS;
 	}
+	if(a2 == &Options::Option::PANORAMA_ANGLE) {
+		return Options::PANORAMA_ANGLE_LEVELS;
+	}
 	return {};
 }
 std::string Options::getStringValue(const Options::Option* a2) {
@@ -582,13 +595,13 @@ float Options::getProgressValue(const Options::Option* a2) {
 	return 0;
 }
 std::string Options::getMessage(const Options::Option*) {
-	return "Options::getMessage - Not implemented"; //actual mcpe code
+	return "Options::getMessage - Not implemented";
 }
 std::string Options::getKeyMessage(int32_t) {
-	return "Options::getKeyMessage not implemented"; //actual mcpe code
+	return "Options::getKeyMessage not implemented";
 }
 std::string Options::getKeyDescription(int32_t) {
-	return "Options::getKeyDescription not implemented"; //yes
+	return "Options::getKeyDescription not implemented";
 }
 int32_t Options::getIntValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::DIFFICULTY) {
@@ -609,6 +622,9 @@ int32_t Options::getIntValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return this->newAdditions;
 	}
+	if(a2 == &Options::Option::PANORAMA_ANGLE) {
+		return this->panoramaAngle;
+	}
 	return 0;
 }
 std::string Options::getDescription(const Options::Option* a2, std::string a4) {
@@ -627,6 +643,10 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		std::string modes[] = {"Modded", "New Additions"};
 		if(this->newAdditions >= 0 && this->newAdditions <= 1) return a4 + ": " + modes[this->newAdditions];
+	}
+	if(a2 == &Options::Option::PANORAMA_ANGLE) {
+		std::string modes[] = {"Off", "0: Forward", "1: Right (90)", "2: Back (180)", "3: Left (270)", "4: Up", "5: Down"};
+		if(this->panoramaAngle >= 0 && this->panoramaAngle <= 6) return a4 + ": " + modes[this->panoramaAngle];
 	}
 	if(a2 == &Options::Option::RENDER_DISTANCE) {
 		std::string modes[] = {"Tiny", "Short", "Normal", "Far", "Very Far", "Ultra", "Extreme"};

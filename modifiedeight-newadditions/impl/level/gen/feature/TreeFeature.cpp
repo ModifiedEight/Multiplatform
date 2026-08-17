@@ -66,30 +66,25 @@ bool_t TreeFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 		return 0;
 	}
 	v15 = level->getTile(x, y - 1, z);
-	if(v15 != Tile::grass->blockID && v15 != Tile::dirt->blockID) {
+	if (this->meta == 4 && (v15 == Tile::water->blockID || v15 == Tile::calmWater->blockID)) {
+		int32_t belowWater = level->getTile(x, y - 2, z);
+		if (belowWater != Tile::grass->blockID && belowWater != Tile::dirt->blockID) {
+			return 0;
+		}
+	} else if (v15 != Tile::grass->blockID && v15 != Tile::dirt->blockID) {
 		return 0;
 	}
-	if(y >= 123 - v23) {
-		return 0;
-	}
-	this->placeBlock(level, x, y - 1, z, Tile::dirt->blockID);
+	int32_t woodMeta = (this->meta == 4) ? 0 : this->meta;
+	this->placeBlock(level, x, y - 1, z, Tile::dirt->blockID, 0);
 	for(k = y - 3 + v25; k <= v28; ++k) {
 		v17 = 1 - (k - v28) / 2;
 		for(m = x - v17; m <= x + v17; ++m) {
 			a5 = z - v17;
-			v24 = abs(m - x); //abs32
 			while(a5 <= z + v17) {
-				if(v24 != v17) {
-					goto LABEL_53;
-				}
-				v20 = a5 - z;
-				if(a5 - z < 0) {
-					v20 = z - a5;
-				}
-				if(v20 != v24 || (random->genrand_int32() & 1) != 0 && k != v28) {
-LABEL_53:
-					if(!Tile::solid[level->getTile(m, k, a5)]) {
-						this->placeBlock(level, m, k, a5, Tile::leaves->blockID, this->meta);
+				if(abs(m - x) != v17 || abs(a5 - z) != v17 || (random->genrand_int32() & 1) != 0 && k != v28) {
+					int32_t t = level->getTile(m, k, a5);
+					if(t == 0 || !Tile::solid[t]) {
+						this->placeBlock(level, m, k, a5, Tile::leaves->blockID, woodMeta);
 					}
 				}
 				++a5;
@@ -99,10 +94,60 @@ LABEL_53:
 	v21 = 0;
 	do {
 		v22 = level->getTile(x, v21 + y, z);
-		if(!v22 || v22 == Tile::leaves->blockID) {
-			this->placeBlock(level, x, v21 + y, z, Tile::treeTrunk->blockID, this->meta);
+		if(!v22 || v22 == Tile::leaves->blockID || v22 == Tile::water->blockID || v22 == Tile::calmWater->blockID) {
+			this->placeBlock(level, x, v21 + y, z, Tile::treeTrunk->blockID, woodMeta);
 		}
 		++v21;
 	} while(v21 < v25);
+
+	if (this->meta == 3 || this->meta == 4) {
+		int32_t canopyStart = y - 3 + v25;
+		for (int32_t cy = y; cy < canopyStart; ++cy) {
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z - 1)) this->placeBlock(level, x, cy, z - 1, Tile::vine ? Tile::vine->blockID : 0, 4);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z + 1)) this->placeBlock(level, x, cy, z + 1, Tile::vine ? Tile::vine->blockID : 0, 1);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x - 1, cy, z)) this->placeBlock(level, x - 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 2);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x + 1, cy, z)) this->placeBlock(level, x + 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 8);
+		}
+		for (int32_t ly = canopyStart; ly <= v28; ++ly) {
+			int32_t v17 = 1 - (ly - v28) / 2;
+			for (int32_t lx = x - v17; lx <= x + v17; ++lx) {
+				for (int32_t lz = z - v17; lz <= z + v17; ++lz) {
+					if (level->getTile(lx, ly, lz) == Tile::leaves->blockID) {
+						if (random->genrand_int32() % 3 == 0) {
+							int32_t vlen = 3 + (random->genrand_int32() % 4);
+							if (level->isEmptyTile(lx, ly, lz - 1)) {
+								for (int32_t dy = 0; dy < vlen; ++dy) {
+									int32_t vy = ly - dy;
+									if (vy <= 0 || !level->isEmptyTile(lx, vy, lz - 1)) break;
+									this->placeBlock(level, lx, vy, lz - 1, Tile::vine ? Tile::vine->blockID : 0, 4);
+								}
+							}
+							if (level->isEmptyTile(lx, ly, lz + 1)) {
+								for (int32_t dy = 0; dy < vlen; ++dy) {
+									int32_t vy = ly - dy;
+									if (vy <= 0 || !level->isEmptyTile(lx, vy, lz + 1)) break;
+									this->placeBlock(level, lx, vy, lz + 1, Tile::vine ? Tile::vine->blockID : 0, 1);
+								}
+							}
+							if (level->isEmptyTile(lx - 1, ly, lz)) {
+								for (int32_t dy = 0; dy < vlen; ++dy) {
+									int32_t vy = ly - dy;
+									if (vy <= 0 || !level->isEmptyTile(lx - 1, vy, lz)) break;
+									this->placeBlock(level, lx - 1, vy, lz, Tile::vine ? Tile::vine->blockID : 0, 2);
+								}
+							}
+							if (level->isEmptyTile(lx + 1, ly, lz)) {
+								for (int32_t dy = 0; dy < vlen; ++dy) {
+									int32_t vy = ly - dy;
+									if (vy <= 0 || !level->isEmptyTile(lx + 1, vy, lz)) break;
+									this->placeBlock(level, lx + 1, vy, lz, Tile::vine ? Tile::vine->blockID : 0, 8);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return 1;
 }

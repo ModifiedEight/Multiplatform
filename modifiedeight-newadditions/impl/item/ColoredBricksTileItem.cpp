@@ -21,9 +21,9 @@ int32_t ColoredBricksTileItem::getLevelDataForAuxValue(int32_t a2) {
 }
 
 std::string ColoredBricksTileItem::getName(const ItemInstance* a3) {
-	return I18n::get(this->getDescriptionId() + "." + DyePowderItem::COLOR_DESCS[(~a3->getAuxValue()) & 0xF] + ".name");
+	return I18n::get(this->getDescriptionId(a3) + ".name");
 }
 
-std::string ColoredBricksTileItem::getDescription(const ItemInstance* a3) {
-	return this->getDescriptionId() + "." + DyePowderItem::COLOR_DESCS[(~a3->getAuxValue()) & 0xF];
+std::string ColoredBricksTileItem::getDescriptionId(const ItemInstance* a3) {
+	return TileItem::getDescriptionId() + "." + DyePowderItem::COLOR_DESCS[(~a3->getAuxValue()) & 0xF];
 }

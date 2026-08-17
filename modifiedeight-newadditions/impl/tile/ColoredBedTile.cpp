@@ -9,14 +9,18 @@ ColoredBedTile::ColoredBedTile(int32_t id, int colorIdx)
 	const char* colors[] = {"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"};
 	std::string texName = "bed_" + std::string(colors[colorIdx]);
 	
-	TextureAtlasTextureItem v35(*this->getTextureItem(texName));
-	// Based on BedTile.cpp constructor:
-	this->field_B0 = *v35.getUV(0);
-	this->field_80 = *v35.getUV(1);
-	this->field_98 = *v35.getUV(2);
-	this->field_F8 = *v35.getUV(3);
-	this->field_C8 = *v35.getUV(4);
-	this->field_E0 = *v35.getUV(5);
+	TextureAtlasTextureItem* v35 = this->getTextureItem(texName);
+	if (!v35 || v35->getUVCount() == 0) {
+		v35 = this->getTextureItem("bed");
+	}
+	if (v35 && v35->getUVCount() >= 6) {
+		this->field_B0 = *v35->getUV(0);
+		this->field_80 = *v35->getUV(1);
+		this->field_98 = *v35->getUV(2);
+		this->field_F8 = *v35->getUV(3);
+		this->field_C8 = *v35->getUV(4);
+		this->field_E0 = *v35->getUV(5);
+	}
 }
 
 ColoredBedTile::~ColoredBedTile() {

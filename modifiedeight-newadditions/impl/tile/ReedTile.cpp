@@ -1,6 +1,8 @@
 #include <tile/ReedTile.hpp>
 #include <item/Item.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
+#include <tile/BlockColorRegistry.hpp>
 #include <tile/material/Material.hpp>
 
 ReedTile::ReedTile(int32_t id, const std::string& name, Material* mat)
@@ -102,4 +104,21 @@ int32_t ReedTile::getRenderLayer() {
 }
 bool_t ReedTile::canSurvive(Level* level, int32_t x, int32_t y, int32_t z) {
 	return this->mayPlace(level, x, y, z);
+}
+
+int32_t ReedTile::getColor(int32_t) {
+	return 0x82C746;
+}
+
+int32_t ReedTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
+		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	}
+	if (level) {
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) {
+			return 0x607B3B;
+		}
+	}
+	return 0x82C746;
 }

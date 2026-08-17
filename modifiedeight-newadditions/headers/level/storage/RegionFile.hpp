@@ -8,7 +8,7 @@
 struct RegionFileInfo {
 	FILE* fileRaw = nullptr;
 	int32_t* locTable = nullptr;
-	std::map<int32_t, bool_t> stdMap;
+	std::map<int32_t, int32_t> stdMap;
 	std::string path;
 };
 

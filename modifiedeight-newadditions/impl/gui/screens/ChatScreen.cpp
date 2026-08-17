@@ -10,6 +10,15 @@
 #include <network/packet/MessagePacket.hpp>
 #include <rendering/Font.hpp>
 #include <util/Util.hpp>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <math.h>
+#include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
+#include <level/BiomeSource.hpp>
+#include <tile/Tile.hpp>
 
 ChatScreen::ChatScreen()
 	: Screen() {
@@ -51,12 +60,364 @@ bool_t ChatScreen::guiMessagesUpdated() {
 	}
 	return 0;
 }
+static bool executeCommand(Minecraft* mc, const std::string& line) {
+	if (line.empty() || line[0] != '/') return false;
+
+	std::stringstream ss(line.substr(1));
+	std::string cmd;
+	ss >> cmd;
+	std::vector<std::string> args;
+	std::string arg;
+	while (ss >> arg) {
+		args.emplace_back(arg);
+	}
+
+	for (auto& c : cmd) c = tolower(c);
+
+	if (cmd == "tp") {
+		if (args.size() == 3) {
+			try {
+				float px = (args[0] == "~") ? mc->player->posX : std::stof(args[0]);
+				float py = (args[1] == "~") ? mc->player->posY : std::stof(args[1]);
+				float pz = (args[2] == "~") ? mc->player->posZ : std::stof(args[2]);
+				mc->player->setPos(px, py, pz);
+				mc->player->resetPos(1);
+				mc->gui.addMessage("", "Teleported to " + std::to_string((int)px) + ", " + std::to_string((int)py) + ", " + std::to_string((int)pz), 200);
+			} catch (...) {
+				mc->gui.addMessage("", "Invalid coordinates", 200);
+			}
+			return true;
+		}
+		if (args.size() == 4) {
+			Player* target = nullptr;
+			if (mc->player && mc->player->username == args[0]) {
+				target = mc->player;
+			} else if (mc->level) {
+				for (auto* p : mc->level->playersMaybe) {
+					if (p && p->username == args[0]) {
+						target = p;
+						break;
+					}
+				}
+			}
+			if (!target) {
+				mc->gui.addMessage("", "Player not found: " + args[0], 200);
+				return true;
+			}
+			try {
+				float px = (args[1] == "~") ? target->posX : std::stof(args[1]);
+				float py = (args[2] == "~") ? target->posY : std::stof(args[2]);
+				float pz = (args[3] == "~") ? target->posZ : std::stof(args[3]);
+				target->setPos(px, py, pz);
+				target->resetPos(1);
+				mc->gui.addMessage("", "Teleported " + args[0] + " to " + std::to_string((int)px) + ", " + std::to_string((int)py) + ", " + std::to_string((int)pz), 200);
+			} catch (...) {
+				mc->gui.addMessage("", "Invalid coordinates", 200);
+			}
+			return true;
+		}
+		if (args.size() == 2) {
+			Player* p1 = nullptr;
+			Player* p2 = nullptr;
+			if (mc->player) {
+				if (mc->player->username == args[0]) p1 = mc->player;
+				if (mc->player->username == args[1]) p2 = mc->player;
+			}
+			if (mc->level) {
+				for (auto* p : mc->level->playersMaybe) {
+					if (p) {
+						if (p->username == args[0]) p1 = p;
+						if (p->username == args[1]) p2 = p;
+					}
+				}
+			}
+			if (!p1) {
+				mc->gui.addMessage("", "Player not found: " + args[0], 200);
+				return true;
+			}
+			if (!p2) {
+				mc->gui.addMessage("", "Player not found: " + args[1], 200);
+				return true;
+			}
+			p1->setPos(p2->posX, p2->posY, p2->posZ);
+			p1->resetPos(1);
+			mc->gui.addMessage("", "Teleported " + args[0] + " to " + args[1], 200);
+			return true;
+		}
+		mc->gui.addMessage("", "Usage: /tp [player] <x> <y> <z> or /tp <player1> <player2>", 200);
+		return true;
+	}
+
+	if (cmd == "locate") {
+		if (args.empty()) {
+			mc->gui.addMessage("", "Usage: /locate <biome|village|temple> [radius]", 200);
+			return true;
+		}
+		std::string targetName = args[0];
+		for (auto& c : targetName) c = tolower(c);
+
+		int maxRadius = 3000;
+		if (args.size() >= 2) {
+			try {
+				maxRadius = std::stoi(args[1]);
+				if (maxRadius < 100) maxRadius = 100;
+				if (maxRadius > 50000) maxRadius = 50000;
+			} catch (...) {
+			}
+		}
+
+		if (!mc->player || !mc->level || !mc->level->getBiomeSource()) {
+			mc->gui.addMessage("", "Level or player not loaded", 200);
+			return true;
+		}
+
+		int px = (int)mc->player->posX;
+		int pz = (int)mc->player->posZ;
+		BiomeSource* bs = mc->level->getBiomeSource();
+
+		if (targetName == "village" || targetName == "villages") {
+			int curChunkX = (int)floorf((float)px / 16.0f);
+			int curChunkZ = (int)floorf((float)pz / 16.0f);
+			int curGX = (int)floorf((float)curChunkX / 24.0f);
+			int curGZ = (int)floorf((float)curChunkZ / 24.0f);
+			int maxG = (maxRadius / 384) + 1;
+			int bestDistSq = 999999999;
+			int foundX = 0, foundZ = 0;
+			bool found = false;
+
+			for (int gr = 0; gr <= maxG; ++gr) {
+				for (int dgx = -gr; dgx <= gr; ++dgx) {
+					for (int dgz = -gr; dgz <= gr; ++dgz) {
+						if (abs(dgx) == gr || abs(dgz) == gr) {
+							int gx = curGX + dgx;
+							int gz = curGZ + dgz;
+							uint64_t vSeed = ((uint64_t)gx * 341873128712ULL + (uint64_t)gz * 132897987541ULL) ^ (uint64_t)mc->level->getSeed();
+							Random vRand(vSeed);
+							int targetChunkX = gx * 24 + (vRand.genrand_int32() % 16);
+							int targetChunkZ = gz * 24 + (vRand.genrand_int32() % 16);
+							int vx = targetChunkX * 16 + 8;
+							int vz = targetChunkZ * 16 + 8;
+							Biome* b = bs->getBiome(targetChunkX * 16 + 8, targetChunkZ * 16 + 8);
+							if (b == Biome::plains || b == Biome::desert || b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks) {
+								int dx = vx - px;
+								int dz = vz - pz;
+								int distSq = dx * dx + dz * dz;
+								if (distSq <= maxRadius * maxRadius && distSq < bestDistSq) {
+									bestDistSq = distSq;
+									foundX = vx;
+									foundZ = vz;
+									found = true;
+								}
+							}
+						}
+					}
+				}
+				if (found) break;
+			}
+
+			if (found) {
+				int dist = (int)sqrtf((float)bestDistSq);
+				int foundY = mc->level->getHeightmap(foundX, foundZ);
+				if (foundY <= 0) foundY = 70;
+				else foundY += 1;
+				mc->gui.addMessage("", "Located Village at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+			} else {
+				mc->gui.addMessage("", "Village not found within " + std::to_string(maxRadius) + " blocks", 200);
+			}
+			return true;
+		}
+
+		if (targetName == "temple" || targetName == "desert_temple" || targetName == "deserttemple") {
+			int curChunkX = (int)floorf((float)px / 16.0f);
+			int curChunkZ = (int)floorf((float)pz / 16.0f);
+			int curGX = (int)floorf((float)curChunkX / 20.0f);
+			int curGZ = (int)floorf((float)curChunkZ / 20.0f);
+			int maxG = (maxRadius / 320) + 1;
+			int bestDistSq = 999999999;
+			int foundX = 0, foundZ = 0;
+			bool found = false;
+
+			for (int gr = 0; gr <= maxG; ++gr) {
+				for (int dgx = -gr; dgx <= gr; ++dgx) {
+					for (int dgz = -gr; dgz <= gr; ++dgz) {
+						if (abs(dgx) == gr || abs(dgz) == gr) {
+							int gx = curGX + dgx;
+							int gz = curGZ + dgz;
+							uint64_t tSeed = ((uint64_t)gx * 241873128712ULL + (uint64_t)gz * 332897987541ULL) ^ (uint64_t)mc->level->getSeed();
+							Random tRand(tSeed);
+							int targetChunkX = gx * 20 + (tRand.genrand_int32() % 12);
+							int targetChunkZ = gz * 20 + (tRand.genrand_int32() % 12);
+							int tx = targetChunkX * 16 + 8;
+							int tz = targetChunkZ * 16 + 8;
+							Biome* b = bs->getBiome(targetChunkX * 16 + 16, targetChunkZ * 16 + 16);
+							if (b == Biome::desert) {
+								int dx = tx - px;
+								int dz = tz - pz;
+								int distSq = dx * dx + dz * dz;
+								if (distSq <= maxRadius * maxRadius && distSq < bestDistSq) {
+									bestDistSq = distSq;
+									foundX = tx;
+									foundZ = tz;
+									found = true;
+								}
+							}
+						}
+					}
+				}
+				if (found) break;
+			}
+
+			if (found) {
+				int dist = (int)sqrtf((float)bestDistSq);
+				int foundY = mc->level->getHeightmap(foundX + 10, foundZ + 10);
+				if (foundY <= 0) foundY = 70;
+				else foundY += 1;
+				mc->gui.addMessage("", "Located Desert Temple at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+			} else {
+				mc->gui.addMessage("", "Desert Temple not found within " + std::to_string(maxRadius) + " blocks", 200);
+			}
+			return true;
+		}
+
+		Biome* target1 = nullptr;
+		Biome* target2 = nullptr;
+
+		if (targetName == "plains") {
+			target1 = Biome::plains;
+		} else if (targetName == "desert") {
+			target1 = Biome::desert;
+		} else if (targetName == "jungle" || targetName == "rainforest") {
+			target1 = Biome::jungle;
+			target2 = Biome::rainForest;
+		} else if (targetName == "taiga") {
+			target1 = Biome::taiga;
+		} else if (targetName == "forest") {
+			target1 = Biome::forest;
+		} else if (targetName == "birch" || targetName == "birch_forest") {
+			target1 = Biome::birchForest;
+		} else if (targetName == "swamp" || targetName == "swampland") {
+			target1 = Biome::swampland;
+		} else if (targetName == "mountain" || targetName == "mountains" || targetName == "extreme_hills") {
+			target1 = Biome::mountain;
+		} else if (targetName == "snow" || targetName == "tundra" || targetName == "ice" || targetName == "ice_plains") {
+			target1 = Biome::tundra;
+			target2 = Biome::icePeaks;
+		} else if (targetName == "savanna") {
+			target1 = Biome::savanna;
+		} else if (targetName == "shrubland") {
+			target1 = Biome::shrubland;
+		} else {
+			mc->gui.addMessage("", "Unknown target: " + args[0] + " (use village, temple, or biome name)", 200);
+			return true;
+		}
+
+		int foundX = 0, foundZ = 0, bestDistSq = 999999999;
+		bool found = false;
+
+		for (int r = 16; r <= maxRadius; r += 32) {
+			for (int sx = -r; sx <= r; sx += 32) {
+				for (int sz = -r; sz <= r; sz += 32) {
+					if (abs(sx) == r || abs(sz) == r) {
+						Biome* b = bs->getBiome(px + sx, pz + sz);
+						if (b && (b == target1 || (target2 && b == target2))) {
+							int distSq = sx * sx + sz * sz;
+							if (distSq < bestDistSq) {
+								bestDistSq = distSq;
+								foundX = px + sx;
+								foundZ = pz + sz;
+								found = true;
+							}
+						}
+					}
+				}
+			}
+			if (found) break;
+		}
+
+		if (found) {
+			int dist = (int)sqrtf((float)bestDistSq);
+			int foundY = mc->level->getHeightmap(foundX, foundZ);
+			if (foundY <= 0) foundY = 70;
+			else foundY += 1;
+			mc->gui.addMessage("", "Located " + args[0] + " at X: " + std::to_string(foundX) + ", Y: " + std::to_string(foundY) + ", Z: " + std::to_string(foundZ) + " (" + std::to_string(dist) + " blocks away)", 200);
+		} else {
+			mc->gui.addMessage("", "Biome " + args[0] + " not found within " + std::to_string(maxRadius) + " blocks", 200);
+		}
+		return true;
+	}
+
+	if (cmd == "time") {
+		if (args.size() >= 2 && args[0] == "set") {
+			int timeVal = 0;
+			if (args[1] == "day") timeVal = 1000;
+			else if (args[1] == "noon") timeVal = 6000;
+			else if (args[1] == "night") timeVal = 13000;
+			else if (args[1] == "midnight") timeVal = 18000;
+			else {
+				try {
+					timeVal = std::stoi(args[1]);
+				} catch (...) {
+					mc->gui.addMessage("", "Invalid time value", 200);
+					return true;
+				}
+			}
+			if (mc->level) {
+				mc->level->setTime(timeVal);
+			}
+			mc->gui.addMessage("", "Set time to " + std::to_string(timeVal), 200);
+			return true;
+		}
+		if (args.size() >= 2 && args[0] == "add") {
+			try {
+				int addVal = std::stoi(args[1]);
+				if (mc->level) {
+					mc->level->setTime(mc->level->getTime() + addVal);
+				}
+				mc->gui.addMessage("", "Added " + std::to_string(addVal) + " to time", 200);
+			} catch (...) {
+				mc->gui.addMessage("", "Invalid time value", 200);
+			}
+			return true;
+		}
+		mc->gui.addMessage("", "Usage: /time set <day|night|noon|midnight|number> or /time add <number>", 200);
+		return true;
+	}
+
+	if (cmd == "list") {
+		std::vector<std::string> playerNames;
+		if (mc->player && !mc->player->username.empty()) {
+			playerNames.emplace_back(mc->player->username);
+		}
+		if (mc->level) {
+			for (auto* p : mc->level->playersMaybe) {
+				if (p && !p->username.empty() && (playerNames.empty() || p->username != playerNames[0])) {
+					playerNames.emplace_back(p->username);
+				}
+			}
+		}
+		std::string result = "Players online (" + std::to_string(playerNames.size()) + "): ";
+		for (size_t i = 0; i < playerNames.size(); ++i) {
+			result += playerNames[i];
+			if (i + 1 < playerNames.size()) result += ", ";
+		}
+		mc->gui.addMessage("", result, 200);
+		return true;
+	}
+
+	mc->gui.addMessage("", "Unknown command: /" + cmd + ". Available: /tp, /locate, /time, /list", 200);
+	return true;
+}
+
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
-		MessagePacket v7(this->field_54, this->minecraft->player->username);
-		this->minecraft->rakNetInstance->send(v7);
-		if(!this->minecraft->isOnlineClient()) {
-			this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
+		if (this->field_54[0] == '/') {
+			executeCommand(this->minecraft, this->field_54);
+		} else {
+			MessagePacket v7(this->field_54, this->minecraft->player->username);
+			this->minecraft->rakNetInstance->send(v7);
+			if(!this->minecraft->isOnlineClient()) {
+				this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
+			}
 		}
 		this->field_78.emplace_back(this->field_54);
 		this->field_84 = this->field_78.size();
@@ -184,6 +545,7 @@ void ChatScreen::init() {
 	this->buttons.push_back(this->closeButton);
 	this->buttons.push_back(this->field_60);
 	this->buttons.emplace_back(this->field_64);
+	this->buttons.push_back(this->sendChatMessageButton);
 
 	this->updateKeyboardVisibility();
 	this->field_84 = 0;
@@ -196,9 +558,8 @@ void ChatScreen::setupPositions() {
 	this->field_64->width = 20;
 	this->field_64->height = 20;
 	this->field_64->posX = this->width - this->field_64->width;
-	this->sendChatMessageButton->width = 0;
+	this->sendChatMessageButton->width = 24;
 	this->sendChatMessageButton->height = 20;
-	this->sendChatMessageButton->posX = this->field_64->posX;
 	this->sendChatMessageButton->posX = this->field_64->posX - this->sendChatMessageButton->width;
 	this->sendChatMessageButton->posY = this->height / 2 - this->sendChatMessageButton->height;
 	this->updateToggleKeyboardButton();

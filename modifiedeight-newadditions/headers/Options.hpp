@@ -50,6 +50,7 @@ struct Options{
 		static Options::Option SHOW_FPS;
 		static Options::Option DEBUG_SCREEN;
 		static Options::Option DISCORD_RPC;
+		static Options::Option PANORAMA_ANGLE;
 	};
 
 	static Options* instance;
@@ -138,9 +139,11 @@ struct Options{
 	static std::vector<int32_t> CHAT_BG_COLOR_LEVELS;
 	static std::vector<int32_t> NEON_COLOR_THEME_LEVELS;
 	static std::vector<int32_t> NEW_ADDITIONS_LEVELS;
+	static std::vector<int32_t> PANORAMA_ANGLE_LEVELS;
 
 	int32_t chatColor;
 	int32_t chatBgColor;
+	int32_t panoramaAngle;
 
 	void getNeonColors(int32_t&, int32_t&);
 

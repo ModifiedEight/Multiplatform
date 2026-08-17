@@ -15,6 +15,9 @@
 #include <network/packet/RemoveBlockPacket.hpp>
 #include <inventory/Inventory.hpp>
 
+#include <tile/entity/MixedSlabTileEntity.hpp>
+#include <tile/MixedSlabTile.hpp>
+
 GameMode::GameMode(Minecraft* a2) {
 	this->minecraft = a2;
 	this->field_4 = 0;
@@ -33,11 +36,11 @@ void GameMode::startDestroyBlock(int32_t x, int32_t y, int32_t z, int32_t a5) {
 	}
 }
 bool_t GameMode::destroyBlock(int32_t x, int32_t y, int32_t z, int32_t side) {
-	Level* level; // r5
-	Tile* tile; // r11
-	bool_t v11; // r10
-	Minecraft* minecraft; // r0
-	int32_t meta; // [sp+14h] [bp-4Ch]
+	Level* level;
+	Tile* tile;
+	bool_t v11;
+	Minecraft* minecraft;
+	int32_t meta;
 
 	level = this->minecraft->level;
 	tile = Tile::tiles[level->getTile(x, y, z)];
@@ -49,6 +52,55 @@ bool_t GameMode::destroyBlock(int32_t x, int32_t y, int32_t z, int32_t side) {
 	}
 	this->minecraft->particleEngine->destroy(x, y, z);
 	meta = level->getData(x, y, z);
+
+	if (Tile::mixedSlab && tile == Tile::mixedSlab) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+		if (te && te->bottomTileId > 0 && te->topTileId > 0) {
+			float hitCoord = 0.5f;
+			if (this->minecraft->player) {
+				Vec3 eyePos = this->minecraft->player->getPos(1.0f);
+				eyePos.y += this->minecraft->player->getHeadHeight();
+				Vec3 viewVec = this->minecraft->player->getViewVector(1.0f);
+				Vec3 reachEnd(eyePos.x + viewVec.x * 7.0f, eyePos.y + viewVec.y * 7.0f, eyePos.z + viewVec.z * 7.0f);
+				AABB fullBox = {(float)x, (float)y, (float)z, (float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f};
+				HitResult hit = fullBox.clip(eyePos, reachEnd);
+				if (hit.hitType == 0) {
+					if (te->mode == 1) hitCoord = hit.hitVec.z - (float)z;
+					else if (te->mode == 2) hitCoord = hit.hitVec.x - (float)x;
+					else hitCoord = hit.hitVec.y - (float)y;
+				}
+			}
+
+			bool hitTop = (hitCoord >= 0.5f);
+			int32_t removedTileId = hitTop ? te->topTileId : te->bottomTileId;
+			int32_t removedAux = hitTop ? te->topAux : te->bottomAux;
+
+			if (hitTop) {
+				te->topTileId = 0;
+				te->topAux = 0;
+			} else {
+				te->bottomTileId = 0;
+				te->bottomAux = 0;
+			}
+
+			if (this->minecraft->player && !this->minecraft->player->abilities.instabuild) {
+				Tile* remTile = (removedTileId > 0 && removedTileId < 256) ? Tile::tiles[removedTileId] : nullptr;
+				int32_t dropId = remTile ? remTile->getResource(removedAux, &level->random) : removedTileId;
+				int32_t dropAux = remTile ? remTile->getSpawnResourcesAuxValue(removedAux) : removedAux;
+				if (dropId > 0) {
+					tile->popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
+				}
+			}
+
+			level->sendTileUpdated(x, y, z);
+			this->minecraft->soundEngine->play(tile->soundType->field_8, (float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, (float)(tile->soundType->field_0 + 1.0f) * 0.5f, tile->soundType->field_4 * 0.8f);
+			if (this->minecraft->options.destroyVibration) {
+				this->minecraft->platform()->vibrate(24);
+			}
+			return 0;
+		}
+	}
+
 	tile->playerWillDestroy(level, x, y, z, meta, this->minecraft->player);
 	v11 = level->setTile(x, y, z, 0, 3);
 	if(!v11) {

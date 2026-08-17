@@ -42,7 +42,6 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a2, const 
 	this->levelData = new LevelData();
 	if(ExternalFileLevelStorage::readLevelData(this->anotherDataFolder, *this->levelData)) {
 		this->field_28 = this->levelData->getStorageVersion();
-		ExternalFileLevelStorage::readPlayerData(a1a, *this->levelData);
 	} else {
 		if(this->levelData) {
 			delete this->levelData;
@@ -93,38 +92,6 @@ end:
 	return 0;
 }
 void ExternalFileLevelStorage::readPlayerData(const std::string& a1, LevelData& a2) {
-	FILE* v3 = fopen(a1.c_str(), "rb");
-	if(v3) {
-		int size;
-		int ptr;
-		if(fread(&size, sizeof(size), 1, v3) == 1 && fread(&ptr, sizeof(ptr), 1, v3) && size == 1) {
-			int v4 = fread(&a2, 1, sizeof(a2), v3);
-			if(v4 == ptr) {
-				float z = a2.playerData.z;
-				if(a2.playerData.x < 0.5) {
-					a2.playerData.x = 0.5;
-				}
-				bool v6 = a2.playerData.x == 255.5;
-				bool v7 = a2.playerData.x < 255.5;
-				if(z < 0.5) {
-					a2.playerData.z = 0.5;
-				}
-				float v8 = a2.playerData.z;
-				if(!v7 && !v6) {
-					a2.playerData.x = 255.5;
-				}
-				float y = a2.playerData.y;
-				if(v8 > 255.5) {
-					a2.playerData.z = 255.5;
-				}
-				if(y < 0.0) {
-					a2.playerData.y = 64.0;
-				}
-				a2.field_50 = size;
-			}
-		}
-		fclose(v3);
-	}
 }
 void ExternalFileLevelStorage::saveLevelData(const std::string& a1, LevelData& a2, std::vector<Player*>* a3) {
 	BlockColorRegistry::save(a1);
@@ -218,15 +185,20 @@ bool_t ExternalFileLevelStorage::load(Player* a2) {
 	if(!a2) return 0;
 	FILE* v4 = fopen(sub_D6677960(this->dataFolder, a2->field_CA4).c_str(), "rb");
 	if(!v4) return 0;
-	int sz, v11, n;
-	fread(&sz, 1, sizeof(sz), v4);
+	int sz = 0, v11 = 0, n = 0;
+	if (fread(&sz, 4, 1, v4) != 1 || fread(&v11, 4, 1, v4) != 1 || fread(&n, 4, 1, v4) != 1) {
+		fclose(v4);
+		return 0;
+	}
 	int rfs = getRemainingFileSize(v4);
 	if(n > rfs || n <= 0) {
+		fclose(v4);
 		return 0;
 	} else {
 		bool ret = 0;
 		unsigned char* v6 = new unsigned char[n];
 		fread(v6, 1, n, v4);
+		fclose(v4);
 		RakNet::BitStream v15(v6, n, 0);
 		RakDataInput input;
 		input.stream = &v15;
@@ -242,7 +214,6 @@ bool_t ExternalFileLevelStorage::load(Player* a2) {
 		if(v6) delete[] v6;
 		return ret;
 	}
-
 }
 static int _d6753BB8 = 0x524C50;
 bool_t ExternalFileLevelStorage::save(Player* a2) {
@@ -255,7 +226,7 @@ bool_t ExternalFileLevelStorage::save(Player* a2) {
 		Tag::writeNamedTag(&v11, &v10);
 		v11.deleteChildren();
 	}
-	std::string newa = sub_D6677960(this->dataFolder, a2->field_CA4); //TODO check
+	std::string newa = sub_D6677960(this->dataFolder, a2->field_CA4);
 	std::string v11 = newa + ".tmp";
 	FILE* v5 = fopen(v11.c_str(), "wb");
 	if(v5) {
@@ -265,6 +236,7 @@ bool_t ExternalFileLevelStorage::save(Player* a2) {
 		fwrite(&size, 4u, 1u, v5);
 		fwrite(&n, 4u, 1u, v5);
 		fwrite(v12.GetData(), 1u, n, v5);
+		fflush(v5);
 		fclose(v5);
 		if(exists(newa.c_str())) {
 			remove(newa.c_str());
@@ -275,6 +247,10 @@ bool_t ExternalFileLevelStorage::save(Player* a2) {
 	return 0;
 }
 void ExternalFileLevelStorage::closeAll() {
+	if(this->regionFile) {
+		delete this->regionFile;
+		this->regionFile = 0;
+	}
 }
 void ExternalFileLevelStorage::saveGame(Level* a2) {
 	return this->saveEntities(a2, 0);

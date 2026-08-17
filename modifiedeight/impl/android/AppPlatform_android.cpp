@@ -162,6 +162,17 @@ static unsigned int _d65c6fb8(unsigned int a1){
 }
 
 void AppPlatform_android::loadPNG(ImageData& a2, const std::string& a3, bool_t a4){
+	AssetFile packFile = AppPlatform::readAssetFile(a3);
+	if (packFile.bytes && packFile.length > 0) {
+		int32_t channels;
+		uint8_t *pixels = stbi_load_from_memory(packFile.bytes, packFile.length, &a2.width, &a2.height, &channels, STBI_rgb_alpha);
+		delete[] packFile.bytes;
+		if (pixels) {
+			a2.field_C = 0;
+			a2.pixels = pixels;
+			return;
+		}
+	}
 	if ( this->initialized )
 	{
 		if ( this->_jniGetImageData )

@@ -1,4 +1,5 @@
 #include <sound/SoundEngine.hpp>
+#include <sound/MusicEngine.hpp>
 #include <Options.hpp>
 #include <entity/Mob.hpp>
 #include <math.h>
@@ -186,6 +187,9 @@ LABEL_6:
 	}
 }
 void SoundEngine::update(struct Mob* a2, float a3) {
+	if (MusicEngine::instance && this->minecraft) {
+		MusicEngine::instance->update(this->minecraft);
+	}
 	if(this->options->soundVolume != 0.0) {
 		if(a2) {
 			this->field_A14 = a2->prevX + (float)((float)(a2->posX - a2->prevX) * a3);

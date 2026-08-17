@@ -9,41 +9,42 @@ SpringFeature::SpringFeature(int32_t id)
 SpringFeature::~SpringFeature() {
 }
 bool_t SpringFeature::place(Level* level, Random* random, int32_t x, int32_t y, int32_t z){
-	int32_t v9; // r8
-	int32_t v10;   // r9
-	Tile* v11; // r0
-	int32_t v13;   // [sp+18h] [bp-30h]
+	int32_t solidCount = 0;
+	int32_t airCount = 0;
+	Tile* tileObj;
 
-	if(level->getTile(x, y + 1, z) != Tile::rock->blockID || level->getTile(x, y - 1, z) != Tile::rock->blockID || level->getTile(x, y, z) && level->getTile(x, y, z) != Tile::rock->blockID) {
+	if (y <= 1 || y >= 126) return 0;
+	int32_t tUp = level->getTile(x, y + 1, z);
+	int32_t tDown = level->getTile(x, y - 1, z);
+	if (!Tile::tiles[tUp] || !Tile::tiles[tUp]->isSolidRender() || !Tile::tiles[tDown] || !Tile::tiles[tDown]->isSolidRender()) {
 		return 0;
 	}
-	v9 = level->getTile(x - 1, y, z) == Tile::rock->blockID;
-	if(level->getTile(x + 1, y, z) == Tile::rock->blockID) {
-		++v9;
+
+	int32_t cur = level->getTile(x, y, z);
+	if (cur != 0 && (!Tile::tiles[cur] || !Tile::tiles[cur]->isSolidRender())) {
+		return 0;
 	}
-	v13 = z + 1;
-	if(level->getTile(x, y, z - 1) == Tile::rock->blockID) {
-		++v9;
+
+	int32_t neighbors[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+	for (int i = 0; i < 4; ++i) {
+		int32_t nx = x + neighbors[i][0];
+		int32_t nz = z + neighbors[i][1];
+		int32_t nt = level->getTile(nx, y, nz);
+		if (Tile::tiles[nt] && Tile::tiles[nt]->isSolidRender()) {
+			++solidCount;
+		} else if (level->isEmptyTile(nx, y, nz)) {
+			++airCount;
+		}
 	}
-	if(level->getTile(x, y, v13) == Tile::rock->blockID) {
-		++v9;
-	}
-	v10 = level->isEmptyTile(x - 1, y, z);
-	if(level->isEmptyTile(x + 1, y, z)) {
-		++v10;
-	}
-	if(level->isEmptyTile(x, y, z - 1)) {
-		++v10;
-	}
-	if(level->isEmptyTile(x, y, v13)) {
-		++v10;
-	}
-	if(v9 == 3 && v10 == 1) {
-		level->setTile(x, y, z, this->id, 4);
-		level->instantTick = 1;
-		v11 = Tile::tiles[this->id];
-		v11->tick(level, x, y, z, random);
-		level->instantTick = 0;
+
+	if (solidCount >= 3 && airCount == 1) {
+		level->setTileAndData(x, y, z, this->id, 0, 3);
+		tileObj = Tile::tiles[this->id];
+		if (tileObj) {
+			tileObj->onPlace(level, x, y, z);
+			level->addToTickNextTick(x, y, z, this->id, tileObj->getTickDelay());
+			level->updateNeighborsAt(x, y, z, this->id);
+		}
 	}
 	return 1;
 }

@@ -3,6 +3,7 @@
 #include <level/gen/feature/BirchFeature.hpp>
 #include <level/gen/feature/SpruceFeature.hpp>
 #include <level/gen/feature/TreeFeature.hpp>
+#include <level/gen/feature/MegaJungleTreeFeature.hpp>
 #include <rendering/TextureAtlasTextureItem.hpp>
 
 Sapling::Sapling(int32_t a2, const std::string& a3)
@@ -15,22 +16,70 @@ Sapling::Sapling(int32_t a2, const std::string& a3)
 	this->field_C8 = *texItem->getUV(3);
 }
 void Sapling::growTree(Level* level, int32_t x, int32_t y, int32_t z, Random* rng) {
-	int32_t v10;  // r9
-	Feature* v11; // r4
+	int32_t v10 = level->getData(x, y, z) & 3;
+	Feature* v11 = nullptr;
 
-	v10 = level->getData(x, y, z) & 3;
 	if(v10 == 1) {
 		v11 = new SpruceFeature(1);
+		level->setTileNoUpdate(x, y, z, 0);
+		if(!v11->place(level, rng, x, y, z)) {
+			level->setTileAndDataNoUpdate(x, y, z, this->blockID, v10);
+		}
+		delete v11;
 	} else if(v10 == 2) {
 		v11 = new BirchFeature(1);
+		level->setTileNoUpdate(x, y, z, 0);
+		if(!v11->place(level, rng, x, y, z)) {
+			level->setTileAndDataNoUpdate(x, y, z, this->blockID, v10);
+		}
+		delete v11;
+	} else if(v10 == 3) {
+		int32_t bigX = 0;
+		int32_t bigZ = 0;
+		bool isBig = false;
+		for (int32_t dx = 0; dx >= -1 && !isBig; --dx) {
+			for (int32_t dz = 0; dz >= -1 && !isBig; --dz) {
+				if (level->getTile(x + dx, y, z + dz) == this->blockID && (level->getData(x + dx, y, z + dz) & 3) == 3 &&
+				    level->getTile(x + dx + 1, y, z + dz) == this->blockID && (level->getData(x + dx + 1, y, z + dz) & 3) == 3 &&
+				    level->getTile(x + dx, y, z + dz + 1) == this->blockID && (level->getData(x + dx, y, z + dz + 1) & 3) == 3 &&
+				    level->getTile(x + dx + 1, y, z + dz + 1) == this->blockID && (level->getData(x + dx + 1, y, z + dz + 1) & 3) == 3) {
+					bigX = dx;
+					bigZ = dz;
+					isBig = true;
+				}
+			}
+		}
+
+		if (isBig) {
+			level->setTileNoUpdate(x + bigX, y, z + bigZ, 0);
+			level->setTileNoUpdate(x + bigX + 1, y, z + bigZ, 0);
+			level->setTileNoUpdate(x + bigX, y, z + bigZ + 1, 0);
+			level->setTileNoUpdate(x + bigX + 1, y, z + bigZ + 1, 0);
+
+			int32_t treeHeight = 14 + (rng->genrand_int32() % 8);
+			MegaJungleTreeFeature bigTree(1, treeHeight, 3, 3);
+			if (!bigTree.place(level, rng, x + bigX, y, z + bigZ)) {
+				level->setTileAndDataNoUpdate(x + bigX, y, z + bigZ, this->blockID, 3);
+				level->setTileAndDataNoUpdate(x + bigX + 1, y, z + bigZ, this->blockID, 3);
+				level->setTileAndDataNoUpdate(x + bigX, y, z + bigZ + 1, this->blockID, 3);
+				level->setTileAndDataNoUpdate(x + bigX + 1, y, z + bigZ + 1, this->blockID, 3);
+			}
+		} else {
+			v11 = new TreeFeature(1, 3);
+			level->setTileNoUpdate(x, y, z, 0);
+			if(!v11->place(level, rng, x, y, z)) {
+				level->setTileAndDataNoUpdate(x, y, z, this->blockID, v10);
+			}
+			delete v11;
+		}
 	} else {
 		v11 = new TreeFeature(1, 0);
+		level->setTileNoUpdate(x, y, z, 0);
+		if(!v11->place(level, rng, x, y, z)) {
+			level->setTileAndDataNoUpdate(x, y, z, this->blockID, v10);
+		}
+		delete v11;
 	}
-	level->setTileNoUpdate(x, y, z, 0);
-	if(!v11->place(level, rng, x, y, z)) {
-		level->setTileAndDataNoUpdate(x, y, z, this->blockID, v10);
-	}
-	delete v11;
 }
 
 Sapling::~Sapling() {

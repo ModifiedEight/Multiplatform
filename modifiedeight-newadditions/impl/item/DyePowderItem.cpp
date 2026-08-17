@@ -28,11 +28,51 @@ TextureUVCoordinateSet* DyePowderItem::getIcon(int32_t a2, int32_t, bool_t) {
 	return this->field_48.getUV(a2);
 }
 
+#include <tile/entity/MixedSlabTileEntity.hpp>
+
 bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t face, float fx, float fy, float fz) {
 	int32_t tileId = level->getTile(x, y, z);
 	int32_t data = level->getData(x, y, z);
 
 	if (item && item->getAuxValue() == 15) {
+		if (Tile::vine && tileId == Tile::vine->blockID) {
+			if (level->isEmptyTile(x, y - 1, z)) {
+				level->setTileAndData(x, y - 1, z, Tile::vine->blockID, data, 3);
+				if (player && !player->abilities.instabuild) {
+					--item->count;
+				}
+				return 1;
+			}
+		}
+		if (Tile::tallgrass && tileId == Tile::tallgrass->blockID) {
+			if (Tile::doublePlant && level->isEmptyTile(x, y + 1, z)) {
+				int32_t subtype = (data == 2) ? 1 : 0;
+				level->setTileAndData(x, y, z, Tile::doublePlant->blockID, subtype, 3);
+				level->setTileAndData(x, y + 1, z, Tile::doublePlant->blockID, subtype | 8, 3);
+				if (player && !player->abilities.instabuild) {
+					--item->count;
+				}
+				return 1;
+			}
+		}
+		if (Tile::waterLily && tileId == Tile::waterLily->blockID) {
+			bool placed = false;
+			for (int32_t dx = -2; dx <= 2 && !placed; ++dx) {
+				for (int32_t dz = -2; dz <= 2 && !placed; ++dz) {
+					int32_t underTile = level->getTile(x + dx, y - 1, z + dz);
+					if (level->isEmptyTile(x + dx, y, z + dz) && (underTile == 8 || underTile == 9)) {
+						level->setTileAndData(x + dx, y, z + dz, Tile::waterLily->blockID, 0, 3);
+						placed = true;
+					}
+				}
+			}
+			if (placed) {
+				if (player && !player->abilities.instabuild) {
+					--item->count;
+				}
+				return 1;
+			}
+		}
 		Tile* result = Tile::tiles[tileId];
 		if (result && result->onFertilized(level, x, y, z)) {
 			if (player && !player->abilities.instabuild) {
@@ -40,6 +80,7 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 			}
 			return 1;
 		}
+		return 0;
 	}
 
 	if (tileId > 0 && tileId < 256) {
@@ -64,7 +105,40 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 		};
 
 		uint32_t colorHex = DYE_COLORS[colorIdx];
-		BlockColorRegistry::setBlockColor(x, y, z, colorHex);
+
+		if (Tile::mixedSlab && tileId == Tile::mixedSlab->blockID) {
+			MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+			if (te) {
+				bool hitTop = false;
+				if (te->mode == 1) {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (face == 2) hitTop = false;
+					else if (face == 3) hitTop = true;
+					else hitTop = (fz >= 0.5f);
+				} else if (te->mode == 2) {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (face == 4) hitTop = false;
+					else if (face == 5) hitTop = true;
+					else hitTop = (fx >= 0.5f);
+				} else {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (face == 0) hitTop = false;
+					else if (face == 1) hitTop = true;
+					else hitTop = (fy >= 0.5f);
+				}
+
+				if (hitTop) {
+					te->topColor = colorHex;
+				} else {
+					te->bottomColor = colorHex;
+				}
+			}
+		} else {
+			BlockColorRegistry::setBlockColor(x, y, z, colorHex);
+		}
 
 		Tile* tile = Tile::tiles[tileId];
 		if (tile && tile->soundType) {

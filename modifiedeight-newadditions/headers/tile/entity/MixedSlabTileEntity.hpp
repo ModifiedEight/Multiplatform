@@ -7,6 +7,8 @@ struct MixedSlabTileEntity : TileEntity {
 	int32_t bottomAux;
 	int32_t topTileId;
 	int32_t topAux;
+	uint32_t bottomColor;
+	uint32_t topColor;
 
 	MixedSlabTileEntity();
 	virtual ~MixedSlabTileEntity();

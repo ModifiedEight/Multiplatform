@@ -79,6 +79,14 @@ struct Tile{
 	static Tile* coloredBrickSlab2;
 	static Tile* flower;
 	static Tile* rose;
+	static Tile* flowerPaeonia;
+	static Tile* flowerDaisy;
+	static Tile* flowerHoustonia;
+	static Tile* flowerOrchid;
+	static Tile* flowerAllium;
+	static Tile* doublePlant;
+	static Tile* vine;
+	static Tile* waterLily;
 	static Tile* mushroom1;
 	static Tile* mushroom2;
 	static Tile* goldBlock;
@@ -163,6 +171,7 @@ struct Tile{
 	static Tile* lever;
 	static Tile* redstoneLampOff;
 	static Tile* redstoneLampOn;
+	static Tile* seagrass;
 
 	static Tile::SoundType SOUND_NORMAL;
 	static Tile::SoundType SOUND_WOOD;

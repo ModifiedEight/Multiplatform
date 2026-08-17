@@ -38,7 +38,6 @@ int32_t Biome::defaultTotalEnemyWeight = 0;
 int32_t Biome::defaultTotalFriendlyWeight = 0;
 Biome* Biome::map[64][64];
 
-
 Biome::MobSpawnerData::MobSpawnerData(int32_t rarity, int32_t mobtype, int32_t min, int32_t max){
 	this->rarity = rarity;
 	this->mobtype = mobtype;
@@ -50,7 +49,7 @@ Biome::~Biome(void){
 	if(this->biomeName) delete this->biomeName;
 }
 Feature* Biome::getTreeFeature(Random* rand){
-	rand->genrand_int32(); //must be here
+	rand->genrand_int32();
 	return new TreeFeature(0, 0);
 }
 Feature* Biome::getGrassFeature(Random* rand){
@@ -150,129 +149,130 @@ Biome* Biome::setTemperatureAndDownfall(float t, float d){
 void Biome::recalc(void) {
 	for(int32_t i = 0; i != 64; ++i) {
 		for(int32_t j = 0; j != 64; ++j) {
-			Biome* b = Biome::_getBiome((float)i / 63.0, (float)j / 63.0);
-			Biome::map[j][i] = b; //TODO check
+			Biome* b = Biome::_getBiome((float)i / 63.0f, (float)j / 63.0f);
+			Biome::map[j][i] = b;
 		}
 	}
 	Biome::desert->topBlock = Tile::sand->blockID;
 	Biome::desert->fillerBlock = Tile::sand->blockID;
 	Biome::iceDesert->topBlock = Tile::sand->blockID;
 	Biome::iceDesert->fillerBlock = Tile::sand->blockID;
-
 }
+
 void Biome::initBiomes(void) {
-	Biome::rainForest = (new RainforestBiome())->setColor(0x537B09)->setName("Rainforest")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2, 0.9); //TODO fill zeros before Biome::Biome()
-	Biome::swampland = (new SwampBiome())->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x8BAF48)->setTemperatureAndDownfall(0.8, 0.9); //TODO fill zeros
+	Biome::rainForest = (new RainforestBiome())->setColor(0x537B09)->setName("Rainforest")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
+	Biome::swampland = (new SwampBiome())->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x8BAF48)->setTemperatureAndDownfall(0.8f, 0.9f);
 	Biome::seasonalForest = (new Biome())->setColor(0x56621)->setName("Seasonal Forest");
-	Biome::forest = (new ForestBiome())->setColor(0x56621)->setName("Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7, 0.8); //TODO fill zeros
-	Biome::savanna = (new FlatBiome())->setColor(0xD9E023)->setName("Savanna")->setTemperatureAndDownfall(0.8, 0.4); //TODO fill zeros
+	Biome::forest = (new ForestBiome())->setColor(0x56621)->setName("Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
+	Biome::savanna = (new FlatBiome())->setColor(0xD9E023)->setName("Savanna")->setTemperatureAndDownfall(0.8f, 0.4f);
 	Biome::shrubland = (new Biome())->setColor(0xA1AD20)->setName("Shrubland");
-	Biome::taiga = (new TaigaBiome())->setColor(0xB6659)->setName("Taiga")->setSnowCovered()->setLeafColor(0x4EBA3)->setTemperatureAndDownfall(0.05, 0.8); //TODO fill zeros
-	Biome::desert = (new FlatBiome())->setColor(0xFA9418)->clearMobs(1, 1, 0)->setName("Desert")->setTemperatureAndDownfall(2.0, 0.0); //TODO fill zeros
-	Biome::plains = (new FlatBiome())->setColor(0x8DB360)->setName("Plains")->setTemperatureAndDownfall(0.8, 0.4); //TOOD fill zeros
-	Biome::iceDesert = (new FlatBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Desert")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0, 0.5);
-	Biome::tundra = (new Biome())->setColor(0x163933)->setName("Tundra")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.05, 0.8);
-	Biome::jungle = (new JungleBiome())->setColor(0x537B09)->setName("Jungle")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2, 0.9);
-	Biome::birchForest = (new BirchForestBiome())->setColor(0x56621)->setName("Birch Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7, 0.8);
-	Biome::mountain = (new MountainBiome())->setColor(0xA1AD20)->setName("Mountain")->setTemperatureAndDownfall(0.2, 0.3);
-	Biome::icePeaks = (new IcePeaksBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Peaks")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0, 0.5);
+	Biome::taiga = (new TaigaBiome())->setColor(0xB6659)->setName("Taiga")->setSnowCovered()->setLeafColor(0x4EBA3)->setTemperatureAndDownfall(0.05f, 0.8f);
+	Biome::desert = (new FlatBiome())->setColor(0xFA9418)->clearMobs(1, 1, 0)->setName("Desert")->setTemperatureAndDownfall(2.0f, 0.0f);
+	Biome::plains = (new FlatBiome())->setColor(0x8DB360)->setName("Plains")->setTemperatureAndDownfall(0.8f, 0.4f);
+	Biome::iceDesert = (new FlatBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Desert")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0f, 0.5f);
+	Biome::tundra = (new Biome())->setColor(0x163933)->setName("Tundra")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.05f, 0.8f);
+	Biome::jungle = (new JungleBiome())->setColor(0x537B09)->setName("Jungle")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
+	Biome::birchForest = (new BirchForestBiome())->setColor(0x56621)->setName("Birch Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
+	Biome::mountain = (new MountainBiome())->setColor(0xA1AD20)->setName("Mountain")->setTemperatureAndDownfall(0.2f, 0.3f);
+	Biome::icePeaks = (new IcePeaksBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Peaks")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0f, 0.5f);
 	Biome::recalc();
 }
+
 void Biome::teardownBiomes(void) {
-	if(Biome::rainForest) {
-		delete Biome::rainForest;
-	}
-	Biome::rainForest = 0;
-	if(Biome::swampland) {
-		delete Biome::swampland;
-	}
-	Biome::swampland = 0;
-	if(Biome::seasonalForest) {
-		delete Biome::seasonalForest;
-	}
-	Biome::seasonalForest = 0;
-	if(Biome::forest) {
-		delete Biome::forest;
-	}
-	Biome::forest = 0;
-	if(Biome::savanna) {
-		delete Biome::savanna;
-	}
-	Biome::savanna = 0;
-	if(Biome::shrubland) {
-		delete Biome::shrubland;
-	}
-	Biome::shrubland = 0;
-	if(Biome::taiga) {
-		delete Biome::taiga;
-	}
-	Biome::taiga = 0;
-	if(Biome::desert) {
-		delete Biome::desert;
-	}
-	Biome::desert = 0;
-	if(Biome::plains) {
-		delete Biome::plains;
-	}
-	Biome::plains = 0;
-	if(Biome::iceDesert) {
-		delete Biome::iceDesert;
-	}
-	Biome::iceDesert = 0;
-	if(Biome::tundra) {
-		delete Biome::tundra;
-	}
-	Biome::tundra = 0;
+	if(Biome::rainForest) delete Biome::rainForest; Biome::rainForest = 0;
+	if(Biome::swampland) delete Biome::swampland; Biome::swampland = 0;
+	if(Biome::seasonalForest) delete Biome::seasonalForest; Biome::seasonalForest = 0;
+	if(Biome::forest) delete Biome::forest; Biome::forest = 0;
+	if(Biome::savanna) delete Biome::savanna; Biome::savanna = 0;
+	if(Biome::shrubland) delete Biome::shrubland; Biome::shrubland = 0;
+	if(Biome::taiga) delete Biome::taiga; Biome::taiga = 0;
+	if(Biome::desert) delete Biome::desert; Biome::desert = 0;
+	if(Biome::plains) delete Biome::plains; Biome::plains = 0;
+	if(Biome::iceDesert) delete Biome::iceDesert; Biome::iceDesert = 0;
+	if(Biome::tundra) delete Biome::tundra; Biome::tundra = 0;
 	if(Biome::jungle) delete Biome::jungle; Biome::jungle = 0;
 	if(Biome::birchForest) delete Biome::birchForest; Biome::birchForest = 0;
 	if(Biome::mountain) delete Biome::mountain; Biome::mountain = 0;
 	if(Biome::icePeaks) delete Biome::icePeaks; Biome::icePeaks = 0;
 }
-Biome* Biome::getBiome(float a1, float a2){
-	return Biome::map[(int32_t)(float)(a2 * 63.0)][(int32_t)(float)(a1 * 63.0)];
+
+Biome* Biome::getBiome(float a1, float a2) {
+	int32_t x = (int32_t)(a1 * 63.0f);
+	int32_t z = (int32_t)(a2 * 63.0f);
+	if (x < 0) x = 0;
+	if (x > 63) x = 63;
+	if (z < 0) z = 0;
+	if (z > 63) z = 63;
+	return Biome::map[z][x];
 }
 
 Biome* Biome::_getBiome(float temp, float rain) {
-	Biome** v2; // r2
-	float newRain; // s14
-
-	if(temp < 0.1) {
-		goto LABEL_2;
+	if (temp < 0.15f) {
+		return (rain < 0.2f) ? Biome::icePeaks : Biome::tundra;
 	}
-	newRain = rain * temp;
-	if((float)(rain * temp) >= 0.2) {
-		if(newRain <= 0.5 || temp >= 0.7) {
-			if(temp >= 0.5) {
-				if(temp >= 0.90f && newRain >= 0.85f) {
-					v2 = &Biome::jungle;
-				} else if(temp >= 0.97) {
-					if(newRain >= 0.45) {
-						v2 = &Biome::seasonalForest;
+	if (temp < 0.45f) {
+		if (rain < 0.35f) {
+			return Biome::mountain;
+		}
+		return Biome::taiga;
+	}
+	if (temp >= 0.85f) {
+		if (rain < 0.15f) {
+			return Biome::desert;
+		}
+		if (rain < 0.45f) {
+			return Biome::savanna;
+		}
+		if (rain < 0.75f) {
+			return Biome::seasonalForest;
+		}
+		return Biome::jungle;
+	}
+	if (rain >= 0.75f) {
+		return Biome::swampland;
+	}
+	if (rain >= 0.55f) {
+		return Biome::birchForest;
+	}
+	if (rain >= 0.25f) {
+		return Biome::forest;
+	}
+	return Biome::plains;
+}
+
+Biome* Biome::getOldBiome(float temp, float rain) {
+	if(temp < 0.1f) {
+		return (rain < 0.2f) ? Biome::iceDesert : Biome::tundra;
+	}
+	float v4 = rain * temp;
+	if(v4 >= 0.2f) {
+		if(v4 <= 0.5f || temp >= 0.7f) {
+			if(temp >= 0.5f) {
+				if(temp >= 0.97f) {
+					if(v4 >= 0.45f) {
+						return Biome::seasonalForest;
 					} else {
-						v2 = &Biome::plains;
+						return Biome::plains;
 					}
-				} else if(newRain >= 0.35) {
-					v2 = (newRain > 0.6) ? &Biome::birchForest : &Biome::forest;
+				} else if(v4 >= 0.35f) {
+					return Biome::forest;
 				} else {
-					v2 = &Biome::mountain;
+					return Biome::savanna;
 				}
 			} else {
-				v2 = &Biome::taiga;
+				return Biome::taiga;
 			}
 		} else {
-			v2 = &Biome::swampland;
+			return Biome::swampland;
 		}
 	} else {
-		if(temp < 0.5) {
-LABEL_2:
-			v2 = (rain < 0.2) ? &Biome::icePeaks : &Biome::tundra;
-			return (*v2);
+		if(temp < 0.5f) {
+			return (rain < 0.2f) ? Biome::iceDesert : Biome::tundra;
 		}
-		if(temp >= 0.95) {
-			v2 = &Biome::desert;
+		if(temp >= 0.95f) {
+			return Biome::desert;
 		} else {
-			v2 = &Biome::savanna;
+			return Biome::shrubland;
 		}
 	}
-	return (*v2);
 }

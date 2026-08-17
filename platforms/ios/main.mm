@@ -182,57 +182,83 @@ static MCPEViewController* g_viewController = nil;
 	_paused = NO;
 }
 
-- (void)feedTouches:(NSSet*)touches pressed:(BOOL)pressed moved:(BOOL)moved {
-	CGFloat scale = [self scale];
-	UITouch* primaryTouch = _mouseTouch;
-	if (!primaryTouch && [touches count] > 0) {
-		primaryTouch = [touches anyObject];
-		if (pressed && !moved) {
-			_mouseTouch = primaryTouch;
+static UITouch* g_touchSlots[12] = {nil};
+
+static int8_t getTouchSlot(UITouch* t, BOOL createIfNotFound) {
+	for (int i = 0; i < 10; ++i) {
+		if (g_touchSlots[i] == t) {
+			return (int8_t)i;
 		}
 	}
-
-	for (UITouch* t in touches) {
-		CGPoint p = [t locationInView:_glView];
-		int16_t x = (int16_t)(p.x * scale);
-		int16_t y = (int16_t)(p.y * scale);
-		int8_t pid = (int8_t)(((intptr_t)t >> 4) & 0x7);
-		if (moved) {
-			Multitouch::feed(0, 0, x, y, pid);
-		} else {
-			Multitouch::feed(1, pressed ? 1 : 0, x, y, pid);
+	if (!createIfNotFound) return -1;
+	for (int i = 0; i < 10; ++i) {
+		if (g_touchSlots[i] == nil) {
+			g_touchSlots[i] = t;
+			return (int8_t)i;
 		}
 	}
+	return 0;
+}
 
-	if (primaryTouch && [touches containsObject:primaryTouch]) {
-		CGPoint p = [primaryTouch locationInView:_glView];
-		int16_t x = (int16_t)(p.x * scale);
-		int16_t y = (int16_t)(p.y * scale);
-		if (moved) {
-			Mouse::feed(0, 0, x, y);
-		} else {
-			Mouse::feed(1, pressed ? 1 : 0, x, y);
-			if (!pressed) {
-				_mouseTouch = nil;
-			}
+static void releaseTouchSlot(UITouch* t) {
+	for (int i = 0; i < 10; ++i) {
+		if (g_touchSlots[i] == t) {
+			g_touchSlots[i] = nil;
 		}
 	}
 }
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)e {
-	[self feedTouches:touches pressed:YES moved:NO];
-}
-- (void)touchesMoved:(NSSet*)touches withEvent:(UIEvent*)e {
-	[self feedTouches:touches pressed:YES moved:YES];
-}
-- (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)e {
-	[self feedTouches:touches pressed:NO moved:NO];
-}
-- (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)e {
-	if (_mouseTouch && [touches containsObject:_mouseTouch]) {
-		_mouseTouch = nil;
+	CGFloat scale = [self scale];
+	for (UITouch* t in touches) {
+		int8_t pid = getTouchSlot(t, YES);
+		if (!_mouseTouch) {
+			_mouseTouch = t;
+		}
+		CGPoint p = [t locationInView:_glView];
+		int16_t x = (int16_t)(p.x * scale);
+		int16_t y = (int16_t)(p.y * scale);
+		Multitouch::feed(1, 1, x, y, pid);
+		if (_mouseTouch == t) {
+			Mouse::feed(1, 1, x, y);
+		}
 	}
-	[self feedTouches:touches pressed:NO moved:NO];
+}
+
+- (void)touchesMoved:(NSSet*)touches withEvent:(UIEvent*)e {
+	CGFloat scale = [self scale];
+	for (UITouch* t in touches) {
+		int8_t pid = getTouchSlot(t, NO);
+		if (pid < 0) pid = getTouchSlot(t, YES);
+		CGPoint p = [t locationInView:_glView];
+		int16_t x = (int16_t)(p.x * scale);
+		int16_t y = (int16_t)(p.y * scale);
+		Multitouch::feed(0, 0, x, y, pid);
+		if (_mouseTouch == t) {
+			Mouse::feed(0, 0, x, y);
+		}
+	}
+}
+
+- (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)e {
+	CGFloat scale = [self scale];
+	for (UITouch* t in touches) {
+		int8_t pid = getTouchSlot(t, NO);
+		if (pid < 0) pid = 0;
+		CGPoint p = [t locationInView:_glView];
+		int16_t x = (int16_t)(p.x * scale);
+		int16_t y = (int16_t)(p.y * scale);
+		Multitouch::feed(1, 0, x, y, pid);
+		if (_mouseTouch == t) {
+			Mouse::feed(1, 0, x, y);
+			_mouseTouch = nil;
+		}
+		releaseTouchSlot(t);
+	}
+}
+
+- (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)e {
+	[self touchesEnded:touches withEvent:e];
 }
 
 - (void)showKeyboardWithText:(NSString*)text {

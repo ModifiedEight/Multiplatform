@@ -51,7 +51,7 @@ struct ChunkSource* Dimension::createRandomLevelSource(void) {
 		spawnMobs = level->getLevelData()->getSpawnMobs();
 	}
 
-	if (genVer >= 3 || genVer == 2) {
+	if (genVer >= 1) {
 		return new NewRandomLevelSource(this->levelPtr, seed, genVer, spawnMobs);
 	}
 	return new RandomLevelSource(this->levelPtr, seed, genVer, spawnMobs);
@@ -113,12 +113,10 @@ bool_t Dimension::mayRespawn(void) {
 	return 1;
 }
 void Dimension::updateLightRamp(void) {
-	int32_t i;	// r3
-	int32_t v2; // s8
-
-	for(i = 0; i != 16; ++i) {
-		v2 = i;
-		this->lightRamp[i] = (float)((float)((float)(1.0 - (float)(1.0 - (float)((float)v2 * 0.0625))) / (float)((float)((float)(1.0 - (float)((float)v2 * 0.0625)) * 3.0) + 1.0)) * 0.95) + 0.15;
+	for(int32_t i = 0; i != 16; ++i) {
+		float f = (float)i / 15.0f;
+		float f1 = f / (4.0f - 3.0f * f);
+		this->lightRamp[i] = f1 * 0.78f + 0.22f;
 	}
 }
 void Dimension::init() {

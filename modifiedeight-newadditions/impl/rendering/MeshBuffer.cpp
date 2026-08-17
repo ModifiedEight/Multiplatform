@@ -98,11 +98,28 @@ void MeshBuffer::render(){
 	if(this->arrayBuffer && this->arraysCount > 3 && this->drawMode && this->vertexFormat){
 		glBindBuffer(GL_ARRAY_BUFFER, this->arrayBuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->arrayElementsBuffer);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		if(this->vertexFormat->offsets[1] != 255) {
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
+		if(this->vertexFormat->offsets[2] != 255) {
+			glEnableClientState(GL_COLOR_ARRAY);
+		}
+		if(this->vertexFormat->offsets[3] != 255) {
+			glEnableClientState(GL_NORMAL_ARRAY);
+		}
 		this->vertexFormat->bindArrays();
 		if(this->elementsCount){
 			glDrawElements(this->drawMode, this->elementsCount, this->drawType, 0);
 		}else{
 			glDrawArrays(this->drawMode, 0, this->arraysCount);
+		}
+		if(this->vertexFormat->offsets[2] != 255) {
+			glDisableClientState(GL_COLOR_ARRAY);
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+		if(this->vertexFormat->offsets[3] != 255) {
+			glDisableClientState(GL_NORMAL_ARRAY);
 		}
 	}
 }

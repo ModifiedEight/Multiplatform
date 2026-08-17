@@ -11,6 +11,7 @@ public:
 	virtual void updateShape(LevelSource*, int32_t, int32_t, int32_t);
 	virtual void addAABBs(Level*, int32_t, int32_t, int32_t, const AABB*, std::vector<AABB>&);
 	virtual void playerDestroy(Level* level, Player* player, int32_t x, int32_t y, int32_t z, int32_t meta);
+	virtual void playerWillDestroy(Level* level, int32_t x, int32_t y, int32_t z, int32_t meta, Player* player);
 	virtual int32_t getResource(int32_t meta, Random* random);
 	virtual int32_t getResourceCount(Random* random);
 	virtual bool_t isSolidRender();

@@ -90,8 +90,8 @@ TextureUVCoordinateSet* CropTile::getTexture(int32_t a2, int32_t a3) {
 }
 TextureUVCoordinateSet* CropTile::getTexture(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
 	int32_t v7 = level->getData(x, y, z);
-	if(v7 < 0) v7 = 7;
-	return this->texture2.getUV(v7);
+	if(v7 < 0) v7 = 0;
+	return this->getTexture(a6, v7);
 }
 void CropTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* rng) {
 	this->checkAlive(level, x, y, z);

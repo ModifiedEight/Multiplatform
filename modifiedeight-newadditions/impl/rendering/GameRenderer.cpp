@@ -8,6 +8,7 @@
 #include <input/Mouse.hpp>
 #include <input/Multitouch.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <level/dimension/Dimension.hpp>
 #include <math.h>
 #include <math/Mth.hpp>
@@ -127,6 +128,10 @@ void GameRenderer::bobView(float a2) {
 	}
 }
 float GameRenderer::getFov(float a2, bool_t a3) {
+	if (this->minecraft->options.panoramaAngle > 0) {
+		return 90.0f;
+	}
+
 	float v4;			  // s16
 	Minecraft* minecraft; // r1
 	Mob* viewEntityMaybe; // r5
@@ -139,7 +144,7 @@ float GameRenderer::getFov(float a2, bool_t a3) {
 		v4 = (float)(this->field_5C + (float)((float)(this->field_58 - this->field_5C) * a2)) * minecraft->options.fov;
 	}
 	if(viewEntityMaybe->isUnderLiquid(Material::water)) {
-		v4 = 60.0;
+		v4 = v4 * 0.98f;
 	}
 	if(viewEntityMaybe->health <= 0) {
 		v8 = 1.0 - (float)(500.0 / (float)((float)((float)viewEntityMaybe->deathTime + a2) + 500.0));
@@ -282,8 +287,33 @@ LABEL_16:
 	}
 LABEL_17:
 	if(!this->minecraft->options.field_F1) {
-		glRotatef(viewEntityMaybe->prevPitch + (float)((float)(viewEntityMaybe->pitch - viewEntityMaybe->prevPitch) * a2), 1.0, 0.0, 0.0);
-		glRotatef((float)(viewEntityMaybe->prevYaw + (float)((float)(viewEntityMaybe->yaw - viewEntityMaybe->prevYaw) * a2)) + 180.0, 0.0, 1.0, 0.0);
+		float pPitch = viewEntityMaybe->prevPitch + (float)((float)(viewEntityMaybe->pitch - viewEntityMaybe->prevPitch) * a2);
+		float pYaw = (float)(viewEntityMaybe->prevYaw + (float)((float)(viewEntityMaybe->yaw - viewEntityMaybe->prevYaw) * a2)) + 180.0;
+
+		if (this->minecraft->options.panoramaAngle > 0) {
+			if (this->minecraft->options.panoramaAngle == 1) {
+				pPitch = 0.0f;
+				pYaw = 0.0f;
+			} else if (this->minecraft->options.panoramaAngle == 2) {
+				pPitch = 0.0f;
+				pYaw = 90.0f;
+			} else if (this->minecraft->options.panoramaAngle == 3) {
+				pPitch = 0.0f;
+				pYaw = 180.0f;
+			} else if (this->minecraft->options.panoramaAngle == 4) {
+				pPitch = 0.0f;
+				pYaw = 270.0f;
+			} else if (this->minecraft->options.panoramaAngle == 5) {
+				pPitch = -90.0f;
+				pYaw = 0.0f;
+			} else if (this->minecraft->options.panoramaAngle == 6) {
+				pPitch = 90.0f;
+				pYaw = 0.0f;
+			}
+		}
+
+		glRotatef(pPitch, 1.0, 0.0, 0.0);
+		glRotatef(pYaw, 0.0, 1.0, 0.0);
 	}
 	glTranslatef(0.0, v11, 0.0);
 }
@@ -609,7 +639,7 @@ void GameRenderer::renderItemInHand(float a2, int32_t a3) {
 					if(fov != this->fov) {
 						glMatrixMode(0x1701u);
 						glLoadIdentity();
-						gluPerspective(fov, (float)this->minecraft->field_1C / (float)this->minecraft->field_20, 0.05, this->field_8);
+						gluPerspective(fov, this->minecraft->options.panoramaAngle > 0 ? 1.0f : ((float)this->minecraft->field_1C / (float)this->minecraft->field_20), 0.05, this->field_8);
 						glMatrixMode(0x1700u);
 					}
 					glClear(0x100u);
@@ -763,7 +793,7 @@ void GameRenderer::renderSky(LevelRenderer* a2, float a3, float a4) {
 	minecraft = this->minecraft;
 	v9 = this->field_8;
 	this->fov = fov;
-	gluPerspective(fov, (float)minecraft->field_1C / (float)minecraft->field_20, 2.0, v9 * 5120.0);
+	gluPerspective(fov, minecraft->options.panoramaAngle > 0 ? 1.0f : ((float)minecraft->field_1C / (float)minecraft->field_20), 2.0, v9 * 5120.0);
 	glMatrixMode(0x1700u);
 	glScalef((float)(this->field_8 / 100.0) * 128.0, (float)(this->field_8 / 100.0) * 128.0, (float)(this->field_8 / 100.0) * 128.0);
 	glPushMatrix();
@@ -819,7 +849,7 @@ void GameRenderer::setupCamera(float a2, int32_t a3) {
 	fov = this->getFov(a2, 1);
 	v8 = this->minecraft;
 	this->fov = fov;
-	gluPerspective(fov, (float)v8->field_1C / (float)v8->field_20, 0.05, this->field_8 * 1.2);
+	gluPerspective(fov, v8->options.panoramaAngle > 0 ? 1.0f : ((float)v8->field_1C / (float)v8->field_20), 0.05, this->field_8 * 1.2);
 	glMatrixMode(0x1700u);
 	glLoadIdentity();
 	this->bobHurt(a2);
@@ -880,9 +910,14 @@ void GameRenderer::setupClearColor(float a2) {
 	this->field_84.g = v16;
 	this->field_84.b = this->field_84.b + (float)((float)(v17 - this->field_84.b) * v13);
 	if(viewEntityMaybe->isUnderLiquid(Material::water)) {
-		*v5 = Color4(0.02, 0.02, 0.2, 1.0);
+		Biome* b = level ? level->getBiome((int)floorf(viewEntityMaybe->posX), (int)floorf(viewEntityMaybe->posZ)) : nullptr;
+		if (b == Biome::swampland) {
+			*v5 = Color4(0.25f, 0.38f, 0.18f, 1.0f);
+		} else {
+			*v5 = Color4(0.22f, 0.52f, 0.72f, 1.0f);
+		}
 	} else if(viewEntityMaybe->isUnderLiquid(Material::lava)) {
-		*v5 = Color4(0.6, 0.1, 0.0, 1.0);
+		*v5 = Color4(0.6f, 0.1f, 0.0f, 1.0f);
 	}
 LABEL_6:
 	v20 = this->minecraft;
@@ -899,9 +934,9 @@ LABEL_6:
 	glClearColor(this->field_74.r, this->field_74.g, this->field_74.b, this->field_74.a);
 }
 void GameRenderer::setupFog(int32_t a2) {
-	Mob* viewEntityMaybe; // r5
-	Color4* v5;			  // r1
-	float v6;			  // r1
+	Mob* viewEntityMaybe;
+	Color4* v5;
+	float v6;
 
 	viewEntityMaybe = this->minecraft->viewEntityMaybe;
 	if(a2) {
@@ -927,14 +962,19 @@ void GameRenderer::setupFog(int32_t a2) {
 	}
 	glEnable(GL_FOG);
 	if(viewEntityMaybe->isUnderLiquid(Material::water)) {
+		Biome* b = this->minecraft->level ? this->minecraft->level->getBiome((int)floorf(viewEntityMaybe->posX), (int)floorf(viewEntityMaybe->posZ)) : nullptr;
 #ifdef USEGLES
-		glFogx(GL_FOG_MODE, 2048);
+		glFogx(GL_FOG_MODE, GL_LINEAR);
 #else
-		glFogi(GL_FOG_MODE, 2048);
+		glFogi(GL_FOG_MODE, GL_LINEAR);
 #endif
-		v6 = 0.1;
-LABEL_8:
-		glFogf(GL_FOG_DENSITY, v6);
+		if (b == Biome::swampland) {
+			glFogf(GL_FOG_START, 0.0f);
+			glFogf(GL_FOG_END, 24.0f);
+		} else {
+			glFogf(GL_FOG_START, 0.0f);
+			glFogf(GL_FOG_END, 80.0f);
+		}
 		this->field_150 = 1;
 		return;
 	}
@@ -944,8 +984,9 @@ LABEL_8:
 #else
 		glFogi(GL_FOG_MODE, 2048);
 #endif
-		v6 = 2.0;
-		goto LABEL_8;
+		glFogf(GL_FOG_DENSITY, 2.0f);
+		this->field_150 = 1;
+		return;
 	}
 #ifdef USEGLES
 	glFogx(GL_FOG_MODE, GL_LINEAR);

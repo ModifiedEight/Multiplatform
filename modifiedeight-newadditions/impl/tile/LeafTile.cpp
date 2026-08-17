@@ -2,6 +2,7 @@
 #include <tile/BlockColorRegistry.hpp>
 #include <util/Random.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <entity/Player.hpp>
 #include <inventory/Inventory.hpp>
 #include <item/Item.hpp>
@@ -207,6 +208,12 @@ int32_t LeafTile::getRenderLayer() {
 int32_t LeafTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
 		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
+	}
+	if (level) {
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) {
+			return 0x6A7039;
+		}
 	}
 	int32_t v5;		// r3
 	int32_t result; // r0

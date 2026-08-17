@@ -46,10 +46,16 @@ int32_t TallGrass::getResource(int32_t a2, Random* a3) {
 	}
 }
 int32_t TallGrass::getColor(int32_t a2) {
-	return Tile::grass->getColor(a2);
+	if (a2 == 2) {
+		return 0x5B8F32;
+	}
+	return 0x66A538;
 }
 int32_t TallGrass::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z){
-	return Tile::grass->getColor(level, x, y, z);
+	if (level && Tile::grass) {
+		return Tile::grass->getColor(level, x, y, z);
+	}
+	return this->getColor(1);
 }
 void TallGrass::playerDestroy(Level* level, Player* player, int32_t x, int32_t y, int32_t z, int32_t meta) {
 

@@ -8,9 +8,9 @@ LiquidTileStatic::LiquidTileStatic(int32_t a2, const struct Material* a3, const 
 	if(a3 == Material::lava) this->setTicking(1);
 }
 void LiquidTileStatic::setDynamic(Level* level, int32_t x, int32_t y, int32_t z) {
-	int32_t data; // r0
-	int32_t id; // r10
-	int32_t v12; // r0
+	int32_t data;
+	int32_t id;
+	int32_t v12;
 
 	data = level->getData(x, y, z);
 	level->setTileAndDataNoUpdate(x, y, z, this->blockID - 1, data);

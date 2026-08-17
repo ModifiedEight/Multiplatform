@@ -107,6 +107,13 @@ void CreativeInventoryScreen::populateFilteredItems() {
 		if (f54 >= 1 && f54 <= 6) {
 			CreativeInventoryScreen::filteredItems[f54-1].emplace_back(it);
 		}
+		if (Options::instance && Options::instance->newAdditions) {
+			if (it.tileClass && (it.tileClass == Tile::vine || it.tileClass == Tile::doublePlant || it.tileClass == Tile::flowerPaeonia || it.tileClass == Tile::flowerDaisy || it.tileClass == Tile::flowerHoustonia || it.tileClass == Tile::flowerOrchid || it.tileClass == Tile::flowerAllium || it.tileClass == Tile::seagrass)) {
+				if (f54 != 2) {
+					CreativeInventoryScreen::filteredItems[1].emplace_back(it);
+				}
+			}
+		}
 	}
 }
 void CreativeInventoryScreen::populateItem(Item* a1, int32_t a2, int32_t a3) {
@@ -239,6 +246,20 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::redstoneLampOff, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::flower, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::rose, 1, 0);
+	if (Options::instance && Options::instance->newAdditions) {
+		CreativeInventoryScreen::populateItem(Tile::flowerPaeonia, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::flowerDaisy, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::flowerHoustonia, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::flowerOrchid, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::flowerAllium, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::doublePlant, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::doublePlant, 1, 1);
+		CreativeInventoryScreen::populateItem(Tile::doublePlant, 1, 2);
+		CreativeInventoryScreen::populateItem(Tile::doublePlant, 1, 3);
+		CreativeInventoryScreen::populateItem(Tile::vine, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::waterLily, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::seagrass, 1, 0);
+	}
 	CreativeInventoryScreen::populateItem(Tile::mushroom1, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::mushroom2, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::cactus, 1, 0);
@@ -374,7 +395,7 @@ void CreativeInventoryScreen::render(int32_t a2, int32_t a3, float a4) {
 	}
 	glColor4f(1.0, 1.0, 1.0, 1.0);
 	this->field_68->draw(Tesselator::instance, this->field_A8, this->field_AC);
-	std::shared_ptr<Touch::InventoryPane> v25 = this->field_78[this->currentPaneMaybe]; //TODO check
+	std::shared_ptr<Touch::InventoryPane> v25 = this->field_78[this->currentPaneMaybe];
 	this->fill(v25->field_228.minX - this->field_B8 - v25->field_248, v25->field_228.minY - v25->field_24C, v25->field_228.minX - v25->field_248, v25->field_228.height + v25->field_228.minY + v25->field_24C, 0xFF333333);
 	int v15 = v25->field_228.minX + v25->field_228.width + v25->field_248;
 	this->fill(v15, v25->field_228.minY - v25->field_24C, v15 + this->field_B8, v25->field_228.minY + v25->field_228.height + v25->field_24C, 0xFF333333);
@@ -400,35 +421,29 @@ void CreativeInventoryScreen::init()
 	}
 	CreativeInventoryScreen::populateItems();
 	if (this->minecraft->options.newAdditions) {
-		// 1. Planks
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			CreativeInventoryScreen::populateItem(Tile::coloredPlanks, 1, i);
 		}
-		// 2. Stairs
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredStairs[i]) {
 				CreativeInventoryScreen::populateItem(Tile::coloredStairs[i], 1, 0);
 			}
 		}
-		// 2b. Brick Stairs
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredBrickStairs[i]) {
 				CreativeInventoryScreen::populateItem(Tile::coloredBrickStairs[i], 1, 0);
 			}
 		}
-		// 3. Fences
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredFences[i]) {
 				CreativeInventoryScreen::populateItem(Tile::coloredFences[i], 1, 0);
 			}
 		}
-		// 4. Logs
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredLogs[i]) {
 				CreativeInventoryScreen::populateItem(Tile::coloredLogs[i], 1, 0);
 			}
 		}
-		// 5. Slabs
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (i < 8) {
 				if (Tile::coloredSlabHalf1) {
@@ -446,7 +461,6 @@ void CreativeInventoryScreen::init()
 				}
 			}
 		}
-		// 6. Bricks
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredBricks) {
 				CreativeInventoryScreen::populateItem(Tile::coloredBricks, 1, i);
@@ -619,7 +633,7 @@ std::vector<const ItemInstance*> CreativeInventoryScreen::getItems(const Touch::
 	int32_t v5 = CreativeInventoryScreen::filteredItems[cat].size();
 	std::vector<const ItemInstance*> vec(v5);
 	for(int32_t i = 0; i < v5; ++i) {
-		vec[i] = &CreativeInventoryScreen::filteredItems[cat][i]; //TODO does something else
+		vec[i] = &CreativeInventoryScreen::filteredItems[cat][i];
 	}
 	return vec;
 }

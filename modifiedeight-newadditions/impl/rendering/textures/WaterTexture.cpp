@@ -81,10 +81,10 @@ void WaterTexture::tick() {
 			v14 = 0.0;
 		}
 		v15 = v14 * v14;
-		this->data[v13] = (int32_t)(float)((float)(v15 * 32.0) + 32.0);
-		this->data[v13 + 1] = (int32_t)(float)((float)(v15 * 64.0) + 50.0);
-		this->data[v13 + 2] = -1;
-		this->data[v13 + 3] = (int32_t)(float)((float)(v15 * 50.0) + 146.0);
+		this->data[v13] = (int32_t)(float)((float)(v15 * 30.0) + 60.0);
+		this->data[v13 + 1] = (int32_t)(float)((float)(v15 * 38.0) + 130.0);
+		this->data[v13 + 2] = (int32_t)(float)((float)(v15 * 28.0) + 215.0);
+		this->data[v13 + 3] = (int32_t)(float)((float)(v15 * 28.0) + 75.0);
 		v13 += 4;
 	} while(v13 != 1024);
 }

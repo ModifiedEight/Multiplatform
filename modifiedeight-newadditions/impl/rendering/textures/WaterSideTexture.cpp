@@ -83,11 +83,11 @@ void WaterSideTexture::tick() {
 			v15 = 0.0;
 		}
 		v16 = v15 * v15;
-		this->data[4 * v14++] = (int32_t)(float)((float)(v16 * 32.0) + 32.0);
-		this->data[v13] = (int32_t)(float)((float)(v16 * 64.0) + 50.0);
-		this->data[v13 + 1] = -1;
+		this->data[4 * v14++] = (int32_t)(float)((float)(v16 * 32.0) + 64.0);
+		this->data[v13] = (int32_t)(float)((float)(v16 * 40.0) + 130.0);
+		this->data[v13 + 1] = (int32_t)(float)((float)(v16 * 30.0) + 215.0);
 		v17 = &this->data[v13];
 		v13 += 4;
-		v17[2] = (int32_t)(float)((float)(v16 * 50.0) + 146.0);
+		v17[2] = (int32_t)(float)((float)(v16 * 35.0) + 95.0);
 	} while(v14 != 256);
 }

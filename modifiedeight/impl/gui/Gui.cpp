@@ -474,7 +474,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight Classic 1.6.0 (%d fps)", fps);
+            sprintf(dbgText1, "ModifiedEight Classic 1.6.1 (%d fps)", fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 
@@ -519,8 +519,11 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             font->drawShadow(dbgTextSeed, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 
-            float yaw = this->minecraftInst->player->yaw;
-            int dir = ((int)floorf(yaw * 4.0f / 360.0f + 0.5f)) & 3;
+            float rawYaw = this->minecraftInst->player->yaw;
+            float yaw = fmodf(rawYaw, 360.0f);
+            if (yaw > 180.0f) yaw -= 360.0f;
+            if (yaw < -180.0f) yaw += 360.0f;
+            int dir = ((int)floorf(rawYaw * 4.0f / 360.0f + 0.5f)) & 3;
             if (dir < 0)
               dir = (dir % 4 + 4) % 4;
             const char *dirNames[] = {"South (+Z)", "West (-X)", "North (-Z)",

@@ -2,6 +2,9 @@
 #include <entity/Entity.hpp>
 #include <entity/Mob.hpp>
 #include <math/Mth.hpp>
+#include <level/Level.hpp>
+#include <tile/material/Material.hpp>
+#include <tile/Tile.hpp>
 #include <math.h>
 
 HumanoidModel::HumanoidModel(float a2, float a3)
@@ -20,6 +23,7 @@ HumanoidModel::HumanoidModel(float a2, float a3)
 	this->field_319 = 0;
 	this->field_31A = 0;
 	this->isUsingBow = 0;
+	this->isSwimming = 0;
 	this->headModel.setModel(this);
 	this->bodyModel.setModel(this);
 	this->rightArmModel.setModel(this);
@@ -50,12 +54,30 @@ void HumanoidModel::render(Entity* a2, float a3, float a4, float a5, float a6, f
 
 	if(a2) {
 		if(a2->isMob()) {
-			item = ((Mob*)a2)->getCarriedItem();
+			Mob* m = (Mob*)a2;
+			item = m->getCarriedItem();
 			if(item) {
-				if(((Mob*)a2)->getUseItemDuration() > 0 && item->getUseAnimation() == 4) {
+				if(m->getUseItemDuration() > 0 && item->getUseAnimation() == 4) {
 					this->isUsingBow = 1;
 				}
 			}
+			bool swim = (m->entityHeight < 0.8f) || m->isInWater() || m->isUnderLiquid(Material::water);
+			if (!swim && m->level) {
+				int px = (int)floorf(m->posX);
+				int pz = (int)floorf(m->posZ);
+				for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
+					int py = (int)floorf(m->posY + yo);
+					if (py >= 0 && py < 128) {
+						Material* mat = m->level->getMaterial(px, py, pz);
+						int tile = m->level->getTile(px, py, pz);
+						if ((mat && mat == Material::water) || tile == Tile::water->blockID || tile == Tile::calmWater->blockID || (Tile::seagrass && tile == Tile::seagrass->blockID)) {
+							swim = true;
+							break;
+						}
+					}
+				}
+			}
+			this->isSwimming = swim;
 		}
 	}
 	this->setupAnim(a3, a4, a5, a6, a7, a8);
@@ -97,6 +119,28 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 	float v28;		 // s15
 	float yRotAngle; // s13
 	float v30;		 // s14
+
+	this->headModel.xOffset = 0.0f;
+	this->headModel.yOffset = 0.0f;
+	this->headModel.zOffset = 0.0f;
+	this->bodyModel.xOffset = 0.0f;
+	this->bodyModel.yOffset = 0.0f;
+	this->bodyModel.zOffset = 0.0f;
+	this->bodyModel.xRotAngle = 0.0f;
+	this->bodyModel.yRotAngle = 0.0f;
+	this->bodyModel.zRotAngle = 0.0f;
+	this->rightArmModel.xOffset = -5.0f;
+	this->rightArmModel.yOffset = 2.0f;
+	this->rightArmModel.zOffset = 0.0f;
+	this->leftArmModel.xOffset = 5.0f;
+	this->leftArmModel.yOffset = 2.0f;
+	this->leftArmModel.zOffset = 0.0f;
+	this->rightLegModel.xOffset = -2.0f;
+	this->rightLegModel.yOffset = 12.0f;
+	this->rightLegModel.zOffset = 0.0f;
+	this->leftLegModel.xOffset = 2.0f;
+	this->leftLegModel.yOffset = 12.0f;
+	this->leftLegModel.zOffset = 0.0f;
 
 	this->headModel.yRotAngle = a5 / (float)(180.0 / 3.1416);
 	v10 = a2 * 0.6662;
@@ -160,13 +204,6 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 		this->headModel.yOffset = 1.0;
 		this->rightArmModel.xRotAngle = v24;
 		this->leftArmModel.xRotAngle = this->leftArmModel.xRotAngle + 0.4;
-	} else {
-		this->bodyModel.xRotAngle = 0.0;
-		this->rightLegModel.zOffset = 0.0;
-		this->leftLegModel.zOffset = 0.0;
-		this->headModel.yOffset = 0.0;
-		this->rightLegModel.yOffset = 12.0;
-		this->leftLegModel.yOffset = 12.0;
 	}
 	v25 = (float)(Mth::cos(a4 * 0.09) * 0.05) + 0.05;
 	v26 = Mth::sin(a4 * 0.067);
@@ -184,5 +221,46 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 		this->leftArmModel.zRotAngle = 0.0 - v25;
 		this->rightArmModel.xRotAngle = v30 + v28;
 		this->leftArmModel.xRotAngle = v30 - v28;
+	}
+	if(this->isSwimming) {
+		this->bodyModel.xRotAngle = 1.5708f;
+		this->bodyModel.yOffset = 19.0f;
+		this->bodyModel.zOffset = 0.0f;
+		this->bodyModel.yRotAngle = 0.0f;
+
+		this->headModel.yOffset = 19.0f;
+		this->headModel.zOffset = 0.0f;
+		this->headModel.xRotAngle = a6 / (float)(180.0 / 3.1416) * 0.4f;
+
+		float swimArm = sinf(a4 * 0.25f);
+		float swimArm2 = cosf(a4 * 0.25f);
+
+		this->rightArmModel.xOffset = -5.0f;
+		this->rightArmModel.yOffset = 21.0f;
+		this->rightArmModel.zOffset = 0.0f;
+		this->rightArmModel.xRotAngle = 1.35f + swimArm * 0.35f;
+		this->rightArmModel.yRotAngle = -0.2f;
+		this->rightArmModel.zRotAngle = 0.3f + swimArm2 * 0.15f;
+
+		this->leftArmModel.xOffset = 5.0f;
+		this->leftArmModel.yOffset = 21.0f;
+		this->leftArmModel.zOffset = 0.0f;
+		this->leftArmModel.xRotAngle = 1.35f - swimArm * 0.35f;
+		this->leftArmModel.yRotAngle = 0.2f;
+		this->leftArmModel.zRotAngle = -0.3f - swimArm2 * 0.15f;
+
+		this->rightLegModel.xOffset = -2.0f;
+		this->rightLegModel.yOffset = 19.0f;
+		this->rightLegModel.zOffset = 12.0f;
+		this->rightLegModel.xRotAngle = 1.5708f + sinf(a4 * 0.35f) * 0.25f;
+		this->rightLegModel.zRotAngle = 0.05f;
+		this->rightLegModel.yRotAngle = 0.0f;
+
+		this->leftLegModel.xOffset = 2.0f;
+		this->leftLegModel.yOffset = 19.0f;
+		this->leftLegModel.zOffset = 12.0f;
+		this->leftLegModel.xRotAngle = 1.5708f - sinf(a4 * 0.35f) * 0.25f;
+		this->leftLegModel.zRotAngle = -0.05f;
+		this->leftLegModel.yRotAngle = 0.0f;
 	}
 }

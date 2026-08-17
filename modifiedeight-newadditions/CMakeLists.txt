@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(modifiedeight-newadditions LANGUAGES CXX)
 
+enable_language(ASM)
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}")
 if(MCPE_IOS)
     enable_language(OBJCXX)
 endif()
@@ -47,6 +49,7 @@ endif()
 
 file(GLOB_RECURSE IMPLCPP "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE IMPLC   "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
+file(GLOB_RECURSE IMPLASM "${CMAKE_CURRENT_SOURCE_DIR}/*.S")
 file(GLOB_RECURSE HEADC   "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB_RECURSE HEADCPP "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
@@ -65,7 +68,7 @@ if(ANDROID)
     if(NOT TARGET native_app_glue)
         add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
     endif()
-    add_library(minecraftpe SHARED ${IMPLCPP} ${IMPLC} ${HEADC} ${HEADCPP})
+    add_library(minecraftpe SHARED ${IMPLCPP} ${IMPLC} ${IMPLASM} ${HEADC} ${HEADCPP})
     target_include_directories(minecraftpe PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/headers"
         "${ANDROID_NDK}/sources/android/native_app_glue"
@@ -106,7 +109,7 @@ elseif(MCPE_IOS)
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
     )
 else()
-    add_executable(modifiedeight-newadditions ${IMPLCPP} ${IMPLC} ${HEADC} ${HEADCPP})
+    add_executable(modifiedeight-newadditions ${IMPLCPP} ${IMPLC} ${IMPLASM} ${HEADC} ${HEADCPP})
     target_include_directories(modifiedeight-newadditions PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/headers"
         ${SDL_INCLUDE_DIR}

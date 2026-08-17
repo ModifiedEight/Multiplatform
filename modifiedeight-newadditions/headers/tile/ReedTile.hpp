@@ -17,4 +17,6 @@ struct ReedTile : Tile{
 	virtual int32_t getResource(int32_t, Random*);
 	virtual int32_t getRenderLayer();
 	virtual bool_t canSurvive(Level*, int32_t, int32_t, int32_t);
+	virtual int32_t getColor(int32_t);
+	virtual int32_t getColor(LevelSource*, int32_t, int32_t, int32_t);
 };

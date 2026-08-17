@@ -16,6 +16,13 @@ FurnaceRecipes::FurnaceRecipes() {
 	this->addFurnaceRecipe(Tile::stoneBrick->blockID, ItemInstance(Tile::rock));
 	this->addFurnaceRecipe(Item::clay->itemID, ItemInstance(Item::brick));
 	this->addFurnaceRecipe(Tile::cactus->blockID, ItemInstance(Item::dye_powder, 1, 2));
+	this->addFurnaceRecipe(Tile::tallgrass->blockID, ItemInstance(Item::dye_powder, 1, 2));
+	if (Tile::doublePlant) {
+		this->addFurnaceRecipe(Tile::doublePlant->blockID, ItemInstance(Item::dye_powder, 1, 2));
+	}
+	if (Tile::seagrass) {
+		this->addFurnaceRecipe(Tile::seagrass->blockID, ItemInstance(Item::dye_powder, 1, 2));
+	}
 	this->addFurnaceRecipe(Tile::mushroom2->blockID, ItemInstance(Item::dye_powder, 1, 1));
 	this->addFurnaceRecipe(Tile::treeTrunk->blockID, ItemInstance(Item::coal, 1, 1));
 	this->addFurnaceRecipe(Tile::netherrack->blockID, ItemInstance(Item::netherbrick));
@@ -31,7 +38,7 @@ FurnaceRecipes* FurnaceRecipes::getInstance() {
 	return FurnaceRecipes::instance;
 }
 void FurnaceRecipes::getRecipes() {
-} //TODO prob different type, but it is empty so cant really guess
+}
 ItemInstance FurnaceRecipes::getResult(int32_t a2) {
 	auto&& p = this->recipes.find(a2);
 	if(p == this->recipes.end()) {

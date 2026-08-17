@@ -4,6 +4,7 @@
 #include <AppPlatform.hpp>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 int32_t Textures::textureChanges = 0;
 
@@ -158,7 +159,9 @@ int32_t Textures::loadTexture(const std::string& s, bool_t a, bool_t b){
 
 }
 
-void Textures::reloadAll(){}
+void Textures::reloadAll(){
+	this->clear(1);
+}
 
 int32_t Textures::smoothBlend(int32_t a, int32_t b){
 	return ((int32_t)((a & 0xFEFEFE) + (b & 0xFEFEFE)) >> 1) + ((int32_t)((b >> 24) + (a >> 24)) >> 1 << 24);
@@ -174,19 +177,23 @@ void Textures::tick(bool_t a2) {
 			DynamicTexture* v7 = this->dynamicTextures[i];
 			v7->bindTexture(this);
 			if(v7->field_18 == 1) {
-				glTexSubImage2D(0xDE1u, 0, (int32_t)(float)(v7->uv.minX * v7->uv.width), (int32_t)(float)(v7->uv.minY * v7->uv.height), (int32_t)(float)((float)((float)(v7->uv.maxX - v7->uv.minX) * v7->uv.width) + 0.49), (int32_t)(float)((float)((float)(v7->uv.maxY - v7->uv.minY) * v7->uv.height) + 0.49) + 1, 0x1908u, 0x1401u, v7->data);
+				int32_t subX = (int32_t)floorf(v7->uv.minX * (float)v7->uv.width);
+				int32_t subY = (int32_t)floorf(v7->uv.minY * (float)v7->uv.height);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, subX, subY, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, v7->data);
 			} else if(v7->field_18 == 2) {
 				uint8_t* data = v7->data;
-				char_t* v10 = &byte_D6E06B78[0x40]; //TODO figure out what is this
+				char_t* v10 = &byte_D6E06B78[0x40];
 				int32_t v11 = 0;
 				do {
 					memcpy(v10 - 0x40, &data[v11], 0x40);
-					memcpy(v10, &data[v11], 0x40); //0.7.2 has memcpys here
+					memcpy(v10, &data[v11], 0x40);
 					v10 += 0x80;
 					v11 = ((int16_t)v11 + 64) & 0x3FF;
 				}
 				while ( v10 < &byte_D6E06B78[0x1000] );
-				glTexSubImage2D(0xDE1u, 0, (int)(float)(v7->uv.minX * v7->uv.width), (int)(float)(v7->uv.minY * v7->uv.height), 2 * (int)(float)((float)((float)(v7->uv.maxX - v7->uv.minX) * v7->uv.width) + 0.49), 2 * (int)(float)((float)((float)(v7->uv.maxY - v7->uv.minY) * v7->uv.height) + 0.49), 0x1908u, 0x1401u, byte_D6E06B78);
+				int32_t subX = (int32_t)floorf(v7->uv.minX * (float)v7->uv.width);
+				int32_t subY = (int32_t)floorf(v7->uv.minY * (float)v7->uv.height);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, subX, subY, 32, 32, GL_RGBA, GL_UNSIGNED_BYTE, byte_D6E06B78);
 			}
 		}
 

@@ -213,6 +213,7 @@ void TextureTesselator::_addLighting(const Vec3& a2, const uint8_t* a3, int32_t 
 		}
 		Tesselator::instance.color((float)((float)((float)*a3 * v10) / 255.0) * this->field_2C.r, (float)((float)((float)a3[1] * v11) / 255.0) * this->field_2C.g, (float)((float)((float)a3[2] * v12) / 255.0) * this->field_2C.b, (float)((float)a3[3] / 255.0) * this->field_2C.a);
 	} else {
+		Tesselator::instance.color(this->field_2C.r, this->field_2C.g, this->field_2C.b, this->field_2C.a);
 		Tesselator::instance.normal(a2.x, a2.y, a2.z);
 		if(a2.x <= 0.0) {
 			if(a2.z > 0.0) {

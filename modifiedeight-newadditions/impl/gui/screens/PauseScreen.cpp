@@ -122,6 +122,8 @@ void PauseScreen::tick() {
 	}
 	++this->tickCounter;
 }
+#include <gui/screens/SaveWorldScreen.hpp>
+
 bool_t PauseScreen::renderGameBehind() {
 	return 1;
 }
@@ -131,11 +133,11 @@ void PauseScreen::buttonClicked(Button* a2) {
 		return;
 	}
 	if(a2->buttonID == this->quitToTitleButton->buttonID) {
-		this->minecraft->leaveGame(0, 1);
+		this->minecraft->setScreen(new SaveWorldScreen(0));
 		return;
 	}
 	if(a2->buttonID == this->quitAndCopyMapButton->buttonID) {
-		this->minecraft->leaveGame(1, 1);
+		this->minecraft->setScreen(new SaveWorldScreen(1));
 		return;
 	}
 	if(a2->buttonID == this->optionsButton->buttonID) {

@@ -714,16 +714,34 @@ static AssetFile readTexturePackFile(const std::string &path) {
   if (activeName.empty())
     return AssetFile(0, -1);
 
+  std::string noPrefix = path;
+  if (noPrefix.rfind("assets/images/", 0) == 0) noPrefix = noPrefix.substr(14);
+  else if (noPrefix.rfind("images/", 0) == 0) noPrefix = noPrefix.substr(7);
+  else if (noPrefix.rfind("assets/", 0) == 0) noPrefix = noPrefix.substr(7);
+
+  std::string leaf = path;
+  size_t lastSlash = leaf.find_last_of("/\\");
+  if (lastSlash != std::string::npos) {
+    leaf = leaf.substr(lastSlash + 1);
+  }
+
   for (const auto &dir : baseDirs) {
     std::string packDir = dir + "/saved_textures/" + activeName;
-    std::vector<std::string> cands = {packDir + "/" + path,
-                                      packDir + "/assets/" + path};
-    if (path.rfind("images/", 0) != 0) {
-      cands.push_back(packDir + "/images/" + path);
-    }
-    if (path.rfind("textures/", 0) != 0) {
-      cands.push_back(packDir + "/textures/" + path);
-    }
+    std::vector<std::string> cands = {
+      packDir + "/" + path,
+      packDir + "/assets/" + path,
+      packDir + "/images/" + path,
+      packDir + "/assets/images/" + path,
+      packDir + "/" + noPrefix,
+      packDir + "/images/" + noPrefix,
+      packDir + "/assets/images/" + noPrefix,
+      packDir + "/textures/" + noPrefix,
+      packDir + "/" + leaf,
+      packDir + "/images/" + leaf,
+      packDir + "/gui/" + leaf,
+      packDir + "/mob/" + leaf,
+      packDir + "/font/" + leaf
+    };
 
     for (const auto &cand : cands) {
       FILE *f = fopen(cand.c_str(), "rb");
@@ -756,36 +774,36 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
   }
   FILE *f = fopen(path.c_str(), "rb");
   if (!f) {
-    std::vector<std::string> cands = {
-        "platforms/android/app/src/classic/" + path,
-        "platforms/android/app/src/newadditions/" + path,
-        "../../platforms/android/app/src/classic/" + path,
-        "../../platforms/android/app/src/newadditions/" + path,
-        "build/modifiedeight/build/" + path,
-        "build/modifiedeight-newadditions/build/" + path,
-        "../../" + path};
-    if (path.find("assets/") == 0) {
-      std::string sub = path.substr(7);
-      cands.push_back("platforms/android/app/src/classic/assets/" + sub);
-      cands.push_back("platforms/android/app/src/newadditions/assets/" + sub);
-      cands.push_back("../../platforms/android/app/src/classic/assets/" + sub);
-      cands.push_back("../../platforms/android/app/src/newadditions/assets/" +
-                      sub);
-      cands.push_back("build/modifiedeight/build/assets/" + sub);
-      cands.push_back("build/modifiedeight-newadditions/build/assets/" + sub);
-    } else {
-      cands.push_back("assets/" + path);
-      cands.push_back("../../assets/" + path);
-      cands.push_back("platforms/android/app/src/classic/assets/" + path);
-      cands.push_back("platforms/android/app/src/newadditions/assets/" + path);
-      cands.push_back("../../platforms/android/app/src/classic/assets/" + path);
-      cands.push_back("../../platforms/android/app/src/newadditions/assets/" +
-                      path);
-    }
-    for (const auto &cand : cands) {
-      f = fopen(cand.c_str(), "rb");
-      if (f)
-        break;
+    std::string noAssets = path;
+    if (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
+
+    const char* prefixes[] = {
+      "platforms/android/app/src/newadditions/assets/",
+      "platforms/android/app/src/classic/assets/",
+      "assets/",
+      "../../platforms/android/app/src/newadditions/assets/",
+      "../../platforms/android/app/src/classic/assets/",
+      "../../assets/",
+      "platforms/android/app/src/newadditions/",
+      "platforms/android/app/src/classic/",
+      "../../platforms/android/app/src/newadditions/",
+      "../../platforms/android/app/src/classic/",
+      "build/modifiedeight-newadditions/build/assets/",
+      "build/modifiedeight/build/assets/",
+      "build/modifiedeight-newadditions/build/",
+      "build/modifiedeight/build/",
+      "../../"
+    };
+
+    for (const char* p : prefixes) {
+      std::string full = std::string(p) + noAssets;
+      f = fopen(full.c_str(), "rb");
+      if (f) break;
+      if (noAssets != path) {
+        full = std::string(p) + path;
+        f = fopen(full.c_str(), "rb");
+        if (f) break;
+      }
     }
   }
   if (f) {
@@ -854,6 +872,25 @@ void AppPlatform::loadImage(ImageData &image, const std::string &name,
   }
 }
 TextureData AppPlatform::loadTexture(const std::string &a3, bool_t a4) {
+  AssetFile packFile = readTexturePackFile(a3);
+  if (packFile.bytes && packFile.length > 0) {
+    TextureData data;
+    int32_t channels;
+    uint8_t *pix = stbi_load_from_memory(packFile.bytes, packFile.length,
+                                         &data.width, &data.height,
+                                         &channels, STBI_rgb_alpha);
+    delete[] packFile.bytes;
+    if (pix) {
+      data.pixels = pix;
+      data.field_C = 0;
+      data.field_10 = 0;
+      data.lod = 0;
+      data.field_18 = 0;
+      data.glTexId = 0;
+      return data;
+    }
+  }
+
   extern uint8_t *g_terrainAtlasPixels;
   extern int g_terrainAtlasWidth;
   extern int g_terrainAtlasHeight;

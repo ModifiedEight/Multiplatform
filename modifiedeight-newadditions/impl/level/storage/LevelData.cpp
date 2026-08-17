@@ -98,17 +98,12 @@ LevelData::LevelData(void) {
 }
 struct CompoundTag* LevelData::createTag(const std::vector<struct Player*>& a2) {
 	CompoundTag* v4 = new CompoundTag();
-	CompoundTag* v7;
-	if(a2.empty()) {
-		v7 = 0;
-
-	} else {
-		if(a2[0]) {
-			v7 = new CompoundTag();
-			a2[0]->saveWithoutId(v7);
-		}else{
-			v7 = 0;
-		}
+	CompoundTag* v7 = 0;
+	if(!a2.empty() && a2[0]) {
+		v7 = new CompoundTag();
+		a2[0]->saveWithoutId(v7);
+	} else if (this->playerTag) {
+		v7 = (CompoundTag*)this->playerTag->copy();
 	}
 	this->setTagData(v4, v7);
 	return v4;

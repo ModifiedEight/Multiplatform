@@ -1,6 +1,7 @@
 #include <item/Item.hpp>
 #include <rendering/TextureAtlas.hpp>
 #include <item/StoneSlabTileItem.hpp>
+#include <item/WaterLilyTileItem.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <I18n.hpp>
 #include <item/ShovelItem.hpp>
@@ -304,6 +305,9 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	if (Tile::coloredBrickSlabHalf2) {
 		if (!Item::items[Tile::coloredBrickSlabHalf2->blockID]) new StoneSlabTileItem(Tile::coloredBrickSlabHalf2->blockID - 256);
 	}
+	if (Tile::waterLily && !Item::items[Tile::waterLily->blockID]) {
+		(new WaterLilyTileItem(Tile::waterLily->blockID - 256))->setIcon("waterlily", 0)->setCategory(2, 8)->setDescriptionId("waterlily");
+	}
 
 	int32_t v556 = 0;
 	do {
@@ -416,15 +420,57 @@ ItemInstance* Item::use(struct ItemInstance* r, Level*, struct Player*) {
 bool_t Item::useOn(struct ItemInstance*, struct Level*, int32_t, int32_t, int32_t, int32_t) {
 	return 0;
 }
+#include <tile/entity/MixedSlabTileEntity.hpp>
+
 bool_t Item::useOn(struct ItemInstance*, struct Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float hitX, float hitY, float hitZ) {
 	if(this == Item::paper) {
+		int32_t tileId = level->getTile(x, y, z);
+		int32_t data = level->getData(x, y, z);
+
+		if (Tile::mixedSlab && tileId == Tile::mixedSlab->blockID) {
+			MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+			if (te) {
+				bool hitTop = false;
+				if (te->mode == 1) {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (side == 2) hitTop = false;
+					else if (side == 3) hitTop = true;
+					else hitTop = (hitZ >= 0.5f);
+				} else if (te->mode == 2) {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (side == 4) hitTop = false;
+					else if (side == 5) hitTop = true;
+					else hitTop = (hitX >= 0.5f);
+				} else {
+					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
+					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
+					else if (side == 0) hitTop = false;
+					else if (side == 1) hitTop = true;
+					else hitTop = (hitY >= 0.5f);
+				}
+
+				if (hitTop) {
+					te->topColor = 0xFFFFFF;
+				} else {
+					te->bottomColor = 0xFFFFFF;
+				}
+
+				if (BlockColorRegistry::hasBlockColor(x, y, z)) {
+					BlockColorRegistry::clearBlockColor(x, y, z);
+				}
+
+				level->sendTileUpdated(x, y, z);
+				return 1;
+			}
+		}
+
 		if (BlockColorRegistry::hasBlockColor(x, y, z)) {
 			BlockColorRegistry::clearBlockColor(x, y, z);
 			level->sendTileUpdated(x, y, z);
 			return 1;
 		}
-		int32_t tileId = level->getTile(x, y, z);
-		int32_t data = level->getData(x, y, z);
 		if(tileId == Tile::cloth->blockID || tileId == Tile::woolCarpet->blockID) {
 			level->setTileAndData(x, y, z, tileId, 0, 3);
 			return 1;

@@ -126,42 +126,27 @@ bool_t WoodSlabTile::Item::useOn(ItemInstance* a2, Player* a3, Level* a4, int32_
 	}
 
 	if (face >= 2) {
-		int32_t targetX = x;
-		int32_t targetY = y;
-		int32_t targetZ = z;
-		if (face == 2) --targetZ;
-		else if (face == 3) ++targetZ;
-		else if (face == 4) --targetX;
-		else if (face == 5) ++targetX;
+		bool isMiddle = false;
+		if (face == 2 || face == 3) {
+			if (a9 >= 0.25f && a9 <= 0.75f) isMiddle = true;
+		} else {
+			if (a11 >= 0.25f && a11 <= 0.75f) isMiddle = true;
+		}
 
-		if (a4->mayPlace(Tile::mixedSlab->blockID, targetX, targetY, targetZ, 0, face)) {
-			int32_t mode = 0;
-			int32_t bTileId = 0, bAux = 0;
-			int32_t tTileId = 0, tAux = 0;
+		if (!isMiddle) {
+			int32_t targetX = x;
+			int32_t targetY = y;
+			int32_t targetZ = z;
+			if (face == 2) --targetZ;
+			else if (face == 3) ++targetZ;
+			else if (face == 4) --targetX;
+			else if (face == 5) ++targetX;
 
-			if (id == Tile::mixedSlab->blockID) {
-				MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(x, y, z);
-				if (te && (te->mode == 1 || te->mode == 2)) {
-					mode = te->mode;
-					if (te->bottomTileId != 0 && te->topTileId == 0) {
-						bTileId = Tile::woodSlabHalf->blockID;
-						bAux = a2->getAuxValue() & 7;
-					} else if (te->topTileId != 0 && te->bottomTileId == 0) {
-						tTileId = Tile::woodSlabHalf->blockID;
-						tAux = a2->getAuxValue() & 7;
-					} else {
-						if (mode == 1) {
-							if (a11 < 0.5f) { bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7; }
-							else { tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7; }
-						} else {
-							if (a9 < 0.5f) { bTileId = Tile::woodSlabHalf->blockID; bAux = a2->getAuxValue() & 7; }
-							else { tTileId = Tile::woodSlabHalf->blockID; tAux = a2->getAuxValue() & 7; }
-						}
-					}
-				}
-			}
+			if (a4->mayPlace(Tile::mixedSlab->blockID, targetX, targetY, targetZ, 0, face)) {
+				int32_t mode = 0;
+				int32_t bTileId = 0, bAux = 0;
+				int32_t tTileId = 0, tAux = 0;
 
-			if (mode == 0) {
 				if (face == 2 || face == 3) {
 					mode = 2;
 					if (a9 < 0.5f) {
@@ -181,21 +166,21 @@ bool_t WoodSlabTile::Item::useOn(ItemInstance* a2, Player* a3, Level* a4, int32_
 						tAux = a2->getAuxValue() & 7;
 					}
 				}
-			}
 
-			if (a4->setTileAndData(targetX, targetY, targetZ, Tile::mixedSlab->blockID, 0, 3)) {
-				MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(targetX, targetY, targetZ);
-				if (te) {
-					te->mode = mode;
-					te->bottomTileId = bTileId;
-					te->bottomAux = bAux;
-					te->topTileId = tTileId;
-					te->topAux = tAux;
+				if (a4->setTileAndData(targetX, targetY, targetZ, Tile::mixedSlab->blockID, 0, 3)) {
+					MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(targetX, targetY, targetZ);
+					if (te) {
+						te->mode = mode;
+						te->bottomTileId = bTileId;
+						te->bottomAux = bAux;
+						te->topTileId = tTileId;
+						te->topAux = tAux;
+					}
+					a4->sendTileUpdated(targetX, targetY, targetZ);
+					a4->playSound((float)targetX + 0.5f, (float)targetY + 0.5f, (float)targetZ + 0.5f, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0f) * 0.5f, Tile::woodSlab->soundType->field_4 * 0.8f);
+					--a2->count;
+					return 1;
 				}
-				a4->sendTileUpdated(targetX, targetY, targetZ);
-				a4->playSound((float)targetX + 0.5f, (float)targetY + 0.5f, (float)targetZ + 0.5f, Tile::woodSlab->soundType->field_C, (float)(Tile::woodSlab->soundType->field_0 + 1.0f) * 0.5f, Tile::woodSlab->soundType->field_4 * 0.8f);
-				--a2->count;
-				return 1;
 			}
 		}
 	}

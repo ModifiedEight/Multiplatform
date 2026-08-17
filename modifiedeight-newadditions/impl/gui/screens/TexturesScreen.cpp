@@ -13,9 +13,12 @@
 #include <gui/elements/Label.hpp>
 #include <gui/elements/TextBox.hpp>
 #include <gui/screens/TexturesScreen.hpp>
+#include <item/Item.hpp>
 #include <level/storage/LevelStorageSource.hpp>
+#include <rendering/LevelRenderer.hpp>
 #include <rendering/Tesselator.hpp>
 #include <rendering/Textures.hpp>
+#include <tile/Tile.hpp>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -332,21 +335,39 @@ void TexturesScreen::importTexturePack() {
   std::thread([this, dataPath, aliveFlag]() {
     std::string zipPath = pickZipFile();
     if (zipPath.empty()) {
-      std::string resPacks = dataPath + "/resource_packs";
-      if (isDirExists(resPacks)) {
-        DIR *pd = opendir(resPacks.c_str());
+      std::vector<std::string> searchDirs;
+      searchDirs.push_back(dataPath + "/resource_packs");
+      searchDirs.push_back(dataPath + "/texture_packs");
+      searchDirs.push_back(dataPath + "/games/com.mojang/resource_packs");
+      searchDirs.push_back("/sdcard/Download");
+      searchDirs.push_back("/sdcard/Download/Minecraft");
+      searchDirs.push_back("/storage/emulated/0/Download");
+      searchDirs.push_back("/storage/emulated/0/Download/Minecraft");
+      searchDirs.push_back("/storage/emulated/0/games/com.mojang/resource_packs");
+      searchDirs.push_back("/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/resource_packs");
+      const char* home = getenv("HOME");
+      if (home) {
+        searchDirs.push_back(std::string(home) + "/Downloads");
+        searchDirs.push_back(std::string(home) + "/Documents");
+      }
+      searchDirs.push_back(".");
+
+      for (const auto& dir : searchDirs) {
+        if (!isDirExists(dir)) continue;
+        DIR *pd = opendir(dir.c_str());
         if (pd) {
           struct dirent *pe;
           while ((pe = readdir(pd))) {
             if (!pe) break;
             std::string zname = pe->d_name;
             if (zname.size() > 4 && zname.substr(zname.size() - 4) == ".zip") {
-              zipPath = resPacks + "/" + zname;
+              zipPath = dir + "/" + zname;
               break;
             }
           }
           closedir(pd);
         }
+        if (!zipPath.empty()) break;
       }
     }
 
@@ -354,7 +375,7 @@ void TexturesScreen::importTexturePack() {
       std::lock_guard<std::mutex> lock(g_texture_mutex);
       if (!*aliveFlag)
         return;
-      installMsg = "Put .zip in resource_packs folder to import!";
+      installMsg = "Put .zip in Download or resource_packs folder!";
       installRunning = false;
       installDone = true;
       return;
@@ -428,15 +449,31 @@ void TexturesScreen::applySavedTexture(const std::string &path,
 
   activeTexturePack = title;
 
+  extern uint8_t* g_terrainAtlasPixels;
+  extern uint8_t* g_itemsAtlasPixels;
+  if (g_terrainAtlasPixels) {
+    free(g_terrainAtlasPixels);
+    g_terrainAtlasPixels = nullptr;
+  }
+  if (g_itemsAtlasPixels) {
+    free(g_itemsAtlasPixels);
+    g_itemsAtlasPixels = nullptr;
+  }
+
   if (this->minecraft) {
+    if (this->minecraft->texturesPtr) {
+      this->minecraft->texturesPtr->reloadAll();
+    }
     if (NinecraftApp::_terrainTextureAtlas) {
       NinecraftApp::_terrainTextureAtlas->load((NinecraftApp *)this->minecraft);
+      Tile::initTiles(NinecraftApp::_terrainTextureAtlas);
     }
     if (NinecraftApp::_itemsTextureAtlas) {
       NinecraftApp::_itemsTextureAtlas->load((NinecraftApp *)this->minecraft);
+      Item::initItems(NinecraftApp::_itemsTextureAtlas);
     }
-    if (this->minecraft->texturesPtr) {
-      this->minecraft->texturesPtr->reloadAll();
+    if (this->minecraft->levelRenderer) {
+      this->minecraft->levelRenderer->allChanged();
     }
   }
 
@@ -468,19 +505,35 @@ void TexturesScreen::restoreDefaultTextures() {
   remove(activeFile.c_str());
   activeTexturePack = "";
 
+  extern uint8_t* g_terrainAtlasPixels;
+  extern uint8_t* g_itemsAtlasPixels;
+  if (g_terrainAtlasPixels) {
+    free(g_terrainAtlasPixels);
+    g_terrainAtlasPixels = nullptr;
+  }
+  if (g_itemsAtlasPixels) {
+    free(g_itemsAtlasPixels);
+    g_itemsAtlasPixels = nullptr;
+  }
+
   if (this->minecraft) {
-    if (NinecraftApp::_terrainTextureAtlas) {
-      NinecraftApp::_terrainTextureAtlas->load((NinecraftApp *)this->minecraft);
-    }
-    if (NinecraftApp::_itemsTextureAtlas) {
-      NinecraftApp::_itemsTextureAtlas->load((NinecraftApp *)this->minecraft);
-    }
     if (this->minecraft->texturesPtr) {
       this->minecraft->texturesPtr->reloadAll();
     }
+    if (NinecraftApp::_terrainTextureAtlas) {
+      NinecraftApp::_terrainTextureAtlas->load((NinecraftApp *)this->minecraft);
+      Tile::initTiles(NinecraftApp::_terrainTextureAtlas);
+    }
+    if (NinecraftApp::_itemsTextureAtlas) {
+      NinecraftApp::_itemsTextureAtlas->load((NinecraftApp *)this->minecraft);
+      Item::initItems(NinecraftApp::_itemsTextureAtlas);
+    }
+    if (this->minecraft->levelRenderer) {
+      this->minecraft->levelRenderer->allChanged();
+    }
   }
 
-  statusMsg = "Default textures restored!";
+  statusMsg = "Default Textures Restored.";
   needsRefresh = true;
 }
 

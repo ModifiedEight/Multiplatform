@@ -1,5 +1,4 @@
 #include <level/storage/RegionFile.hpp>
-#include <util/Util.hpp>
 #include <BitStream.h>
 #include <string.h>
 #include <zlib.h>
@@ -46,7 +45,7 @@ RegionFileInfo* RegionFile::getRegion(int32_t chunkX, int32_t chunkZ) {
 	if (rx == 0 && rz == 0) {
 		rInfo->path = this->folderPath + "/chunks.dat";
 	} else {
-		rInfo->path = this->folderPath + "/chunks_r." + Util::toString(rx) + "." + Util::toString(rz) + ".dat";
+		rInfo->path = this->folderPath + "/chunks_r." + std::to_string(rx) + "." + std::to_string(rz) + ".dat";
 	}
 
 	rInfo->fileRaw = fopen(rInfo->path.c_str(), "r+b");
@@ -163,9 +162,6 @@ bool_t RegionFile::writeChunk(int32_t chunkX, int32_t chunkZ, RakNet::BitStream&
 				if (compressedBuffer) delete[] compressedBuffer;
 				return 1;
 			}
-			int32_t v11 = 0;
-		} else {
-			int32_t v11 = 0;
 		}
 		int32_t v13 = 1;
 		for (int v11 = 0; v11 < firstByteOfLocTableEntry; ++v11) {
@@ -189,7 +185,6 @@ bool_t RegionFile::writeChunk(int32_t chunkX, int32_t chunkZ, RakNet::BitStream&
 			}
 		}
 		{
-			int32_t v22 = 0;
 			fseek(rInfo->fileRaw, 0, 2);
 			int32_t i = v8 - v14;
 			for (int32_t k = 0; k < i; ++k) {

@@ -5,40 +5,33 @@
 #include <tile/Tile.hpp>
 
 ReedsFeature::ReedsFeature() : Feature(0){
-
 }
+
 ReedsFeature::~ReedsFeature() {
 }
-bool_t ReedsFeature::place(Level* level, Random* random, int32_t x, int32_t y, int32_t z) {
-	int32_t v8;	 // r8
-	int32_t v9;	 // r5
-	int32_t v10; // r5
-	int32_t v11; // r6
-	int32_t v12; // r6
-	int32_t v13; // r9
-	int32_t v14; // r11
-	int32_t v16; // [sp+8h] [bp-38h]
-	int32_t v17; // [sp+10h] [bp-30h]
 
-	v16 = 20;
-	v8 = y - 1;
-	do {
-		v9 = x + (random->genrand_int32() & 3);
-		v10 = v9 - (random->genrand_int32() & 3);
-		v11 = z + (random->genrand_int32() & 3);
-		v12 = v11 - (random->genrand_int32() & 3);
-		if(level->isEmptyTile(v10, y, v12) && (Material::water == level->getMaterial(v10 - 1, v8, v12) || Material::water == level->getMaterial(v10 + 1, v8, v12) || Material::water == level->getMaterial(v10, v8, v12 - 1) || Material::water == level->getMaterial(v10, v8, v12 + 1))) {
-			v14 = random->genrand_int32();
-			v13 = 0;
-			v17 = random->genrand_int32() % (v14 % 3u + 1) + 2;
-			do {
-				if(Tile::reeds->canSurvive(level, v10, v13 + y, v12)) {
-					level->setTileNoUpdate(v10, v13 + y, v12, Tile::reeds->blockID);
+bool_t ReedsFeature::place(Level* level, Random* random, int32_t x, int32_t y, int32_t z) {
+	for(int32_t i = 0; i < 20; ++i) {
+		int32_t px = x + (random->genrand_int32() & 3) - (random->genrand_int32() & 3);
+		int32_t pz = z + (random->genrand_int32() & 3) - (random->genrand_int32() & 3);
+		if(level->isEmptyTile(px, y, pz)) {
+			int32_t ground = level->getTile(px, y - 1, pz);
+			bool isWaterAdjacent = (Material::water == level->getMaterial(px - 1, y - 1, pz) ||
+			                        Material::water == level->getMaterial(px + 1, y - 1, pz) ||
+			                        Material::water == level->getMaterial(px, y - 1, pz - 1) ||
+			                        Material::water == level->getMaterial(px, y - 1, pz + 1));
+			if(isWaterAdjacent && (ground == Tile::sand->blockID || ground == Tile::dirt->blockID || ground == Tile::grass->blockID)) {
+				int32_t maxHeight = 1 + (random->genrand_int32() % 3);
+				if((random->genrand_int32() % 10) == 0) {
+					maxHeight = 4;
 				}
-				++v13;
-			} while(v13 < v17);
+				for(int32_t h = 0; h < maxHeight; ++h) {
+					if(level->isEmptyTile(px, y + h, pz) && Tile::reeds->canSurvive(level, px, y + h, pz)) {
+						level->setTileNoUpdate(px, y + h, pz, Tile::reeds->blockID);
+					}
+				}
+			}
 		}
-		--v16;
-	} while(v16);
+	}
 	return 1;
 }

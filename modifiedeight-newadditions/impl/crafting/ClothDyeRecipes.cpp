@@ -4,7 +4,7 @@
 #include <tile/Tile.hpp>
 
 void ClothDyeRecipes::addRecipes(Recipes* a2) {
-	int v2; // r9
+	int v2;
 
 	v2 = 0;
 	do {
@@ -13,6 +13,26 @@ void ClothDyeRecipes::addRecipes(Recipes* a2) {
 	} while(v2 != 16);
 
 	a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 11), definition<Tile*>(0, Tile::flower));
+	a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 12), definition<Tile*>(0, Tile::rose));
+	if (Tile::flowerOrchid) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 4), definition<Tile*>(0, Tile::flowerOrchid));
+	}
+	if (Tile::flowerAllium) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 13), definition<Tile*>(0, Tile::flowerAllium));
+	}
+	if (Tile::flowerDaisy) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 7), definition<Tile*>(0, Tile::flowerDaisy));
+	}
+	if (Tile::flowerHoustonia) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 15), definition<Tile*>(0, Tile::flowerHoustonia));
+	}
+	if (Tile::flowerPaeonia) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 9), definition<Tile*>(0, Tile::flowerPaeonia));
+	}
+	if (Tile::doublePlant) {
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 9), definition<ItemInstance>(0, ItemInstance(Tile::doublePlant, 1, 2)));
+		a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 1), definition<ItemInstance>(0, ItemInstance(Tile::doublePlant, 1, 3)));
+	}
 	a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 1), definition<Item*>(0, Item::beetroot));
 	a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 3, 15), definition<Item*>(0, Item::bone));
 	a2->addShapelessRecipe(ItemInstance(Item::dye_powder, 2, 9), definition<ItemInstance, ItemInstance>(0, ItemInstance(Item::dye_powder, 1, 1), 0, ItemInstance(Item::dye_powder, 1, 15)));

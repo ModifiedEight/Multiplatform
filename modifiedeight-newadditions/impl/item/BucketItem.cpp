@@ -17,8 +17,8 @@ BucketItem::BucketItem(int32_t id)
 	this->setMaxDamage(0);
 }
 bool_t BucketItem::emptyBucket(Level* level, int32_t type, int32_t x, int32_t y, int32_t z){
-	int32_t v10;   // r9
-	Material* v11; // r0
+	int32_t v10;   
+	Material* v11; 
 
 	if(type <= 0) {
 		return 0;
@@ -31,7 +31,7 @@ bool_t BucketItem::emptyBucket(Level* level, int32_t type, int32_t x, int32_t y,
 		}
 	}
 	level->setTileAndData(x, y, z, type, 0, 3);
-	if(type == Tile::water->blockID && (v10 == Tile::fire->blockID || v10 == Tile::lava->blockID || v10 == Tile::calmLava->blockID)) {
+	if(type == Tile::water->blockID && (v10 == Tile::fire->blockID || v10 == Tile::lava->blockID || (Tile::calmLava && v10 == Tile::calmLava->blockID))) {
 		level->playSound((float)x + 0.5, (float)y + 0.5, (float)z + 0.5, "random.fizz", 0.5, (float)((float)(level->random.nextFloat() - level->random.nextFloat()) * 0.8) + 2.6);
 	}
 	return 1;

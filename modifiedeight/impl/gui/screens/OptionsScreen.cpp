@@ -73,9 +73,9 @@ void OptionsScreen::generateOptionScreens(void) {
 	if(this->minecraft->platform()->supportsVibration()) {
 		this->optionPanes[1]->createOptionsGroup("options.group.feedback")->addOptionItem(&Options::Option::DESTROY_VIBRATION, this->minecraft);
 	}
-	this->optionPanes[2]->createOptionsGroup("options.group.graphics")->addOptionItem(&Options::Option::RENDER_DISTANCE, this->minecraft)->addOptionItem(&Options::Option::FOV, this->minecraft)->addOptionItem(&Options::Option::GUI_SCALE, this->minecraft)->addOptionItem(&Options::Option::FOG_ENABLED, this->minecraft)->addOptionItem(&Options::Option::GRAPHICS, this->minecraft)->addOptionItem(&Options::Option::FANCY_SKIES, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_TEXTURES, this->minecraft);
+	this->optionPanes[2]->createOptionsGroup("options.group.graphics")->addOptionItem(&Options::Option::RENDER_DISTANCE, this->minecraft)->addOptionItem(&Options::Option::FOV, this->minecraft)->addOptionItem(&Options::Option::FOG_ENABLED, this->minecraft)->addOptionItem(&Options::Option::GRAPHICS, this->minecraft)->addOptionItem(&Options::Option::FANCY_SKIES, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_TEXTURES, this->minecraft);
 	this->optionPanes[2]->createOptionsGroup("options.group.graphics.experimental")->addOptionItem(&Options::Option::HIDE_GUI, this->minecraft);
-	this->optionPanes[3]->createOptionsGroup("options.group.audio")->addOptionItem(&Options::Option::SOUND, this->minecraft);
+	this->optionPanes[3]->createOptionsGroup("options.group.audio")->addOptionItem(&Options::Option::SOUND, this->minecraft)->addOptionItem(&Options::Option::MUSIC, this->minecraft);
 	
 	auto grp = this->optionPanes[4]->createOptionsGroup("options.newadditions");
 	grp->addOptionItem(&Options::Option::SPRINT, this->minecraft);

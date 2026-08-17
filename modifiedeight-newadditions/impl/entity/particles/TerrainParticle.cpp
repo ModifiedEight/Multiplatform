@@ -4,30 +4,30 @@
 #include <tile/Tile.hpp>
 TerrainParticle::TerrainParticle(Level* level, ParticleType pt, const std::string& a2)
 	: Particle(level, pt, a2) {
-	this->rColMul = this->gColMul = this->bColMul = 0.6;
+	this->rColMul = this->gColMul = this->bColMul = 0.5f;
 }
 TerrainParticle::~TerrainParticle() {
 }
 void TerrainParticle::init(float a2, float a3, float a4, float a5, float a6, float a7, int32_t a8) {
-	Tile* v13;	   // r0
-	float v19;	   // s15
-	Tile* tile;	   // r0
-	int v21;	   // r0
-	float gColMul; // s13
+	Tile* v13;
+	float v19;
+	Tile* tile;
+	int v21;
+	float gColMul;
 
-	v13 = Tile::tiles[/*(unsigned __int16)a8*/ a8 & 0xffff];
+	v13 = Tile::tiles[a8 & 0xffff];
 	this->tile = v13;
-	this->field_168 = *v13->getTexture(2, /*HIWORD(a8)*/ (a8 >> 16)); //TODO check
-	v19 = this->_scale * 0.5;
+	this->field_168 = *v13->getTexture(2, (a8 >> 16));
+	v19 = this->_scale * 0.3f;
 	tile = this->tile;
 	this->gravity = tile->field_3C;
 	this->_scale = v19;
 	if(tile != Tile::grass) {
 		v21 = tile->getColor(this->level, (int32_t)a2, (int32_t)a3, (int32_t)a4);
 		gColMul = this->gColMul;
-		this->rColMul = this->rColMul * (float)((float)((v21 >> 16) & 0xff) / 255.0);
-		this->gColMul = gColMul * (float)((float)((v21 >> 8) & 0xff) / 255.0);
-		this->bColMul = this->bColMul * (float)((float)(v21 & 0xff) / 255.0);
+		this->rColMul = this->rColMul * (float)((float)((v21 >> 16) & 0xff) / 255.0) * 0.8f;
+		this->gColMul = gColMul * (float)((float)((v21 >> 8) & 0xff) / 255.0) * 0.8f;
+		this->bColMul = this->bColMul * (float)((float)(v21 & 0xff) / 255.0) * 0.8f;
 	}
 }
 void TerrainParticle::render(Tesselator& a2, float a3, float a4, float a5, float a6, float a7, float a8) {

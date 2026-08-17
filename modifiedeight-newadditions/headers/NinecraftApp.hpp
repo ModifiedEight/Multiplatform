@@ -6,6 +6,7 @@ struct NinecraftApp : Minecraft{
 	static std::shared_ptr<TextureAtlas> _itemsTextureAtlas;
 	static std::shared_ptr<TextureAtlas> _terrainTextureAtlas;
 	static bool _hasInitedStatics;
+	static NinecraftApp* instance;
 
 	int8_t field_D48___;
 	int8_t field_D49, field_D4A, field_D4B;

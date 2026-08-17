@@ -15,6 +15,27 @@ TileRenderer* ItemRenderer::tileRenderer = new TileRenderer(0);
 bool_t ItemRenderer::inited = 0;
 float ItemRenderer::rndFloats[16];
 
+static int32_t getFoliageColor(Tile* tileClass, int32_t aux, int32_t id) {
+	if (tileClass) {
+		int32_t col = tileClass->getColor(aux);
+		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) return col;
+	}
+	if (Tile::tallgrass && id == Tile::tallgrass->blockID) {
+		return (aux == 2) ? 0x5B8F32 : 0x66A538;
+	}
+	if (Tile::vine && id == Tile::vine->blockID) {
+		return 0x30BB0B;
+	}
+	if (Tile::waterLily && id == Tile::waterLily->blockID) {
+		return 0x529141;
+	}
+	if (Tile::doublePlant && id == Tile::doublePlant->blockID) {
+		int32_t sub = aux & 7;
+		return (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+	}
+	return -1;
+}
+
 ItemRenderer::ItemRenderer()
 	: EntityRenderer() {
 	if(!ItemRenderer::inited) {
@@ -240,10 +261,11 @@ void ItemRenderer::renderGuiItemCorrect(Font* a1, Textures* a2, const ItemInstan
 			ItemRenderer::tileRenderer->renderGuiTile(a3->tileClass, a3->getAuxValue(), 1.0, 1.0);
 			glPopMatrix();
 		} else if(a3->itemClass) {
-			a2->loadAndBindTexture(a3->tileClass ? "terrain.png" : "gui/items.png");
+			a2->loadAndBindTexture(a3->tileClass ? "terrain-atlas.tga" : "gui/items.png");
 			icon = a3->getIcon(0, 0);
 			if (icon) {
-				ItemRenderer::blit((float)a4, (float)a5, icon->minX * icon->width, icon->minY * icon->height, 16.0, 16.0);
+				int32_t col = getFoliageColor(a3->tileClass, a3->getAuxValue(), a3->getId());
+				ItemRenderer::iconBlit((float)a4, (float)a5, *icon, 16.0f, 16.0f, 1.0f, 1.0f, col, 1.0f);
 			}
 		}
 	}
@@ -295,7 +317,7 @@ void ItemRenderer::renderGuiItemInChunk(ItemRenderChunkType a1, Textures* a2, co
 			if(a1 == IRCT_THREE) {
 				if(tileClass) {
 LABEL_19:
-					v19 = tileClass->getColor(a3->getAuxValue());
+					v19 = getFoliageColor(tileClass, a3->getAuxValue(), a3->getId());
 LABEL_21:
 					ItemRenderer::iconBlit(a4, a5, *a3->getIcon(0, 1), 16.0, 16.0, a6, 1.0, v19, 1.0);
 					return;
@@ -314,7 +336,7 @@ LABEL_21:
 					return;
 				}
 			}
-			v19 = -1;
+			v19 = getFoliageColor(0, a3->getAuxValue(), a3->getId());
 			goto LABEL_21;
 		}
 		if(a1 == IRCT_NULL || a1 == IRCT_THREE) {
@@ -345,10 +367,10 @@ void ItemRenderer::renderGuiItemNew(Textures* a1, const ItemInstance* a2, int32_
 		if(itemClass) {
 			if(tileClass) {
 				a1->loadAndBindTexture("terrain-atlas.tga");
-				v16 = tileClass->getColor(a2->getAuxValue());
+				v16 = getFoliageColor(tileClass, a2->getAuxValue(), a2->getId());
 			} else {
 				a1->loadAndBindTexture(itemClass->itemTexture);
-				v16 = -1;
+				v16 = getFoliageColor(0, a2->getAuxValue(), a2->getId());
 			}
 			ItemRenderer::iconBlit(a4 - 1.0, a5 + 1.0, *a2->getIcon(a3, 0), 16.0, 16.0, a7, 1.0, v16, a8);
 		}
@@ -438,6 +460,15 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		maxY = Icon->maxY;
 		Tesselator::instance.begin(4 * v16);
 		Tesselator::instance.normal(Vec3::UNIT_Z.x, Vec3::UNIT_Z.y, Vec3::UNIT_Z.z);
+		int32_t col = getFoliageColor(p_itemInstance->tileClass, p_itemInstance->getAuxValue(), p_itemInstance->getId());
+		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+			float r = (float)((col >> 16) & 0xFF) / 255.0f;
+			float g = (float)((col >> 8) & 0xFF) / 255.0f;
+			float b = (float)(col & 0xFF) / 255.0f;
+			Tesselator::instance.color(r, g, b, 1.0f);
+		} else {
+			Tesselator::instance.color(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 		v30 = &ItemRenderer::rndFloats[3];
 		while(1) {
 			Tesselator::instance.vertexUV(-0.5, -0.25, 0.0, minX, maxY);

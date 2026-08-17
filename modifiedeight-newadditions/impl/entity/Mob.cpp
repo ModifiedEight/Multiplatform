@@ -833,14 +833,25 @@ bool_t Mob::canSee(Entity* a2) {
 	return a1.hitType == 2;
 }
 bool_t Mob::onLadder() {
-	int32_t v2; // r7
-	int32_t v3; // r6
-	int32_t v4; // r8
+	if (!Tile::ladder) return 0;
+	int32_t minX = Mth::floor(this->boundingBox.minX - 0.25f);
+	int32_t maxX = Mth::floor(this->boundingBox.maxX + 0.25f);
+	int32_t minY = Mth::floor(this->boundingBox.minY - 0.2f);
+	int32_t maxY = Mth::floor(this->boundingBox.maxY);
+	int32_t minZ = Mth::floor(this->boundingBox.minZ - 0.25f);
+	int32_t maxZ = Mth::floor(this->boundingBox.maxZ + 0.25f);
 
-	v2 = Mth::floor(this->posX);
-	v3 = Mth::floor(this->boundingBox.minY);
-	v4 = Mth::floor(this->posZ);
-	return this->level->getTile(v2, v3, v4) == Tile::ladder->blockID || this->level->getTile(v2, v3 + 1, v4) == Tile::ladder->blockID;
+	for (int32_t x = minX; x <= maxX; ++x) {
+		for (int32_t y = minY; y <= maxY; ++y) {
+			for (int32_t z = minZ; z <= maxZ; ++z) {
+				int32_t tid = this->level->getTile(x, y, z);
+				if (tid == Tile::ladder->blockID || (Tile::vine && tid == Tile::vine->blockID)) {
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
 }
 void Mob::spawnAnim() {
 }
@@ -979,9 +990,7 @@ LABEL_5:
 		this->motionX = v14;
 		this->motionZ = v15;
 		if(this->isCollidedHorizontally) {
-			if(this->isFree(v14, (float)((float)(v11 + 0.6) - this->posY) + posY, v15)) {
-				this->motionY = 0.3;
-			}
+			this->motionY = 0.35;
 		}
 		return;
 	}

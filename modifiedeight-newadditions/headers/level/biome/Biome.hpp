@@ -76,4 +76,5 @@ UNK	int8_t field_33 = 0;
 	static void teardownBiomes(void);
 	static Biome* getBiome(float, float);
 	static Biome* _getBiome(float, float);
+	static Biome* getOldBiome(float, float);
 };

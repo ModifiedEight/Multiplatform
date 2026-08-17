@@ -50,6 +50,16 @@ AssetFile AppPlatform_iOS::readAssetFile(const std::string& path) {
 
 void AppPlatform_iOS::loadPNG(ImageData& data, const std::string& path, bool_t) {
 	int32_t channels;
+	AssetFile file = this->readAssetFile(path);
+	if (file.bytes && file.length > 0) {
+		uint8_t* pixels = stbi_load_from_memory(file.bytes, file.length, &data.width, &data.height, &channels, STBI_rgb_alpha);
+		delete[] file.bytes;
+		if (pixels) {
+			data.field_C = 0;
+			data.pixels = pixels;
+			return;
+		}
+	}
 	uint8_t* pixels = stbi_load(path.c_str(), &data.width, &data.height,
 	                            &channels, STBI_rgb_alpha);
 	if (!pixels) {

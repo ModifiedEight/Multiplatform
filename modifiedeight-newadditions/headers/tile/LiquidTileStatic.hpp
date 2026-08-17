@@ -9,5 +9,4 @@ struct LiquidTileStatic: LiquidTile
 	virtual ~LiquidTileStatic();
 	virtual void tick(Level*, int32_t, int32_t, int32_t, Random*);
 	virtual void neighborChanged(Level*, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
-
 };

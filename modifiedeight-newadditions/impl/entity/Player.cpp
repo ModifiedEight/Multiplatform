@@ -8,6 +8,8 @@
 #include <math.h>
 #include <math/Mth.hpp>
 #include <tile/BedTile.hpp>
+#include <tile/Tile.hpp>
+#include <tile/material/Material.hpp>
 #include <nbt/CompoundTag.hpp>
 #include <nbt/ListTag.hpp>
 
@@ -512,6 +514,29 @@ void Player::tick() {
 		}
 	}
 	Mob::tick();
+	if (this->entityHeight < 1.7f) {
+		this->setSize(0.6f, 1.8f);
+		this->ridingHeight = 1.62f;
+	}
+	if (!this->isSleeping() && this->level) {
+		bool inWater = this->isInWater() || this->isUnderLiquid(Material::water);
+		if (!inWater) {
+			int px = Mth::floor(this->posX);
+			int py = Mth::floor(this->posY);
+			int pz = Mth::floor(this->posZ);
+			if (py >= 0 && py < 128) {
+				int t = this->level->getTile(px, py, pz);
+				if (t == Tile::water->blockID || t == Tile::calmWater->blockID) {
+					inWater = true;
+				}
+			}
+		}
+		if (inWater) {
+			this->stepHeight = 1.0f;
+		} else {
+			this->stepHeight = 0.5f;
+		}
+	}
 	if(!this->level->isClientMaybe) {
 		this->foodData.tick(this);
 		if(this->isOnFire()) {
@@ -799,9 +824,9 @@ void Player::travel(float a2, float a3) {
 	if(this->abilities.flying) {
 		float motionY = this->motionY;
 		float jumpMovementFactor = this->jumpMovementFactor;
-		this->jumpMovementFactor = 0.05;
+		this->jumpMovementFactor = 0.05f;
 		Mob::travel(a2, a3);
-		this->motionY = motionY * 0.6;
+		this->motionY = motionY * 0.6f;
 		this->jumpMovementFactor = jumpMovementFactor;
 	} else {
 		Mob::travel(a2, a3);

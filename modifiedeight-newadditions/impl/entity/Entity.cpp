@@ -653,7 +653,7 @@ void Entity::move(float dx, float dy, float dz) {
 			v43 = 0.0;
 		}
 		stepHeight = this->stepHeight;
-		if(stepHeight > 0.0 && fallingFlag && this->ySize < 0.05 && (movX != v43 || movZ != v42)) {
+		if(stepHeight > 0.0 && (fallingFlag || this->isInWater()) && this->ySize < 0.05 && (movX != v43 || movZ != v42)) {
 			AABB v96{this->boundingBox.minX, this->boundingBox.minY, this->boundingBox.minZ, this->boundingBox.maxX, this->boundingBox.maxY, this->boundingBox.maxZ};
 			v55 = this->boundingBox.maxZ;
 			this->boundingBox.minX = boundingBox.minX;
@@ -1502,7 +1502,7 @@ bool_t Entity::load(CompoundTag* a2) {
 	v15 = (float)(this->entityWidth * 0.5) + 0.001;
 	v16 = z;
 	bool_t shouldClamp = 1;
-	if(this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() == 1) {
+	if(this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 1) {
 		shouldClamp = 0;
 	}
 	if(shouldClamp) {
@@ -1669,17 +1669,32 @@ void Entity::lavaHurt() {
 	}
 }
 void Entity::playStepSound(int32_t x, int32_t y, int32_t z, int32_t id) {
-	const Tile::SoundType* soundType; // r5
+	const Tile::SoundType* soundType;
+	int32_t particleTileId = id;
 
 	soundType = Tile::tiles[id]->soundType;
 	if(this->level->getTile(x, y + 1, z) == Tile::topSnow->blockID) {
 		soundType = Tile::topSnow->soundType;
+		particleTileId = Tile::topSnow->blockID;
 	} else {
 		if(Tile::tiles[id]->material->isLiquid()) {
 			return;
 		}
 	}
 	this->level->playSound(this, soundType->field_C, soundType->field_0 * 0.25, soundType->field_4);
+
+	if(this->isPlayer() && this->level) {
+		int32_t meta = this->level->getData(x, y, z);
+		int32_t particleData = (meta << 16) | particleTileId;
+		for(int i = 0; i < 3; ++i) {
+			float offX = (this->level->random.nextFloat() - 0.5f) * 0.35f;
+			float offZ = (this->level->random.nextFloat() - 0.5f) * 0.35f;
+			float velX = -this->motionX * 0.2f + (this->level->random.nextFloat() - 0.5f) * 0.08f;
+			float velY = 0.1f + this->level->random.nextFloat() * 0.08f;
+			float velZ = -this->motionZ * 0.2f + (this->level->random.nextFloat() - 0.5f) * 0.08f;
+			this->level->addParticle(PT_TERRAIN, this->posX + offX, this->boundingBox.minY + 0.05f, this->posZ + offZ, velX, velY, velZ, particleData);
+		}
+	}
 }
 void Entity::checkInsideTiles() {
 	int32_t minX; // r6

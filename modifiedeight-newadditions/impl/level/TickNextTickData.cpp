@@ -17,7 +17,9 @@ int32_t TickNextTickData::hashCode(){
 
 bool_t TickNextTickData::operator<(const TickNextTickData& a2) const{
 	if(this->delay < a2.delay) return 1;
-	if(this->delay <= a2.delay) return this->id < a2.delay;
+	if(this->delay > a2.delay) return 0;
+	if(this->id < a2.id) return 1;
+	if(this->id > a2.id) return 0;
 	return 0;
 }
 

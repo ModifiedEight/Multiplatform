@@ -186,9 +186,9 @@ void LiquidTileDynamic::setStatic(Level* level, int32_t x, int32_t y, int32_t z)
 	level->sendTileUpdated(x, y, z);
 }
 void LiquidTileDynamic::trySpreadTo(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
-	int32_t v10; // r0
-	Tile* v11;	 // r9
-	int32_t v13; // r0
+	int32_t v10; 
+	Tile* v11;	 
+	int32_t v13; 
 
 	if(this->canSpreadTo(level, x, y, z)) {
 		v10 = level->getTile(x, y, z);
@@ -197,7 +197,7 @@ void LiquidTileDynamic::trySpreadTo(Level* level, int32_t x, int32_t y, int32_t 
 				this->fizz(level, x, y, z);
 			} else {
 				v11 = Tile::tiles[v10];
-				v11->spawnResources(level, x, y, z, level->getData(x, y, z));
+				if (v11) v11->spawnResources(level, x, y, z, level->getData(x, y, z));
 			}
 		}
 		level->setTileAndData(x, y, z, this->blockID, a6, 3);

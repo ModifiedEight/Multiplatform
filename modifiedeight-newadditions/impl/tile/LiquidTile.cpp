@@ -1,6 +1,7 @@
 #include <tile/LiquidTile.hpp>
 #include <tile/material/Material.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <math.h>
 #include <math/Vec3.hpp>
 #include <math/Mth.hpp>
@@ -74,6 +75,9 @@ void LiquidTile::fizz(Level* level, int32_t x, int32_t y, int32_t z) {
 	} while(v11);
 }
 int32_t LiquidTile::getDepth(Level* level, int32_t x, int32_t y, int32_t z) {
+	if(Tile::seagrass && level->getTile(x, y, z) == Tile::seagrass->blockID) {
+		return 0;
+	}
 	if(this->material == level->getMaterial(x, y, z)) {
 		return level->getData(x, y, z);
 	} else {
@@ -183,6 +187,9 @@ LABEL_18:
 int32_t LiquidTile::getRenderedDepth(struct LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	int32_t meta; // r0
 
+	if(Tile::seagrass && level->getTile(x, y, z) == Tile::seagrass->blockID) {
+		return 0;
+	}
 	if(this->material != level->getMaterial(x, y, z)) {
 		return -1;
 	}
@@ -337,8 +344,14 @@ void LiquidTile::handleEntityInside(Level* level, int32_t x, int32_t y, int32_t 
 	a7.y = v8;
 	a7.z = a7.z + (float)(zz * 0.5);
 }
-int32_t LiquidTile::getColor(LevelSource*, int32_t, int32_t, int32_t){
-	return 0x999999FF;
+int32_t LiquidTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z){
+	if (this->material == Material::water && level) {
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) {
+			return 0x6EB834;
+		}
+	}
+	return 0xFFFFFF;
 }
 TextureUVCoordinateSet* LiquidTile::getTextureNum(int32_t a2) {
 	return this->field_AC.getUV(a2);

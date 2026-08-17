@@ -3602,12 +3602,15 @@ bool_t TileRenderer::tesselateThinFenceInWorld(ThinFenceTile* tile, int32_t x, i
 	float v59;					 // [sp+80h] [bp-78h]
 	//int32_t v60;					 // [sp+88h] [bp-70h]
 	//int32_t v61;					 // [sp+8Ch] [bp-6Ch]
-	TextureUVCoordinateSet v62; // [sp+90h] [bp-68h] BYREF
-
-	v6 = tile->getBrightness(this->levelSource, x, y, z);
+	TextureUVCoordinateSet v62;
+	float bSelf = tile->getBrightness(this->levelSource, x, y, z);
+	float bXp = tile->getBrightness(this->levelSource, x + 1, y, z);
+	float bXm = tile->getBrightness(this->levelSource, x - 1, y, z);
+	float bZp = tile->getBrightness(this->levelSource, x, y, z + 1);
+	float bZm = tile->getBrightness(this->levelSource, x, y, z - 1);
+	v6 = std::max(bSelf, std::max(std::max(bXp, bXm), std::max(bZp, bZm)));
 	v7 = tile->getColor(this->levelSource, x, y, z);
 	Tesselator::instance.color(v6 * (float)((float)((v7 & 0xff0000) >> 16) / 255.0), v6 * (float)((float)((v7 & 0xff00) >> 8) / 255.0), v6 * (float)((float)(v7 & 0xff) / 255.0));
-	//hasUVCoords = (unsigned __int8)this->hasUVCoords;
 	if(this->hasUVCoords) {
 		//p_width = &this->field_8.width;
 		v58 = this->field_8;

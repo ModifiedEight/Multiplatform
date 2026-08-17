@@ -61,5 +61,7 @@ struct TileRenderer
 	bool_t tesselateTreeInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateLeverInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWallInWorld(struct WallTile*, int32_t, int32_t, int32_t);
+	bool_t tesselateVineInWorld(Tile*, int32_t, int32_t, int32_t);
+	bool_t tesselateWaterLilyInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWaterInWorld(Tile*, int32_t, int32_t, int32_t);
 };

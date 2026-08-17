@@ -67,7 +67,12 @@ float TileRenderer::getWaterHeight(int32_t x, int32_t y, int32_t z, const struct
 	while(a5 != this->levelSource->getMaterial(x - (v6 & 1), y + 1, z - (v6 >> 1))) {
 		v12 = this->levelSource->getMaterial(x - (v6 & 1), y, z - (v6 >> 1));
 		if(v12 == a5) {
-			v13 = this->levelSource->getData(x - (v6 & 1), y, z - (v6 >> 1));
+			int32_t t = this->levelSource->getTile(x - (v6 & 1), y, z - (v6 >> 1));
+			if (Tile::seagrass && t == Tile::seagrass->blockID) {
+				v13 = 0;
+			} else {
+				v13 = this->levelSource->getData(x - (v6 & 1), y, z - (v6 >> 1));
+			}
 			if(v13 > 7 || !v13) {
 				v5 = v5 + 1.1111;
 				v11 += 10;
@@ -508,6 +513,13 @@ void TileRenderer::renderGuiTile(Tile* tile, int32_t a3, float a4, float a5) {
 	TextureUVCoordinateSet v55;		   // [sp+4h] [bp-64h]
 	float v56;						   // [sp+8h] [bp-60h]
 
+	int32_t col = tile->getColor(a3);
+	float cr = 1.0f, cg = 1.0f, cb = 1.0f;
+	if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+		cr = (float)((col >> 16) & 0xFF) / 255.0f;
+		cg = (float)((col >> 8) & 0xFF) / 255.0f;
+		cb = (float)(col & 0xFF) / 255.0f;
+	}
 	v5 = 0;
 	v6 = this->field_0;
 	this->field_0 = 0;
@@ -516,28 +528,49 @@ void TileRenderer::renderGuiTile(Tile* tile, int32_t a3, float a4, float a5) {
 	if(!v11 || v11 == 31 || tile == (Tile*)Tile::chest) {
 		tile->updateDefaultShape();
 		Tesselator::instance.begin(7, 24);
-		Tesselator::instance.color(a4, a4, a4, a5);
+		Tesselator::instance.color(a4 * cr, a4 * cg, a4 * cb, a5);
 		v13 = tile->getCarriedTexture(1, a3);
 		TileRenderer::renderFaceUp(tile, 0.0, 0.0, 0.0, *v13);
-		Tesselator::instance.color(a4 * 0.5, a4 * 0.5, a4 * 0.5, a5);
+		Tesselator::instance.color(a4 * 0.5f * cr, a4 * 0.5f * cg, a4 * 0.5f * cb, a5);
 		v49 = *tile->getCarriedTexture(3, a3);
 		TileRenderer::renderSouth(tile, 0.0, 0.0, 0.0, v49);
-		Tesselator::instance.color(a4 * 0.73, a4 * 0.73, a4 * 0.73, a5);
+		Tesselator::instance.color(a4 * 0.73f * cr, a4 * 0.73f * cg, a4 * 0.73f * cb, a5);
 		v14 = tile->getCarriedTexture(4, a3);
 		TileRenderer::renderWest(tile, 0.0, 0.0, 0.0, *v14);
 LABEL_10:
-		v15 = 1;
-		goto LABEL_7;
+		Tesselator::instance.draw(1);
+		return;
 	}
 	switch(v11) {
 		case 1:
+		case 20:
+		case 23: {
+			int32_t col = tile->getColor(a3);
+			if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+				float r = a4 * (float)((col >> 16) & 0xFF) / 255.0f;
+				float g = a4 * (float)((col >> 8) & 0xFF) / 255.0f;
+				float b = a4 * (float)(col & 0xFF) / 255.0f;
+				Tesselator::instance.color(r, g, b, a5);
+			} else {
+				Tesselator::instance.color(a4, a4, a4, a5);
+			}
 			Tesselator::instance.begin(8);
-			Tesselator::instance.color(a4, a4, a4, a5);
-			this->tesselateCrossTexture(tile, a3, -0.5, -0.5, -0.5);
-			v15 = v12;
-LABEL_7:
-			Tesselator::instance.draw(v15);
+			if (v11 == 23) {
+				TextureUVCoordinateSet* tex = tile->getTexture(0);
+				float u0 = tex->minX;
+				float u1 = tex->maxX;
+				float v0 = tex->minY;
+				float v1 = tex->maxY;
+				Tesselator::instance.vertexUV(-0.5f, 0.0f, -0.5f, u0, v1);
+				Tesselator::instance.vertexUV(-0.5f, 0.0f, 0.5f, u0, v0);
+				Tesselator::instance.vertexUV(0.5f, 0.0f, 0.5f, u1, v0);
+				Tesselator::instance.vertexUV(0.5f, 0.0f, -0.5f, u1, v1);
+			} else {
+				this->tesselateCrossTexture(tile, a3, -0.5, -0.5, -0.5);
+			}
+			Tesselator::instance.draw(v12);
 			break;
+		}
 		case 13:
 			tile->updateDefaultShape();
 			Tesselator::instance.begin(24);
@@ -1053,16 +1086,40 @@ LABEL_21:
 			Tesselator::instance.addOffset(0.5, 0.5, 0.5);
 			break;
 		case 1:
+		case 20:
+		case 23: {
+			int32_t col = tile->getColor(a3);
+			if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+				float r = (float)((col >> 16) & 0xFF) / 255.0f;
+				float g = (float)((col >> 8) & 0xFF) / 255.0f;
+				float b = (float)(col & 0xFF) / 255.0f;
+				Tesselator::instance.color(r, g, b, 1.0f);
+			} else {
+				Tesselator::instance.color(1.0f, 1.0f, 1.0f, 1.0f);
+			}
 			Tesselator::instance.begin(8);
-			this->tesselateCrossTexture(tile, a3, -0.5, -0.5, -0.5);
-LABEL_8:
+			if (v7 == 23) {
+				TextureUVCoordinateSet* tex = tile->getTexture(0);
+				float u0 = tex->minX;
+				float u1 = tex->maxX;
+				float v0 = tex->minY;
+				float v1 = tex->maxY;
+				Tesselator::instance.vertexUV(-0.5f, 0.0f, -0.5f, u0, v1);
+				Tesselator::instance.vertexUV(-0.5f, 0.0f, 0.5f, u0, v0);
+				Tesselator::instance.vertexUV(0.5f, 0.0f, 0.5f, u1, v0);
+				Tesselator::instance.vertexUV(0.5f, 0.0f, -0.5f, u1, v1);
+			} else {
+				this->tesselateCrossTexture(tile, a3, -0.5, -0.5, -0.5);
+			}
 			Tesselator::instance.draw(0);
 			break;
+		}
 		case 19:
 			Tesselator::instance.begin(8);
 			tile->updateDefaultShape();
 			this->tesselateStemTexture(tile, a3, tile->maxY, -0.5, -0.5, -0.5);
-			goto LABEL_8;
+			Tesselator::instance.draw(0);
+			break;
 		case 13:
 			tile->updateDefaultShape();
 			Tesselator::instance.offset(-0.5, -0.5, -0.5);
@@ -2517,29 +2574,49 @@ bool_t TileRenderer::tesselateCrossInWorld(Tile* tile, int32_t x, int32_t y, int
 	v11 = (float)x;
 	v12 = (float)y;
 	v13 = (float)z;
-	if(tile == Tile::tallgrass || tile == Tile::flower || tile == Tile::rose) {
-		v14 = 11 * ((0x2FC20F * x) ^ y ^ (0x6EBFFF5 * z)) + 0x285B825 * ((0x2FC20F * x) ^ y ^ (0x6EBFFF5 * z)) * ((0x2FC20F * x) ^ y ^ (0x6EBFFF5 * z));
-		v15 = ((v14 & 0xffff0000) >> 16) /*HIWORD*/ & 0xF;
+	if(tile == Tile::tallgrass || tile == Tile::flower || tile == Tile::rose || tile == Tile::flowerPaeonia || tile == Tile::flowerDaisy || tile == Tile::flowerHoustonia || tile == Tile::flowerOrchid || tile == Tile::flowerAllium || tile->blockID == 252) {
+		int32_t baseY = y;
+		if (tile->blockID == 252 && (this->levelSource->getData(x, y, z) == 2)) {
+			baseY = y - 1;
+		}
+		v14 = 11 * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z)) + 0x285B825 * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z)) * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z));
+		v15 = ((v14 & 0xffff0000) >> 16) & 0xF;
 		v16 = (v14 >> 20) & 0xF;
 		v17 = ((v14 & 0xff000000) >> 24) & 0xF;
-		v11 = v11 + (float)((float)((float)((float)v15 / 15.0) - 0.5) * 0.35);
+		v11 = v11 + (float)((float)((float)((float)v15 / 15.0) - 0.5) * 0.45);
 		v18 = 0.1;
-		if(!Tile::flower) {
+		if(!Tile::flower && tile->blockID != 252) {
 			v18 = 0.35;
 		}
-		v12 = v12 + (float)((float)((float)((float)v16 / 15.0) - 1.0) * v18);
+		if (tile->blockID != 252) {
+			v12 = v12 + (float)((float)((float)((float)v16 / 15.0) - 1.0) * v18);
+		} else if (this->levelSource->getData(x, y, z) == 0) {
+			v12 = v12 - 0.22f;
+		}
+		v13 = v13 + (float)((float)((float)((float)v17 / 15.0) - 0.5) * 0.45);
+	} else if(Tile::doublePlant && tile == Tile::doublePlant) {
+		int32_t d = this->levelSource->getData(x, y, z);
+		int32_t baseY = (d & 8) ? (y - 1) : y;
+		v14 = 11 * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z)) + 0x285B825 * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z)) * ((0x2FC20F * x) ^ baseY ^ (0x6EBFFF5 * z));
+		v15 = ((v14 & 0xffff0000) >> 16) & 0xF;
+		v17 = ((v14 & 0xff000000) >> 24) & 0xF;
+		v11 = v11 + (float)((float)((float)((float)v15 / 15.0) - 0.5) * 0.35);
 		v13 = v13 + (float)((float)((float)((float)v17 / 15.0) - 0.5) * 0.35);
 	}
 	v19 = this->levelSource->getData(x, y, z);
+	if (Tile::doublePlant && tile == Tile::doublePlant && (v19 & 8)) {
+		int32_t bottomData = this->levelSource->getData(x, y - 1, z);
+		v19 = 8 | (bottomData & 7);
+	}
 	this->tesselateCrossTexture(tile, v19, v11, v12, v13);
 	return 1;
 }
 void TileRenderer::tesselateCrossTexture(Tile* tile, int32_t d, float a4, float a5, float a6) {
-	TextureUVCoordinateSet* v7; // r0
-	float maxX;					// s16
-	float minY;					// r11
-	float maxY;					// s17
-	float minX;					// s18
+	TextureUVCoordinateSet* v7;
+	float maxX;
+	float minY;
+	float maxY;
+	float minX;
 
 	if(this->hasUVCoords) {
 		v7 = &this->field_8;
@@ -2550,6 +2627,7 @@ void TileRenderer::tesselateCrossTexture(Tile* tile, int32_t d, float a4, float 
 	minY = v7->minY;
 	maxY = v7->maxY;
 	minX = v7->minX;
+
 	Tesselator::instance.vertexUV((float)(a4 + 0.5) - 0.45, a5 + 1.0, (float)(a6 + 0.5) - 0.45, v7->minX, minY);
 	Tesselator::instance.vertexUV((float)(a4 + 0.5) - 0.45, a5 + 0.0, (float)(a6 + 0.5) - 0.45, minX, maxY);
 	Tesselator::instance.vertexUV((float)(a4 + 0.5) + 0.45, a5 + 0.0, (float)(a6 + 0.5) + 0.45, maxX, maxY);
@@ -3142,8 +3220,123 @@ bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t 
 			return this->tesselateTreeInWorld(a2, a3, a4, a5);
 		case 14:
 			return this->tesselateBedInWorld(a2, a3, a4, a5);
+		case 20:
+			return this->tesselateVineInWorld(a2, a3, a4, a5);
+		case 23:
+			return this->tesselateWaterLilyInWorld(a2, a3, a4, a5);
 	}
 	return 0;
+}
+
+bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int32_t z) {
+	TextureUVCoordinateSet* tex = tile->getTexture(0);
+	float brightness = tile->getBrightness(this->levelSource, x, y, z);
+	int32_t color = tile->getColor(this->levelSource, x, y, z);
+	float r = brightness * (float)((color >> 16) & 0xFF) / 255.0f;
+	float g = brightness * (float)((color >> 8) & 0xFF) / 255.0f;
+	float b = brightness * (float)(color & 0xFF) / 255.0f;
+	Tesselator::instance.color(r, g, b);
+
+	float u0 = tex->minX;
+	float u1 = tex->maxX;
+	float v0 = tex->minY;
+	float v1 = tex->maxY;
+
+	int32_t meta = this->levelSource->getData(x, y, z);
+	float eps = 0.05f;
+
+	if (meta & 1 || meta == 0) {
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + eps, u0, v1);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + eps, u0, v0);
+		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + eps, u1, v0);
+		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + eps, u1, v1);
+
+		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + eps, u1, v1);
+		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + eps, u1, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + eps, u0, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + eps, u0, v1);
+	}
+	if (meta & 2) {
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z + 1.0f, u0, v1);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z + 1.0f, u0, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z, u1, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z, u1, v1);
+
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z, u1, v1);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z, u1, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z + 1.0f, u0, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z + 1.0f, u0, v1);
+	}
+	if (meta & 4) {
+		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + 1.0f - eps, u0, v1);
+		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + 1.0f - eps, u0, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f - eps, u1, v0);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + 1.0f - eps, u1, v1);
+
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + 1.0f - eps, u1, v1);
+		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f - eps, u1, v0);
+		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + 1.0f - eps, u0, v0);
+		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + 1.0f - eps, u0, v1);
+	}
+	if (meta & 8) {
+		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z, u0, v1);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z, u0, v0);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z + 1.0f, u1, v0);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z + 1.0f, u1, v1);
+
+		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z + 1.0f, u1, v1);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z + 1.0f, u1, v0);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z, u0, v0);
+		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z, u0, v1);
+	}
+
+	return 1;
+}
+
+bool_t TileRenderer::tesselateWaterLilyInWorld(Tile* tile, int32_t x, int32_t y, int32_t z) {
+	TextureUVCoordinateSet* tex = tile->getTexture(0);
+	float brightness = tile->getBrightness(this->levelSource, x, y, z);
+	int32_t color = tile->getColor(this->levelSource, x, y, z);
+	float r = brightness * (float)((color >> 16) & 0xFF) / 255.0f;
+	float g = brightness * (float)((color >> 8) & 0xFF) / 255.0f;
+	float b = brightness * (float)(color & 0xFF) / 255.0f;
+	Tesselator::instance.color(r, g, b);
+
+	float u0 = tex->minX;
+	float u1 = tex->maxX;
+	float v0 = tex->minY;
+	float v1 = tex->maxY;
+
+	int32_t hash = (x * 3129871) ^ (z * 116129781);
+	hash = hash ^ (hash >> 16);
+	int32_t rot = hash & 3;
+
+	float fx = (float)x;
+	float fy = (float)y + 0.015625f;
+	float fz = (float)z;
+
+	if (rot == 1) {
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 0.0f, u0, v1);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 0.0f, u0, v0);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 1.0f, u1, v0);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 1.0f, u1, v1);
+	} else if (rot == 2) {
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 1.0f, u0, v1);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 0.0f, u0, v0);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 0.0f, u1, v0);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 1.0f, u1, v1);
+	} else if (rot == 3) {
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 1.0f, u0, v1);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 1.0f, u0, v0);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 0.0f, u1, v0);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 0.0f, u1, v1);
+	} else {
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 0.0f, u0, v1);
+		Tesselator::instance.vertexUV(fx + 0.0f, fy, fz + 1.0f, u0, v0);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 1.0f, u1, v0);
+		Tesselator::instance.vertexUV(fx + 1.0f, fy, fz + 0.0f, u1, v1);
+	}
+	return 1;
 }
 bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t a5, const struct TextureUVCoordinateSet& a6) {
 	this->hasUVCoords = 1;
@@ -3610,10 +3803,14 @@ bool_t TileRenderer::tesselateThinFenceInWorld(ThinFenceTile* tile, int32_t x, i
 	//int32_t v61;					 // [sp+8Ch] [bp-6Ch]
 	TextureUVCoordinateSet v62; // [sp+90h] [bp-68h] BYREF
 
-	v6 = tile->getBrightness(this->levelSource, x, y, z);
+	float bSelf = tile->getBrightness(this->levelSource, x, y, z);
+	float bXp = tile->getBrightness(this->levelSource, x + 1, y, z);
+	float bXm = tile->getBrightness(this->levelSource, x - 1, y, z);
+	float bZp = tile->getBrightness(this->levelSource, x, y, z + 1);
+	float bZm = tile->getBrightness(this->levelSource, x, y, z - 1);
+	v6 = std::max(bSelf, std::max(std::max(bXp, bXm), std::max(bZp, bZm)));
 	v7 = tile->getColor(this->levelSource, x, y, z);
 	Tesselator::instance.color(v6 * (float)((float)((v7 & 0xff0000) >> 16) / 255.0), v6 * (float)((float)((v7 & 0xff00) >> 8) / 255.0), v6 * (float)((float)(v7 & 0xff) / 255.0));
-	//hasUVCoords = (unsigned __int8)this->hasUVCoords;
 	if(this->hasUVCoords) {
 		//p_width = &this->field_8.width;
 		v58 = this->field_8;
@@ -4385,19 +4582,58 @@ bool_t TileRenderer::tesselateWaterInWorld(Tile* tile, int32_t x, int32_t y, int
 			v29 = v27 + (float)(v45 * v33);
 			v28 = v28 + (float)(v39 * v38);
 		}
+		int32_t totalR = 0, totalG = 0, totalB = 0;
+		int32_t totalWeight = 0;
+		for (int32_t sx = -2; sx <= 2; ++sx) {
+			for (int32_t sz = -2; sz <= 2; ++sz) {
+				int32_t distSq = sx * sx + sz * sz;
+				if (distSq > 5) continue;
+				int32_t weight = 6 - distSq;
+				int32_t c = tile->getColor(this->levelSource, x + sx, y, z + sz);
+				totalR += ((c >> 16) & 0xFF) * weight;
+				totalG += ((c >> 8) & 0xFF) * weight;
+				totalB += (c & 0xFF) * weight;
+				totalWeight += weight;
+			}
+		}
+		float wr = (float)(totalR / totalWeight) / 255.0f;
+		float wg = (float)(totalG / totalWeight) / 255.0f;
+		float wb = (float)(totalB / totalWeight) / 255.0f;
 		v48 = tile->getBrightness(this->levelSource, x, y, z);
-		Tesselator::instance.color(v48, v48, v48);
+		Tesselator::instance.color(v48 * wr, v48 * wg, v48 * wb);
 		Tesselator::instance.vertexUV((float)x + 0.0, (float)y + WaterHeight, (float)z + 0.0, v46, v43);
 		Tesselator::instance.vertexUV((float)x + 0.0, (float)y + v23, (float)z + 1.0, v42, v47);
 		Tesselator::instance.vertexUV((float)x + 1.0, (float)y + v24, (float)z + 1.0, v72, v30);
 		Tesselator::instance.vertexUV((float)x + 1.0, (float)y + v25, (float)z + 0.0, v29, v28);
+
+		Tesselator::instance.vertexUV((float)x + 1.0, (float)y + v25, (float)z + 0.0, v29, v28);
+		Tesselator::instance.vertexUV((float)x + 1.0, (float)y + v24, (float)z + 1.0, v72, v30);
+		Tesselator::instance.vertexUV((float)x + 0.0, (float)y + v23, (float)z + 1.0, v42, v47);
+		Tesselator::instance.vertexUV((float)x + 0.0, (float)y + WaterHeight, (float)z + 0.0, v46, v43);
 		v80 = 1;
 	} else {
 		v80 = 0;
 	}
+	int32_t totalR = 0, totalG = 0, totalB = 0;
+	int32_t totalWeight = 0;
+	for (int32_t sx = -2; sx <= 2; ++sx) {
+		for (int32_t sz = -2; sz <= 2; ++sz) {
+			int32_t distSq = sx * sx + sz * sz;
+			if (distSq > 5) continue;
+			int32_t weight = 6 - distSq;
+			int32_t c = tile->getColor(this->levelSource, x + sx, y, z + sz);
+			totalR += ((c >> 16) & 0xFF) * weight;
+			totalG += ((c >> 8) & 0xFF) * weight;
+			totalB += (c & 0xFF) * weight;
+			totalWeight += weight;
+		}
+	}
+	float wr = (float)(totalR / totalWeight) / 255.0f;
+	float wg = (float)(totalG / totalWeight) / 255.0f;
+	float wb = (float)(totalB / totalWeight) / 255.0f;
 	if(this->disableCulling || v81) {
 		v49 = tile->getBrightness(this->levelSource, x, v78, z);
-		Tesselator::instance.color((float)(v49 * 0.5), v49 * 0.5, v49 * 0.5);
+		Tesselator::instance.color((float)(v49 * 0.5) * wr, (float)(v49 * 0.5) * wg, (float)(v49 * 0.5) * wb);
 		v50 = tile->getTexture(0);
 		this->renderFaceDown(tile, (float)x, (float)y, (float)z, *v50);
 		v80 = 1;
@@ -4470,7 +4706,7 @@ LABEL_29:
 			} else {
 				v67 = v66 * 0.8;
 			}
-			Tesselator::instance.color(v67, v67, v67);
+			Tesselator::instance.color(v67 * wr, v67 * wg, v67 * wb);
 			Tesselator::instance.vertexUV(v59, (float)y + v63, v58, v55, v73);
 			Tesselator::instance.vertexUV(v60, (float)y + v62, v61, v57, v79);
 			v68 = (float)y + 0.0;
@@ -4680,6 +4916,18 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 	Tile* tTile = (te->topTileId > 0 && te->topTileId < 256) ? Tile::tiles[te->topTileId] : nullptr;
 	if (!bTile && !tTile) return 0;
 
+	uint32_t globalColor = tile->getColor(this->levelSource, x, y, z) & 0xFFFFFF;
+
+	uint32_t bColor = (te->bottomColor != 0xFFFFFF) ? te->bottomColor : globalColor;
+	float b_cr = (float)((bColor >> 16) & 0xFF) / 255.0f;
+	float b_cg = (float)((bColor >> 8) & 0xFF) / 255.0f;
+	float b_cb = (float)(bColor & 0xFF) / 255.0f;
+
+	uint32_t tColor = (te->topColor != 0xFFFFFF) ? te->topColor : globalColor;
+	float t_cr = (float)((tColor >> 16) & 0xFF) / 255.0f;
+	float t_cg = (float)((tColor >> 8) & 0xFF) / 255.0f;
+	float t_cb = (float)(tColor & 0xFF) / 255.0f;
+
 	float fx = (float)x, fy = (float)y, fz = (float)z;
 	int32_t mode = te->mode;
 
@@ -4688,37 +4936,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.5f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(0, te->bottomAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y + 1, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(1, te->bottomAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z - 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(2, te->bottomAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(3, te->bottomAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x - 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(4, te->bottomAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x + 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(5, te->bottomAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
@@ -4727,37 +4975,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.0f, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(0, te->topAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y + 1, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(1, te->topAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(2, te->topAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z + 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(3, te->topAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x - 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(4, te->topAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x + 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(5, te->topAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
@@ -4767,37 +5015,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.0f, 0.0f, 0.0f, 0.5f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(0, te->bottomAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y + 1, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(1, te->bottomAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z - 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(2, te->bottomAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z + 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(3, te->bottomAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x - 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(4, te->bottomAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(5, te->bottomAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
@@ -4806,37 +5054,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(0, te->topAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y + 1, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(1, te->topAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z - 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(2, te->topAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z + 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(3, te->topAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(4, te->topAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x + 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(5, te->topAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
@@ -4846,37 +5094,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(0, te->bottomAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(1, te->bottomAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z - 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(2, te->bottomAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z + 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(3, te->bottomAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x - 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(4, te->bottomAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x + 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * b_cr, br * b_cg, br * b_cb);
 				const TextureUVCoordinateSet* tex = bTile->getTexture(5, te->bottomAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
@@ -4885,37 +5133,37 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			tile->setShape(0.0f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f);
 			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.5f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(0, te->topAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y + 1, z);
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(1, te->topAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z - 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(2, te->topAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z + 1) * 0.8f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(3, te->topAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x - 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(4, te->topAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x + 1, y, z) * 0.6f;
-				Tesselator::instance.color(br, br, br);
+				Tesselator::instance.color(br * t_cr, br * t_cg, br * t_cb);
 				const TextureUVCoordinateSet* tex = tTile->getTexture(5, te->topAux);
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}

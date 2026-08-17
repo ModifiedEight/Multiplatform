@@ -1,4 +1,4 @@
-﻿
+
 language.name=English
 language.region=US
 language.code=en_US
@@ -1107,3 +1107,16 @@ item.bed.brown.name=Brown Bed
 item.bed.green.name=Green Bed
 item.bed.red.name=Red Bed
 item.bed.black.name=Black Bed
+tile.flowerPaeonia.name=Peony
+tile.flowerDaisy.name=Oxeye Daisy
+tile.flowerHoustonia.name=Azure Bluet
+tile.flowerOrchid.name=Blue Orchid
+tile.flowerAllium.name=Allium
+tile.doublePlant.grass.name=Double Tallgrass
+tile.doublePlant.fern.name=Large Fern
+tile.doublePlant.paeonia.name=Peony
+tile.doublePlant.rose.name=Rose Bush
+tile.doublePlant.name=Double Plant
+tile.vine.name=Vines
+tile.seagrass.name=Seagrass
+item.seagrass.name=Seagrass

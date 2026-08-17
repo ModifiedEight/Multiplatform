@@ -2,6 +2,7 @@
 #include <ExternalServerFile.hpp>
 #include <ExternalServer.hpp>
 #include <cpputils.hpp>
+#include <nbt/CompoundTag.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <entity/player/User.hpp>
 #include <entity/player/gamemode/CreativeMode.hpp>
@@ -39,6 +40,7 @@
 #include <rendering/PerfRenderer.hpp>
 #include <rendering/Textures.hpp>
 #include <sound/SoundEngine.hpp>
+#include <sound/MusicEngine.hpp>
 #include <tile/Tile.hpp>
 #include <util/CMutex.hpp>
 #include <util/CThread.hpp>
@@ -139,6 +141,7 @@ Minecraft::Minecraft()
 	this->rakNetInstance = new RakNetInstance();
 	this->soundEngine = new SoundEngine(20);
 	this->soundEngine->init(this, &this->options);
+	new MusicEngine();
 	this->cmutex = new CMutex();
 	this->field_D30 = new ServerCommandParser();
 }
@@ -499,37 +502,24 @@ void Minecraft::joinMultiplayer(const struct PingedCompatibleServer& a2, bool_t 
 	}
 }
 void Minecraft::leaveGame(bool_t a2, bool_t a3) {
-	bool field_CF4; // r5
-	bool v7; // r7
-	LevelStorage* ls; // r0
-
-	field_CF4 = this->field_CF4;
 	if(!this->field_CF4 && this->levelGenerated) {
-		this->field_CF4 = field_CF4;
+		if (this->player && this->level && this->level->getLevelData()) {
+			CompoundTag playerTag;
+			this->player->saveWithoutId(&playerTag);
+			this->level->getLevelData()->setPlayerTag(&playerTag);
+		}
+		if (this->level && this->level->getLevelStorage() && this->player) {
+			this->level->getLevelStorage()->save(this->player);
+		}
 		if(this->level) {
-			if(this->level->isClientMaybe) {
-				if(!a2) {
-					field_CF4 = 0;
-					v7 = 0;
-					goto LABEL_7;
-				}
-			} else {
-				field_CF4 = 1;
+			if(this->level->getChunkSource()) {
+				this->level->getChunkSource()->saveAll(0);
 			}
-			v7 = 1;
-		} else {
-			field_CF4 = 0;
-			v7 = 0;
-		}
-LABEL_7:
-		this->rakNetInstance->disconnect();
-		if(v7) {
-			this->level->getChunkSource()->saveAll(1);
 			this->level->saveGame();
-			if(field_CF4) {
-				this->level->savePlayers();
-			}
+			this->level->savePlayers();
+			this->level->saveLevelData();
 		}
+		this->rakNetInstance->disconnect();
 		this->viewEntityMaybe = 0;
 		this->levelRenderer->setLevel(0);
 		this->particleEngine->setLevel(0);
@@ -538,14 +528,11 @@ LABEL_7:
 		}
 		this->serverSideNetworkHandler = 0;
 		if(this->level) {
-			this->level->saveLevelData();
-			ls = this->level->getLevelStorage();
+			LevelStorage* ls = this->level->getLevelStorage();
 			if(ls) {
 				delete ls;
 			}
-			if(this->level) {
-				delete this->level;
-			}
+			delete this->level;
 			this->level = 0;
 		}
 		this->player = 0;
@@ -936,6 +923,10 @@ void Minecraft::teardown(void) {
 
 	if(this->soundEngine) {
 		delete this->soundEngine;
+	}
+
+	if(MusicEngine::instance) {
+		delete MusicEngine::instance;
 	}
 
 	if(this->gameMode) {

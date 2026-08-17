@@ -64,6 +64,8 @@ void Touch::IngameBlockSelectionScreen::init() {
 	int v12;				   // r1
 	IntRectangle r3_0;		   // [sp+20h] [bp-28h] BYREF
 
+	this->menuButton.width = 38;
+	this->menuButton.height = 18;
 	this->armorButton.width = 38;
 	this->craftButton.width = 38;
 	this->backButton.width = 38;
@@ -99,24 +101,27 @@ void Touch::IngameBlockSelectionScreen::init() {
 	this->field_188 = (v11 - 1) / v12 + 1;
 	this->buttons.emplace_back(&this->selectBlocksHeader);
 	this->buttons.emplace_back(&this->backButton);
+	this->buttons.emplace_back(&this->menuButton);
 	if(!this->minecraft->isCreativeMode()) {
 		this->buttons.emplace_back(&this->craftButton);
 		this->buttons.emplace_back(&this->armorButton);
 	}
 }
 void Touch::IngameBlockSelectionScreen::setupPositions() {
-	int32_t width;		  // r4
-	int32_t v2;			  // r2
-	int32_t v3;			  // r2
-	int32_t v4;			  // r4
-	Minecraft* minecraft; // r2
-	int32_t v6;			  // r2
+	int32_t width;		  
+	int32_t v2;			  
+	int32_t v3;			  
+	int32_t v4;			  
+	Minecraft* minecraft; 
+	int32_t v6;			  
 
 	width = this->width;
 	this->armorButton.posY = 4;
 	this->craftButton.posY = 4;
 	this->backButton.posY = 4;
 	this->backButton.posX = 4;
+	this->menuButton.posY = 4;
+	this->menuButton.posX = this->backButton.posX + this->backButton.width + 4;
 	v2 = this->armorButton.width;
 	this->selectBlocksHeader.width = width;
 	v3 = width - v2;

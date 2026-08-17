@@ -157,6 +157,14 @@ void RenderChunk::rebuild(void) {
 									v25 = 1;
 									v29[blockRenderLayer] = 1;
 								}
+								if(Tile::seagrass && id == Tile::seagrass->blockID) {
+									if(layer == 2) {
+										renderedAnyBlocks |= v32.tesselateInWorld(Tile::calmWater, x, y, z);
+									} else if(layer < 2) {
+										v25 = 1;
+										v29[2] = 1;
+									}
+								}
 							}
 						}
 					}

@@ -118,7 +118,7 @@ void MixedSlabTile::playerDestroy(Level* level, Player* player, int32_t x, int32
 		int32_t dropId = topTile ? topTile->getResource(tAux, &level->random) : tTileId;
 		int32_t dropAux = topTile ? topTile->getSpawnResourcesAuxValue(tAux) : tAux;
 		if (dropId > 0) {
-			Tile::popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
+			this->popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
 		}
 		if (bTileId > 0) {
 			te->topTileId = 0;
@@ -133,7 +133,7 @@ void MixedSlabTile::playerDestroy(Level* level, Player* player, int32_t x, int32
 		int32_t dropId = bottomTile ? bottomTile->getResource(bAux, &level->random) : bTileId;
 		int32_t dropAux = bottomTile ? bottomTile->getSpawnResourcesAuxValue(bAux) : bAux;
 		if (dropId > 0) {
-			Tile::popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
+			this->popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
 		}
 		if (tTileId > 0) {
 			te->bottomTileId = 0;
@@ -142,6 +142,23 @@ void MixedSlabTile::playerDestroy(Level* level, Player* player, int32_t x, int32
 		} else {
 			level->removeTileEntity(x, y, z);
 			level->setTile(x, y, z, 0, 3);
+		}
+	}
+}
+
+void MixedSlabTile::playerWillDestroy(Level* level, int32_t x, int32_t y, int32_t z, int32_t meta, Player* player) {
+	MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+	if (!te) return;
+	if (player && player->abilities.instabuild) return;
+
+	int32_t remTileId = (te->bottomTileId > 0) ? te->bottomTileId : te->topTileId;
+	int32_t remAux = (te->bottomTileId > 0) ? te->bottomAux : te->topAux;
+	if (remTileId > 0) {
+		Tile* remTile = (remTileId < 256) ? Tile::tiles[remTileId] : nullptr;
+		int32_t dropId = remTile ? remTile->getResource(remAux, &level->random) : remTileId;
+		int32_t dropAux = remTile ? remTile->getSpawnResourcesAuxValue(remAux) : remAux;
+		if (dropId > 0) {
+			this->popResource(level, x, y, z, ItemInstance(dropId, 1, dropAux));
 		}
 	}
 }

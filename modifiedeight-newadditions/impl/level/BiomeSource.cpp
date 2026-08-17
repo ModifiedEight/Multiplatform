@@ -17,8 +17,7 @@ BiomeSource::BiomeSource(struct Level* a2)
 	this->perlinNoisePtr2 = new PerlinNoise(&this->randomInstance2, 4);
 	this->detailNoise = new PerlinNoise(&this->randomInstance3, 2);
 	this->level = a2;
-	// small noiseScaleFactor makes biomes larger (lower frequency)
-	this->noiseScaleFactor = (a2 && a2->getLevelData() && a2->getLevelData()->getGeneratorVersion() >= 3) ? 0.25f : 1.0f;
+	this->noiseScaleFactor = 1.0f;
 	this->biomes = new Biome*[256];
 	this->rainfallNoises = new float[256];
 	this->temperatureNoises = new float[256];
@@ -57,16 +56,16 @@ Biome* BiomeSource::getBiome(int32_t x, int32_t z) {
 	return *this->getBiomeBlock(x, z, 1, 1);
 }
 float* BiomeSource::getTemperatureBlock(int32_t a2, int32_t a3, int32_t a4, int32_t a5) {
-	float* reg; // r0
-	float* detailNoises; // r1
-	float* v11; // r0
-	int32_t v12; // r2
-	int32_t v13; // r3
-	int32_t v14; // r12
-	float* v15; // r0
-	float v16; // s15
-	float v17; // s15
-	int32_t i; // r1
+	float* reg;
+	float* detailNoises;
+	float* v11;
+	int32_t v12;
+	int32_t v13;
+	int32_t v14;
+	float* v15;
+	float v16;
+	float v17;
+	int32_t i;
 
 	this->resizeBuffers(a4 * a5);
 
@@ -81,7 +80,7 @@ float* BiomeSource::getTemperatureBlock(int32_t a2, int32_t a3, int32_t a4, int3
 		for(i = 0; i < a5; ++i) {
 			v14 = i + v13;
 			v15 = &this->rainfallNoises[v14];
-			v16 = 1.0 - (float)((float)((float)((float)(this->detailNoises[v14] * 1.1) + 0.5) * 0.01) + (float)((float)((float)(*v15 * 0.15) + 0.7) * 0.99));
+			v16 = 1.0 - (float)((float)((float)((float)(this->detailNoises[v14] * 1.1f) + 0.5) * 0.01) + (float)((float)((float)(*v15 * 0.15) + 0.7) * 0.99));
 			v17 = 1.0 - (float)(v16 * v16);
 			if(v17 < 0.0) {
 				v17 = 0.0;
@@ -102,21 +101,21 @@ Biome** BiomeSource::getBiomeBlock(int32_t a2, int32_t a3, int32_t a4, int32_t a
 	return this->biomes;
 }
 Biome** BiomeSource::getBiomeBlock(Biome** biomes, int32_t a3, int32_t a4, int32_t a5, int32_t a6){
-	float* reg;				  // r0
-	float* temperatureNoises; // r1
-	float* reg2;			  // r0
-	int32_t v12;			  // r2
-	int32_t v13;			  // r6
-	int32_t v14;			  // r8
-	float* detailNoises;	  // r1
-	int32_t v16;			  // r10
-	int32_t v17;			  // r7
-	float v18;				  // s14
-	float* v19;				  // r1
-	float v20;				  // s15
-	float v21;				  // s14
-	float v22;				  // s14
-	Biome** biomes2;		  // r11
+	float* reg;
+	float* temperatureNoises;
+	float* reg2;
+	int32_t v12;
+	int32_t v13;
+	int32_t v14;
+	float* detailNoises;
+	int32_t v16;
+	int32_t v17;
+	float v18;
+	float* v19;
+	float v20;
+	float v21;
+	float v22;
+	Biome** biomes2;
 
 	this->resizeBuffers(a5 * a6);
 
@@ -135,7 +134,7 @@ Biome** BiomeSource::getBiomeBlock(Biome** biomes, int32_t a3, int32_t a4, int32
 		while(v17 < a6) {
 			v16 = v17 + v14;
 			++v17;
-			v18 = (float)(this->detailNoises[v16] * 1.1) + 0.5;
+			v18 = (float)(this->detailNoises[v16] * 1.1f) + 0.5;
 			v19 = &this->rainfallNoises[v16];
 			v20 = (float)(v18 * 0.002) + (float)((float)((float)(this->temperatureNoises[v16] * 0.15) + 0.5) * 0.998);
 			v21 = 1.0 - (float)((float)(v18 * 0.01) + (float)((float)((float)(*v19 * 0.15) + 0.7) * 0.99));
@@ -154,9 +153,11 @@ Biome** BiomeSource::getBiomeBlock(Biome** biomes, int32_t a3, int32_t a4, int32
 				v20 = 1.0;
 			}
 			biomes2 = this->biomes;
-			Biome* b = Biome::getBiome(v22, v20);
-			if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() < 3) {
-				if (b == Biome::jungle) b = Biome::forest;
+			Biome* b;
+			if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() < 2) {
+				b = Biome::getOldBiome(v22, v20);
+			} else {
+				b = Biome::getBiome(v22, v20);
 			}
 			biomes2[v16] = b;
 		}
