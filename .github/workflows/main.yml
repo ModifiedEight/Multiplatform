@@ -90,6 +90,8 @@ jobs:
           cp modifiedeight/build/modifiedeight.exe . 2>/dev/null || true
           cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
           cp ../prebuilt/win64/lib/SDL.dll .
+          find /usr/x86_64-w64-mingw32/ -name "zlib1.dll" -exec cp {} . \; 2>/dev/null || true
+          find /usr/ -name "zlib1.dll" -exec cp {} . \; 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -99,6 +101,7 @@ jobs:
             build/modifiedeight.exe
             build/modifiedeight-newadditions.exe
             build/SDL.dll
+            build/zlib1.dll
 
   build-ios:
     runs-on: ubuntu-24.04

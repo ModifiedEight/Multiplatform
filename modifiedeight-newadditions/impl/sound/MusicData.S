@@ -1,5 +1,5 @@
 #if defined(__APPLE__)
-#define SYM(x) _##x
+#define SYM(x) x
 .section __TEXT,__const
 #else
 #define SYM(x) x

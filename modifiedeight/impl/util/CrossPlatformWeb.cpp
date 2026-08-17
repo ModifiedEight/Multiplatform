@@ -172,6 +172,7 @@ bool CrossPlatform_ExtractZip(const std::string& zipFile, const std::string& out
 }
 
 #elif defined(WIN32) || defined(_WIN32)
+#include <winsock2.h>
 #include <windows.h>
 
 typedef PVOID HINTERNET;

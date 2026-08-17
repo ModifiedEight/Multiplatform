@@ -113,7 +113,13 @@ int32_t PlayerRenderer::prepareArmor(Mob *a2_, int32_t armour, float a4) {
 #include <chrono>
 #include <cstring>
 #include <entity/LocalPlayer.hpp>
+#ifdef _WIN32
+#include <direct.h>
+#define mkdirPortable(p) _mkdir(p)
+#else
 #include <sys/stat.h>
+#define mkdirPortable(p) mkdir(p, 0777)
+#endif
 
 static std::map<std::string, unsigned char *> g_pendingSkinsData;
 static std::map<std::string, std::pair<int, int>> g_pendingSkinsDims;
@@ -268,7 +274,7 @@ void PlayerRenderer::setupPosition(Entity *a2_, float a3, float a4, float a5) {
 
       if (tex && (tex->textures.find(texName) == tex->textures.end() ||
                   tex->textures[texName].glTexId == 0)) {
-        mkdir("skin_cache", 0777);
+        mkdirPortable("skin_cache");
         std::string cachePath = "skin_cache/" + nick + ".png";
         int cw = 0, ch = 0, cch = 0;
         unsigned char *cachedPx =
@@ -294,7 +300,7 @@ void PlayerRenderer::setupPosition(Entity *a2_, float a3, float a4, float a5) {
         std::thread([nick]() {
           auto bin = downloadSkinData(nick);
           if (!bin.empty()) {
-            mkdir("skin_cache", 0777);
+            mkdirPortable("skin_cache");
             std::string cachePath = "skin_cache/" + nick + ".png";
             bool isDifferent = true;
             FILE *rf = fopen(cachePath.c_str(), "rb");
