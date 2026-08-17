@@ -14,11 +14,6 @@
 
 #include <unigl.h>
 
-static std::map<std::string, bool> g_skinRequested;
-static std::map<std::string, unsigned char*> g_pendingSkinsData;
-static std::map<std::string, std::pair<int, int>> g_pendingSkinsDims;
-static std::mutex skinMutex;
-
 PlayerRenderer::PlayerRenderer(HumanoidModel* a2, float a3)
 	: HumanoidMobRenderer(a2, a3) {
 	this->hmodel1 = new HumanoidModel(1.0, 0.0);
@@ -69,6 +64,7 @@ void PlayerRenderer::renderName(Entity* a2_, float a3) {
 		glPopMatrix();
 	}
 }
+
 int32_t PlayerRenderer::prepareArmor(Mob* a2_, int32_t armour, float a4) {
 	Player* a2 = (Player*)a2_;
 	ItemInstance* armor;
@@ -98,71 +94,221 @@ int32_t PlayerRenderer::prepareArmor(Mob* a2_, int32_t armour, float a4) {
 	hmodel2->field_4 = a2->isRiding();
 	return 1;
 }
+
+#include <Minecraft.hpp>
+#include <entity/LocalPlayer.hpp>
+#include <cstring>
+#include <sys/stat.h>
+#include <chrono>
+
+static std::map<std::string, unsigned char*> g_pendingSkinsData;
+static std::map<std::string, std::pair<int, int>> g_pendingSkinsDims;
+static std::map<std::string, uint64_t> g_lastSkinCheckTime;
+static std::mutex skinMutex;
+
+static uint64_t getCurrentTimeMillis() {
+	return (uint64_t)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+static unsigned char* processSkinImage(const unsigned char* src, int w, int h, int& outW, int& outH) {
+	outW = 64;
+	outH = 32;
+	unsigned char* out = (unsigned char*)calloc(64 * 32 * 4, 1);
+	if (!out) return nullptr;
+
+	int srcHalfH = (h == w) ? (h / 2) : h;
+
+	for (int dy = 0; dy < 32; ++dy) {
+		int sy = dy * srcHalfH / 32;
+		if (sy >= h) sy = h - 1;
+		for (int dx = 0; dx < 64; ++dx) {
+			int sx = dx * w / 64;
+			if (sx >= w) sx = w - 1;
+			int srcIdx = (sy * w + sx) * 4;
+			int dstIdx = (dy * 64 + dx) * 4;
+			out[dstIdx + 0] = src[srcIdx + 0];
+			out[dstIdx + 1] = src[srcIdx + 1];
+			out[dstIdx + 2] = src[srcIdx + 2];
+			out[dstIdx + 3] = src[srcIdx + 3];
+
+			// In 64x32 skin format, only x in [32, 63] and y in [0, 15] is the hat/helmet overlay.
+			// Base body, head, arms, legs must be fully opaque (alpha 255) to prevent invisibility.
+			if (!(dx >= 32 && dx < 64 && dy < 16)) {
+				out[dstIdx + 3] = 255;
+			}
+		}
+	}
+	return out;
+}
+
+static void uploadSkinTexture(const std::string& username, const unsigned char* px, int w, int h) {
+	int outW = 64, outH = 32;
+	unsigned char* uploadPx = processSkinImage(px, w, h, outW, outH);
+	if (!uploadPx) return;
+
+	std::string texName = username + "_skin";
+	Textures* tex = EntityRenderer::entityRenderDispatcher->textures;
+	if (!tex) {
+		free(uploadPx);
+		return;
+	}
+
+	auto itTex = tex->textures.find(texName);
+	GLuint skinTexId = 0;
+	if (itTex != tex->textures.end() && itTex->second.glTexId != 0) {
+		skinTexId = itTex->second.glTexId;
+		glBindTexture(GL_TEXTURE_2D, skinTexId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outW, outH, 0, GL_RGBA, GL_UNSIGNED_BYTE, uploadPx);
+		itTex->second.width = outW;
+		itTex->second.height = outH;
+	} else {
+		glGenTextures(1, &skinTexId);
+		glBindTexture(GL_TEXTURE_2D, skinTexId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outW, outH, 0, GL_RGBA, GL_UNSIGNED_BYTE, uploadPx);
+		TextureData td;
+		td.width = outW;
+		td.height = outH;
+		td.pixels = nullptr;
+		td.glTexId = skinTexId;
+		tex->textures.erase(texName);
+		tex->textures.insert(std::pair<std::string, TextureData>(texName, std::move(td)));
+	}
+	tex->currentTexture = 0;
+	free(uploadPx);
+}
+
+static std::vector<unsigned char> downloadSkinData(const std::string& username) {
+	if (username.empty()) return {};
+
+	std::vector<std::string> urls = {
+		"https://raw.githubusercontent.com/gameherobrine2/test123/refs/heads/main/" + username + ".png",
+		"https://raw.githubusercontent.com/gameherobrine2/test123/main/" + username + ".png",
+		"https://raw.githubusercontent.com/gameherobrine2/test123/master/" + username + ".png",
+		"https://github.com/gameherobrine2/test123/raw/main/" + username + ".png",
+	};
+
+	std::string lowerName = username;
+	for (char& c : lowerName) c = (char)tolower((unsigned char)c);
+	if (lowerName != username) {
+		urls.push_back("https://raw.githubusercontent.com/gameherobrine2/test123/refs/heads/main/" + lowerName + ".png");
+		urls.push_back("https://raw.githubusercontent.com/gameherobrine2/test123/main/" + lowerName + ".png");
+		urls.push_back("https://raw.githubusercontent.com/gameherobrine2/test123/master/" + lowerName + ".png");
+	}
+
+	for (const auto& url : urls) {
+		auto data = CrossPlatform_DownloadBinary(url);
+		if (!data.empty() && data.size() > 64) {
+			return data;
+		}
+	}
+	return {};
+}
+
 void PlayerRenderer::setupPosition(Entity* a2_, float a3, float a4, float a5) {
 	Player* a2 = (Player*)a2_;
-	if(a2 && !a2->username.empty()) {
-		bool requestSkin = false;
-		{
-			std::lock_guard<std::mutex> lock(skinMutex);
-			if (!g_skinRequested[a2->username]) {
-				g_skinRequested[a2->username] = true;
-				requestSkin = true;
+	if (a2) {
+		std::string nick = a2->username;
+		if (nick.empty() && EntityRenderer::entityRenderDispatcher && EntityRenderer::entityRenderDispatcher->minecraft) {
+			if (a2 == EntityRenderer::entityRenderDispatcher->minecraft->player) {
+				nick = EntityRenderer::entityRenderDispatcher->minecraft->options.username;
+				if (a2->username.empty()) a2->username = nick;
 			}
 		}
-		
-		if (requestSkin) {
-			std::string nick = a2->username;
-			std::thread([nick]() {
-				std::string url = "https://raw.githubusercontent.com/gameherobrine2/test123/refs/heads/main/" + nick + ".png";
-				auto bin = CrossPlatform_DownloadBinary(url);
-				if (!bin.empty()) {
-					int w, h, ch;
-					unsigned char *px = stbi_load_from_memory(bin.data(), (int)bin.size(), &w, &h, &ch, STBI_rgb_alpha);
-					if (px) {
-						std::lock_guard<std::mutex> lock(skinMutex);
-						g_pendingSkinsData[nick] = px;
-						g_pendingSkinsDims[nick] = {w, h};
+
+		if (!nick.empty()) {
+			std::string texName = nick + "_skin";
+			Textures* tex = EntityRenderer::entityRenderDispatcher->textures;
+
+			if (tex && (tex->textures.find(texName) == tex->textures.end() || tex->textures[texName].glTexId == 0)) {
+				mkdir("skin_cache", 0777);
+				std::string cachePath = "skin_cache/" + nick + ".png";
+				int cw = 0, ch = 0, cch = 0;
+				unsigned char* cachedPx = stbi_load(cachePath.c_str(), &cw, &ch, &cch, STBI_rgb_alpha);
+				if (cachedPx) {
+					uploadSkinTexture(nick, cachedPx, cw, ch);
+					stbi_image_free(cachedPx);
+				}
+			}
+
+			uint64_t now = getCurrentTimeMillis();
+			bool doCheck = false;
+			{
+				std::lock_guard<std::mutex> lock(skinMutex);
+				if (g_lastSkinCheckTime.find(nick) == g_lastSkinCheckTime.end() || now - g_lastSkinCheckTime[nick] >= 15000) {
+					g_lastSkinCheckTime[nick] = now;
+					doCheck = true;
+				}
+			}
+
+			if (doCheck) {
+				std::thread([nick]() {
+					auto bin = downloadSkinData(nick);
+					if (!bin.empty()) {
+						mkdir("skin_cache", 0777);
+						std::string cachePath = "skin_cache/" + nick + ".png";
+						bool isDifferent = true;
+						FILE* rf = fopen(cachePath.c_str(), "rb");
+						if (rf) {
+							fseek(rf, 0, SEEK_END);
+							long sz = ftell(rf);
+							fseek(rf, 0, SEEK_SET);
+							if (sz == (long)bin.size()) {
+								std::vector<unsigned char> diskBuf(sz);
+								if (fread(diskBuf.data(), 1, sz, rf) == (size_t)sz) {
+									if (memcmp(diskBuf.data(), bin.data(), sz) == 0) {
+										isDifferent = false;
+									}
+								}
+							}
+							fclose(rf);
+						}
+
+						if (isDifferent) {
+							FILE* wf = fopen(cachePath.c_str(), "wb");
+							if (wf) {
+								fwrite(bin.data(), 1, bin.size(), wf);
+								fclose(wf);
+							}
+						}
+
+						int w, h, ch;
+						unsigned char *px = stbi_load_from_memory(bin.data(), (int)bin.size(), &w, &h, &ch, STBI_rgb_alpha);
+						if (px) {
+							std::lock_guard<std::mutex> lock(skinMutex);
+							if (g_pendingSkinsData.find(nick) != g_pendingSkinsData.end()) {
+								stbi_image_free(g_pendingSkinsData[nick]);
+							}
+							g_pendingSkinsData[nick] = px;
+							g_pendingSkinsDims[nick] = {w, h};
+						}
 					}
-				}
-			}).detach();
-		}
-		
-		{
-			std::lock_guard<std::mutex> lock(skinMutex);
-			auto it = g_pendingSkinsData.find(a2->username);
-			if (it != g_pendingSkinsData.end()) {
-				unsigned char* px = it->second;
-				int w = g_pendingSkinsDims[a2->username].first;
-				int h = g_pendingSkinsDims[a2->username].second;
-				if (h == 64) {
-					h = 32;
-				}
-				
-				GLuint skinTexId;
-				glGenTextures(1, &skinTexId);
-				glBindTexture(GL_TEXTURE_2D, skinTexId);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
-				
-				TextureData td;
-				td.width = w;
-				td.height = h;
-				td.pixels = nullptr;
-				td.glTexId = skinTexId;
-				
-				std::string texName = a2->username + "_skin";
-				Textures* tex = EntityRenderer::entityRenderDispatcher->textures;
-				tex->textures.insert(std::map<std::string, TextureData>::value_type(texName, std::move(td)));
-				
-				stbi_image_free(px);
-				g_pendingSkinsData.erase(it);
+				}).detach();
 			}
-		}
-		
-		std::string texName = a2->username + "_skin";
-		if (EntityRenderer::entityRenderDispatcher->textures->textures.count(texName)) {
-			a2->skin = texName;
+
+			{
+				std::lock_guard<std::mutex> lock(skinMutex);
+				auto it = g_pendingSkinsData.find(nick);
+				if (it != g_pendingSkinsData.end()) {
+					unsigned char* px = it->second;
+					int w = g_pendingSkinsDims[nick].first;
+					int h = g_pendingSkinsDims[nick].second;
+					uploadSkinTexture(nick, px, w, h);
+					stbi_image_free(px);
+					g_pendingSkinsData.erase(it);
+				}
+			}
+
+			if (tex && tex->textures.count(texName) && tex->textures[texName].glTexId != 0) {
+				a2->skin = texName;
+			}
 		}
 	}
 

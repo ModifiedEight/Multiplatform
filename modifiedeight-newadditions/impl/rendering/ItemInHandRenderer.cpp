@@ -4,6 +4,7 @@
 #include <inventory/Inventory.hpp>
 #include <item/Item.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <math/Mth.hpp>
 #include <rendering/EntityRenderDispatcher.hpp>
 #include <rendering/EntityTileRenderer.hpp>
@@ -25,12 +26,7 @@ ItemInHandRenderer::ItemInHandRenderer(struct Minecraft* a2)
 	AppPlatform::_singleton->addListener(this, 1.0);
 }
 int32_t ItemInHandRenderer::_getFrameID(struct Mob* a2, ItemInstance* a3) {
-	int32_t v7;
-	if(a3->isStackedByData()) {
-		v7 = (a3->getId() | ((uint16_t)a3->getAuxValue()) << 12);
-	} else {
-		v7 = a3->getId() | 0;
-	}
+	int32_t v7 = (a3->getId() | (((uint16_t)a3->getAuxValue()) << 12));
 	if(a2) {
 		v7 |= a2->getEntityTypeId() << 16;					 //byte2
 		v7 |= a3->itemClass->getAnimationFrameFor(a2) << 24; //hibyte
@@ -105,10 +101,41 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	TextureData* td = this->minecraft->texturesPtr->loadAndGetTextureData(v7->field_2C);
 	if (!td || !td->pixels) return v7;
 
-	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, Color4::WHITE);
+	Color4 colorTint = Color4::WHITE;
+	int32_t col = -1;
+	if (a3.tileClass) {
+		col = a3.tileClass->getColor(a3.getAuxValue());
+	}
+	if (col == -1 || (col & 0xFFFFFF) == 0xFFFFFF) {
+		int32_t id = a3.getId();
+		if (Tile::tallgrass && id == Tile::tallgrass->blockID) {
+			col = (a3.getAuxValue() == 2) ? 0x5B8F32 : 0x66A538;
+		} else if (Tile::vine && id == Tile::vine->blockID) {
+			col = 0x30BB0B;
+		} else if (Tile::waterLily && id == Tile::waterLily->blockID) {
+			col = 0x529141;
+		} else if (Tile::doublePlant && id == Tile::doublePlant->blockID) {
+			int32_t sub = a3.getAuxValue() & 7;
+			col = (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+		} else if (Tile::seagrass && id == Tile::seagrass->blockID) {
+			col = 0xFFFFFF;
+		}
+	}
+	if(col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+		float r = (float)((col >> 16) & 0xFF) / 255.0f;
+		float g = (float)((col >> 8) & 0xFF) / 255.0f;
+		float b = (float)(col & 0xFF) / 255.0f;
+		colorTint = Color4(r, g, b, 1.0f);
+	}
+
+	v7->colorR = colorTint.r;
+	v7->colorG = colorTint.g;
+	v7->colorB = colorTint.b;
+
+	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, colorTint);
 	v7->field_4 = textes.tesselate();
 
-	v7->field_32 = a3.itemClass->isEmissive(a3.getAuxValue());
+	v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
 	return v7;
 }
 void ItemInHandRenderer::render(float a2) {
@@ -163,7 +190,7 @@ void ItemInHandRenderer::render(float a2) {
 		glRotatef(45.0, 0.0, 1.0, 0.0);
 		glRotatef(v33 * 70.0, 0.0, 1.0, 0.0);
 		glRotatef(-(float)(v31 * 20.0), 0.0, 0.0, 1.0);
-		this->minecraft->texturesPtr->loadAndBindTexture("mob/char.png");
+		this->minecraft->texturesPtr->loadAndBindTexture(!this->minecraft->player->skin.empty() ? this->minecraft->player->skin : "mob/char.png");
 		glTranslatef(-1.0, 3.6, 3.5);
 		glRotatef(120.0, 0.0, 0.0, 1.0);
 		glRotatef(200.0, 1.0, 0.0, 0.0);
@@ -353,7 +380,9 @@ void ItemInHandRenderer::renderItem(struct Mob* a2, ItemInstance* a3) {
 			DisableState v19(v12);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glColor4f(v7->colorR, v7->colorG, v7->colorB, 1.0f);
 			v7->field_4.render();
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			if(graphics) {
 				glLightModelf(0xB52u, 0.0);
 			}
@@ -443,7 +472,12 @@ void ItemInHandRenderer::renderWater(float a2) {
 	float v9;			 // s16
 
 	v3 = this->minecraft->player->getBrightness(a2);
-	glColor4f(v3, v3, v3, 0.5);
+	Biome* b = this->minecraft->level ? this->minecraft->level->getBiome((int)floorf(this->minecraft->player->posX), (int)floorf(this->minecraft->player->posZ)) : nullptr;
+	if (b == Biome::swampland) {
+		glColor4f(v3 * 0.35f, v3 * 0.55f, v3 * 0.22f, 0.65f);
+	} else {
+		glColor4f(v3 * 0.4f, v3 * 0.7f, v3, 0.5f);
+	}
 	glPushMatrix();
 	player = this->minecraft->player;
 	v5 = -(float)(player->yaw * 0.015625);
