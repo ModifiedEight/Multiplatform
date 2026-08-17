@@ -83,7 +83,7 @@ elseif(MCPE_IOS)
         "${IOS_PLATFORM_DIR}/*.mm"
         "${IOS_PLATFORM_DIR}/*.m"
     )
-    add_executable(modifiedeight-newadditions ${IMPLCPP} ${IMPLC} ${HEADC} ${HEADCPP} ${IOS_PLATFORM_SRC})
+    add_executable(modifiedeight-newadditions ${IMPLCPP} ${IMPLC} ${IMPLASM} ${HEADC} ${HEADCPP} ${IOS_PLATFORM_SRC})
     target_include_directories(modifiedeight-newadditions PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/headers"
         "${IOS_PLATFORM_DIR}"

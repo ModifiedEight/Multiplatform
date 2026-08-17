@@ -57,7 +57,7 @@
 /*  toolchain:           MSFT Visual C++
     target architecture: x86
 */
-#if (defined (_WIN32) && !defined (_WIN32_WCE)) || (defined (__WINS__) && defined (_SYMBIAN)) || (defined (WINCE_EMULATOR)) || (defined (_OPENWAVE_SIMULATOR))
+#if (defined (_MSC_VER) && (defined (_WIN32) && !defined (_WIN32_WCE))) || (defined (__WINS__) && defined (_SYMBIAN)) || (defined (WINCE_EMULATOR)) || (defined (_OPENWAVE_SIMULATOR))
 
 #pragma warning( disable : 4035 )	/* complains about inline asm not returning a value */
 
