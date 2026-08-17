@@ -4,12 +4,18 @@
 #include <sound/helix/aacdec.h>
 #include <vector>
 
+#if (defined(__linux__) && !defined(ANDROID)) || defined(MCPE_IOS) || defined(__APPLE__)
 #if defined(MCPE_IOS) || defined(__APPLE__)
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
 #include <AL/alc.h>
+#endif
+#define HAS_OPENAL 1
+#else
+typedef unsigned int ALuint;
+#define HAS_OPENAL 0
 #endif
 
 struct Minecraft;

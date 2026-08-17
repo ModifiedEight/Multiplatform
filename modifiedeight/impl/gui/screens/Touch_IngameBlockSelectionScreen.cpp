@@ -72,14 +72,6 @@ void Touch::IngameBlockSelectionScreen::init() {
 	this->armorButton.height = 18;
 	this->craftButton.height = 18;
 	this->backButton.height = 18;
-	this->backButton.text = "gui.back";
-	this->menuButton.text = "Pause";
-	this->craftButton.text = "Craft";
-	this->armorButton.text = "Armor";
-	this->craftButton.buttonID = 2;
-	this->armorButton.buttonID = 3;
-	this->menuButton.buttonID = 4;
-	this->backButton.buttonID = 1;
 	this->backButton.init(this->minecraft);
 	this->armorButton.init(this->minecraft);
 	this->menuButton.init(this->minecraft);

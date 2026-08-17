@@ -41,15 +41,18 @@ MusicEngine::~MusicEngine() {
 }
 
 void MusicEngine::init() {
+#if HAS_OPENAL
 	if (this->isInitialized) return;
 	ALCcontext* ctx = alcGetCurrentContext();
 	if (!ctx) return;
 	alGenSources(1, &this->musicSource);
 	alGenBuffers(4, this->musicBuffers);
 	this->isInitialized = true;
+#endif
 }
 
 void MusicEngine::destroy() {
+#if HAS_OPENAL
 	this->stop();
 	if (this->isInitialized) {
 		if (this->musicSource != 0) {
@@ -62,9 +65,11 @@ void MusicEngine::destroy() {
 		}
 		this->isInitialized = false;
 	}
+#endif
 }
 
 void MusicEngine::stop() {
+#if HAS_OPENAL
 	if (!this->isInitialized) return;
 	if (this->musicSource != 0) {
 		alSourceStop(this->musicSource);
@@ -80,25 +85,33 @@ void MusicEngine::stop() {
 	this->streamData = nullptr;
 	this->streamBytesLeft = 0;
 	this->isPlaying = false;
+#endif
 }
 
 void MusicEngine::setVolume(float volume) {
 	this->currentVolume = (volume < 0.0f) ? 0.0f : ((volume > 1.0f) ? 1.0f : volume);
+#if HAS_OPENAL
 	if (this->isInitialized && this->musicSource != 0) {
 		alSourcef(this->musicSource, AL_GAIN, this->currentVolume);
 	}
+#endif
 }
 
 bool_t MusicEngine::isTrackPlaying() {
+#if HAS_OPENAL
 	if (!this->isPlaying || !this->isInitialized || this->musicSource == 0) {
 		return false;
 	}
 	ALint state = 0;
 	alGetSourcei(this->musicSource, AL_SOURCE_STATE, &state);
 	return (state == AL_PLAYING);
+#else
+	return false;
+#endif
 }
 
 void MusicEngine::playTrack(const MusicTrack& track) {
+#if HAS_OPENAL
 	if (!this->isInitialized) {
 		this->init();
 	}
@@ -159,6 +172,7 @@ void MusicEngine::playTrack(const MusicTrack& track) {
 	} else {
 		this->stop();
 	}
+#endif
 }
 
 void MusicEngine::startRandomTrack(int32_t mode) {
@@ -186,6 +200,7 @@ void MusicEngine::startRandomTrack(int32_t mode) {
 }
 
 void MusicEngine::streamBuffers() {
+#if HAS_OPENAL
 	if (!this->isPlaying || !this->isDecoderOpen || !this->isInitialized || this->musicSource == 0) {
 		return;
 	}
@@ -231,6 +246,7 @@ void MusicEngine::streamBuffers() {
 			this->stop();
 		}
 	}
+#endif
 }
 
 void MusicEngine::update(Minecraft* mc) {
