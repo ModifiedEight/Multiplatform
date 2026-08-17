@@ -1,74 +1,126 @@
-#if defined(__APPLE__)
-#define SYM(x) x
+#if defined(MCPE_IOS) || defined(__APPLE__)
 .section __TEXT,__const
 #else
-#define SYM(x) x
 .section .rodata
 #endif
 
-.global SYM(music_danny_start)
-.global SYM(music_danny_end)
-.global SYM(music_door_start)
-.global SYM(music_door_end)
-.global SYM(music_haggstrom_start)
-.global SYM(music_haggstrom_end)
-.global SYM(music_key_start)
-.global SYM(music_key_end)
-.global SYM(music_living_mice_start)
-.global SYM(music_living_mice_end)
-.global SYM(music_mice_on_venus_start)
-.global SYM(music_mice_on_venus_end)
-.global SYM(music_minecraft_start)
-.global SYM(music_minecraft_end)
-.global SYM(music_moog_city_2_start)
-.global SYM(music_moog_city_2_end)
-.global SYM(music_oxygene_start)
-.global SYM(music_oxygene_end)
-.global SYM(music_subwoofer_lullaby_start)
-.global SYM(music_subwoofer_lullaby_end)
-.global SYM(music_equinoxe_start)
-.global SYM(music_equinoxe_end)
+.globl music_danny_start
+.globl _music_danny_start
+.globl music_danny_end
+.globl _music_danny_end
 
-SYM(music_danny_start):
+.globl music_door_start
+.globl _music_door_start
+.globl music_door_end
+.globl _music_door_end
+
+.globl music_haggstrom_start
+.globl _music_haggstrom_start
+.globl music_haggstrom_end
+.globl _music_haggstrom_end
+
+.globl music_key_start
+.globl _music_key_start
+.globl music_key_end
+.globl _music_key_end
+
+.globl music_living_mice_start
+.globl _music_living_mice_start
+.globl music_living_mice_end
+.globl _music_living_mice_end
+
+.globl music_mice_on_venus_start
+.globl _music_mice_on_venus_start
+.globl music_mice_on_venus_end
+.globl _music_mice_on_venus_end
+
+.globl music_minecraft_start
+.globl _music_minecraft_start
+.globl music_minecraft_end
+.globl _music_minecraft_end
+
+.globl music_moog_city_2_start
+.globl _music_moog_city_2_start
+.globl music_moog_city_2_end
+.globl _music_moog_city_2_end
+
+.globl music_oxygene_start
+.globl _music_oxygene_start
+.globl music_oxygene_end
+.globl _music_oxygene_end
+
+.globl music_subwoofer_lullaby_start
+.globl _music_subwoofer_lullaby_start
+.globl music_subwoofer_lullaby_end
+.globl _music_subwoofer_lullaby_end
+
+.globl music_equinoxe_start
+.globl _music_equinoxe_start
+.globl music_equinoxe_end
+.globl _music_equinoxe_end
+
+music_danny_start:
+_music_danny_start:
 .incbin "assets/music/danny.aac"
-SYM(music_danny_end):
+music_danny_end:
+_music_danny_end:
 
-SYM(music_door_start):
+music_door_start:
+_music_door_start:
 .incbin "assets/music/door.aac"
-SYM(music_door_end):
+music_door_end:
+_music_door_end:
 
-SYM(music_haggstrom_start):
+music_haggstrom_start:
+_music_haggstrom_start:
 .incbin "assets/music/haggstrom.aac"
-SYM(music_haggstrom_end):
+music_haggstrom_end:
+_music_haggstrom_end:
 
-SYM(music_key_start):
+music_key_start:
+_music_key_start:
 .incbin "assets/music/key.aac"
-SYM(music_key_end):
+music_key_end:
+_music_key_end:
 
-SYM(music_living_mice_start):
+music_living_mice_start:
+_music_living_mice_start:
 .incbin "assets/music/living_mice.aac"
-SYM(music_living_mice_end):
+music_living_mice_end:
+_music_living_mice_end:
 
-SYM(music_mice_on_venus_start):
+music_mice_on_venus_start:
+_music_mice_on_venus_start:
 .incbin "assets/music/mice_on_venus.aac"
-SYM(music_mice_on_venus_end):
+music_mice_on_venus_end:
+_music_mice_on_venus_end:
 
-SYM(music_minecraft_start):
+music_minecraft_start:
+_music_minecraft_start:
 .incbin "assets/music/minecraft.aac"
-SYM(music_minecraft_end):
+music_minecraft_end:
+_music_minecraft_end:
 
-SYM(music_moog_city_2_start):
+music_moog_city_2_start:
+_music_moog_city_2_start:
 .incbin "assets/music/moog_city_2.aac"
-SYM(music_moog_city_2_end):
+music_moog_city_2_end:
+_music_moog_city_2_end:
 
-SYM(music_oxygene_start):
+music_oxygene_start:
+_music_oxygene_start:
 .incbin "assets/music/oxygene.aac"
-SYM(music_oxygene_end):
+music_oxygene_end:
+_music_oxygene_end:
 
-SYM(music_subwoofer_lullaby_start):
+music_subwoofer_lullaby_start:
+_music_subwoofer_lullaby_start:
 .incbin "assets/music/subwoofer_lullaby.aac"
-SYM(music_subwoofer_lullaby_end):
+music_subwoofer_lullaby_end:
+_music_subwoofer_lullaby_end:
 
-SYM(music_equinoxe_start):
+music_equinoxe_start:
+_music_equinoxe_start:
 .incbin "assets/music/equinoxe.aac"
-SYM(music_equinoxe_end):
+music_equinoxe_end:
+_music_equinoxe_end:
