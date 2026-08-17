@@ -62,10 +62,13 @@ void MultiPlayerLevel::tick() {
 			}
 		}
 	} else {
-		this->tick();
+		Level::tick();
 	}
 }
-bool_t MultiPlayerLevel::tickPendingTicks(bool_t) {
+bool_t MultiPlayerLevel::tickPendingTicks(bool_t a2) {
+	if(!this->isClientMaybe) {
+		return Level::tickPendingTicks(a2);
+	}
 	return 0;
 }
 void MultiPlayerLevel::addToTickNextTick(int32_t x, int32_t y, int32_t z, int32_t id, int32_t delay) {

@@ -7,37 +7,37 @@ LargeCaveFeature::~LargeCaveFeature() {
 
 void LargeCaveFeature::addFeature(Level* level, int32_t a3, int32_t a4, int32_t targetChunkX, int32_t targetChunkZ, uint8_t* blocks, int32_t a8) {
 	Random* p_random = &this->random;
-	int caveChance = p_random->genrand_int32() % 7;
-	if (caveChance != 0) return;
+	uint32_t v12 = p_random->genrand_int32();
+	uint32_t v13 = p_random->genrand_int32();
+	uint32_t v14 = p_random->genrand_int32();
+	uint32_t caveCount;
+	if (p_random->genrand_int32() % 0xF) {
+		caveCount = 0;
+	} else {
+		caveCount = v14 % (v13 % (v12 % 0x28u + 1) + 1) + 1;
+	}
 
-	int maxCaves = (p_random->genrand_int32() % 15) + 1;
-	int caveCount = (p_random->genrand_int32() % maxCaves) + 1;
-
-	for (int i = 0; i < caveCount; ++i) {
-		float originX = (float)(a3 * 16 + (p_random->genrand_int32() & 0xF));
-		float originY = (float)(p_random->genrand_int32() % 110 + 10);
-		if ((p_random->genrand_int32() & 1) == 0) {
-			originY = (float)(p_random->genrand_int32() % 45 + 50);
-		}
-		float originZ = (float)(a4 * 16 + (p_random->genrand_int32() & 0xF));
+	for (uint32_t i = 0; i < caveCount; ++i) {
+		float originX = (float)(int32_t)(a3 * 16 + (p_random->genrand_int32() & 0xF));
+		uint32_t yRnd = p_random->genrand_int32();
+		float originY = (float)(int32_t)(p_random->genrand_int32() % (yRnd % 0x78u + 8));
+		float originZ = (float)(int32_t)((p_random->genrand_int32() & 0xF) + a4 * 16);
 
 		int numTunnels = 1;
-		if ((p_random->genrand_int32() % 4) == 0) {
+		if (p_random->genrand_int32() << 30) {
+			// non-zero upper bits: single tunnel branch call
 			float f = p_random->nextFloat();
 			uint32_t tunnelSeed = p_random->genrand_int32();
-			LargeCaveFeature::addTunnel(targetChunkX, targetChunkZ, blocks, originX, originY, originZ, (f * 6.0f) + 1.5f, 0.0f, 0.0f, -1, -1, 0.5f, tunnelSeed);
-			numTunnels += (p_random->genrand_int32() % 4) + 1;
+			LargeCaveFeature::addTunnel(targetChunkX, targetChunkZ, blocks, originX, originY, originZ, (f * 6.0f) + 1.0f, 0.0f, 0.0f, -1, -1, 0.5f, tunnelSeed);
+			numTunnels = (p_random->genrand_int32() & 3) + 1;
 		}
 
 		for (int t = 0; t < numTunnels; ++t) {
-			float yaw = p_random->nextFloat() * 3.14159265f * 2.0f;
-			float pitch = (p_random->nextFloat() - 0.5f) / 4.0f;
-			float width = p_random->nextFloat() * 2.5f + p_random->nextFloat();
-			if ((p_random->genrand_int32() % 8) == 0) {
-				width *= (p_random->nextFloat() * p_random->nextFloat() * 3.0f + 1.0f);
-			}
+			float yaw   = p_random->nextFloat() * 3.14159265f * 2.0f;
+			float dy    = p_random->nextFloat() - 0.5f;
+			float width = p_random->nextFloat() * 2.0f + p_random->nextFloat();
 			uint32_t tunnelSeed = p_random->genrand_int32();
-			LargeCaveFeature::addTunnel(targetChunkX, targetChunkZ, blocks, originX, originY, originZ, width, yaw, pitch, 0, 0, 1.0f, tunnelSeed);
+			LargeCaveFeature::addTunnel(targetChunkX, targetChunkZ, blocks, originX, originY, originZ, width, yaw, dy * 0.25f, 0, 0, 1.0f, tunnelSeed);
 		}
 	}
 }
