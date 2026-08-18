@@ -111,6 +111,7 @@ else()
     )
 
     if(WIN32)
+        target_link_options(modifiedeight PRIVATE -static -static-libgcc -static-libstdc++)
         target_link_libraries(modifiedeight pthread dsound dxguid opengl32 winmm ws2_32 gdi32 psapi)
     else()
         target_link_libraries(modifiedeight ${OPENAL_LIBRARY})

@@ -19,14 +19,26 @@ jobs:
       - name: install pkgs
         run: |
           sudo apt update
-          sudo apt install -y libsdl1.2-dev libopenal-dev libgl1-mesa-dev zlib1g-dev libcurl4-openssl-dev
+          sudo apt install -y ccache libsdl1.2-dev libopenal-dev libgl1-mesa-dev zlib1g-dev libcurl4-openssl-dev
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: linux-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            linux-build-${{ runner.os }}-
 
       - name: do cmake stuff
         run: |
           mkdir build/
           cd build/
-          cmake .. -DDYNAMICSOUNDS=ON
-          make -j8
+          ccache -z || true
+          cmake .. -DDYNAMICSOUNDS=ON \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          make -j$(nproc)
+          ccache -s || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -75,7 +87,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_EXE_LINKER_FLAGS="-static" \
+            -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
@@ -91,6 +103,12 @@ jobs:
           cp modifiedeight-newadditions/build/modifiedeight-newadditions.exe . 2>/dev/null || true
           cp ../prebuilt/win64/lib/SDL.dll .
           cp /usr/x86_64-w64-mingw32/bin/zlib1.dll . 2>/dev/null || true
+          cp /usr/x86_64-w64-mingw32/lib/zlib1.dll . 2>/dev/null || true
+          cp /usr/lib/gcc/x86_64-w64-mingw32/*-win32/libstdc++-6.dll . 2>/dev/null || true
+          cp /usr/lib/gcc/x86_64-w64-mingw32/*-posix/libstdc++-6.dll . 2>/dev/null || true
+          cp /usr/lib/gcc/x86_64-w64-mingw32/*-win32/libgcc_s_seh-1.dll . 2>/dev/null || true
+          cp /usr/lib/gcc/x86_64-w64-mingw32/*-posix/libgcc_s_seh-1.dll . 2>/dev/null || true
+          cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll . 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -100,6 +118,7 @@ jobs:
             build/modifiedeight.exe
             build/modifiedeight-newadditions.exe
             build/SDL.dll
+            build/zlib1.dll
             build/*.dll
 
   build-ios:
@@ -198,7 +217,27 @@ jobs:
               /usr/lib/x86_64-linux-gnu/libtinfo.so.5
           fi
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('platforms/android/**/*.gradle*', 'platforms/android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Cache Android NDK & SDK Components
+        uses: actions/cache@v4
+        id: ndk-cache
+        with:
+          path: |
+            /usr/local/lib/android/sdk/ndk/16.1.4479499
+            /usr/local/lib/android/sdk/cmake/3.22.1
+          key: android-ndk-16.1.4479499-cmake-${{ runner.os }}
+
       - name: Setup Android NDK and SDK
+        if: steps.ndk-cache.outputs.cache-hit != 'true'
         run: |
           SDKMANAGER=$(which sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
 

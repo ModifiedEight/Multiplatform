@@ -2,18 +2,43 @@
 #include <Minecraft.hpp>
 #include <gui/Screen.hpp>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <string.h>
 
+#if HAS_OPENSLES
+#include <sound/SoundSystemSL.hpp>
+#endif
+
+#if defined(_WIN32) || defined(WIN32)
+static double getMusicTime() {
+	LARGE_INTEGER freq, cnt;
+	QueryPerformanceFrequency(&freq);
+	QueryPerformanceCounter(&cnt);
+	return (double)cnt.QuadPart / (double)freq.QuadPart;
+}
+#else
+#include <sys/time.h>
 static double getMusicTime() {
 	struct timeval tv;
 	gettimeofday(&tv, nullptr);
 	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
 }
+#endif
 
 MusicEngine* MusicEngine::instance = nullptr;
 
 MusicEngine::MusicEngine()
+#if HAS_OPENAL
 	: musicSource(0)
+#elif HAS_WINMM
+	: hWaveOut(NULL)
+#elif HAS_OPENSLES
+	: slPlayerObj(nullptr)
+	, slPlayItf(nullptr)
+	, slVolumeItf(nullptr)
+	, slBufferQueueItf(nullptr)
+	, slOutputMix(nullptr)
+	, slBufferIndex(0)
+#endif
 	, isPlaying(false)
 	, isDecoderOpen(false)
 	, isInitialized(false)
@@ -27,9 +52,16 @@ MusicEngine::MusicEngine()
 	, streamData(nullptr)
 	, streamBytesLeft(0)
 	, pcmBuffer(8192) {
+#if HAS_OPENAL
 	for (int i = 0; i < 4; ++i) {
 		this->musicBuffers[i] = 0;
 	}
+#elif HAS_WINMM
+	for (int i = 0; i < 4; ++i) {
+		memset(&this->waveHeaders[i], 0, sizeof(WAVEHDR));
+		this->winBufferInUse[i] = false;
+	}
+#endif
 	MusicEngine::instance = this;
 }
 
@@ -48,12 +80,14 @@ void MusicEngine::init() {
 	alGenSources(1, &this->musicSource);
 	alGenBuffers(4, this->musicBuffers);
 	this->isInitialized = true;
+#elif HAS_WINMM || HAS_OPENSLES
+	this->isInitialized = true;
 #endif
 }
 
 void MusicEngine::destroy() {
-#if HAS_OPENAL
 	this->stop();
+#if HAS_OPENAL
 	if (this->isInitialized) {
 		if (this->musicSource != 0) {
 			alDeleteSources(1, &this->musicSource);
@@ -65,6 +99,14 @@ void MusicEngine::destroy() {
 		}
 		this->isInitialized = false;
 	}
+#elif HAS_OPENSLES
+	if (this->slOutputMix) {
+		(*this->slOutputMix)->Destroy(this->slOutputMix);
+		this->slOutputMix = nullptr;
+	}
+	this->isInitialized = false;
+#elif HAS_WINMM
+	this->isInitialized = false;
 #endif
 }
 
@@ -75,6 +117,33 @@ void MusicEngine::stop() {
 		alSourceStop(this->musicSource);
 		alSourcei(this->musicSource, AL_BUFFER, 0);
 	}
+#elif HAS_WINMM
+	if (this->hWaveOut) {
+		waveOutReset(this->hWaveOut);
+		for (int i = 0; i < 4; ++i) {
+			if (this->winBufferInUse[i]) {
+				waveOutUnprepareHeader(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+				this->winBufferInUse[i] = false;
+			}
+		}
+		waveOutClose(this->hWaveOut);
+		this->hWaveOut = NULL;
+	}
+#elif HAS_OPENSLES
+	if (this->slPlayItf) {
+		(*this->slPlayItf)->SetPlayState(this->slPlayItf, SL_PLAYSTATE_STOPPED);
+		this->slPlayItf = nullptr;
+	}
+	if (this->slBufferQueueItf) {
+		(*this->slBufferQueueItf)->Clear(this->slBufferQueueItf);
+		this->slBufferQueueItf = nullptr;
+	}
+	this->slVolumeItf = nullptr;
+	if (this->slPlayerObj) {
+		(*this->slPlayerObj)->Destroy(this->slPlayerObj);
+		this->slPlayerObj = nullptr;
+	}
+#endif
 	if (this->isDecoderOpen) {
 		if (this->aacDec) {
 			AACFreeDecoder(this->aacDec);
@@ -85,7 +154,6 @@ void MusicEngine::stop() {
 	this->streamData = nullptr;
 	this->streamBytesLeft = 0;
 	this->isPlaying = false;
-#endif
 }
 
 void MusicEngine::setVolume(float volume) {
@@ -93,6 +161,17 @@ void MusicEngine::setVolume(float volume) {
 #if HAS_OPENAL
 	if (this->isInitialized && this->musicSource != 0) {
 		alSourcef(this->musicSource, AL_GAIN, this->currentVolume);
+	}
+#elif HAS_WINMM
+	if (this->hWaveOut) {
+		DWORD vol = (DWORD)(this->currentVolume * 0xFFFF);
+		DWORD lrVol = (vol & 0xFFFF) | (vol << 16);
+		waveOutSetVolume(this->hWaveOut, lrVol);
+	}
+#elif HAS_OPENSLES
+	if (this->slVolumeItf) {
+		SLmillibel mb = (this->currentVolume <= 0.0001f) ? -9600 : (SLmillibel)((1.0f - this->currentVolume) * -2000.0f);
+		(*this->slVolumeItf)->SetVolumeLevel(this->slVolumeItf, mb);
 	}
 #endif
 }
@@ -105,18 +184,23 @@ bool_t MusicEngine::isTrackPlaying() {
 	ALint state = 0;
 	alGetSourcei(this->musicSource, AL_SOURCE_STATE, &state);
 	return (state == AL_PLAYING);
+#elif HAS_WINMM
+	return this->isPlaying && (this->hWaveOut != NULL);
+#elif HAS_OPENSLES
+	if (!this->isPlaying || !this->slPlayItf) {
+		return false;
+	}
+	SLuint32 state = 0;
+	(*this->slPlayItf)->GetPlayState(this->slPlayItf, &state);
+	return (state == SL_PLAYSTATE_PLAYING);
 #else
 	return false;
 #endif
 }
 
 void MusicEngine::playTrack(const MusicTrack& track) {
-#if HAS_OPENAL
 	if (!this->isInitialized) {
 		this->init();
-	}
-	if (!this->isInitialized || this->musicSource == 0) {
-		return;
 	}
 	this->stop();
 	if (!track.data || track.size == 0) {
@@ -131,6 +215,12 @@ void MusicEngine::playTrack(const MusicTrack& track) {
 	this->streamData = track.data;
 	this->streamBytesLeft = (int)track.size;
 	this->isDecoderOpen = true;
+
+#if HAS_OPENAL
+	if (!this->isInitialized || this->musicSource == 0) {
+		this->stop();
+		return;
+	}
 
 	alSourcei(this->musicSource, AL_SOURCE_RELATIVE, AL_TRUE);
 	alSource3f(this->musicSource, AL_POSITION, 0.0f, 0.0f, 0.0f);
@@ -172,6 +262,160 @@ void MusicEngine::playTrack(const MusicTrack& track) {
 	} else {
 		this->stop();
 	}
+
+#elif HAS_WINMM
+	int syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+	if (syncOffset < 0) { this->stop(); return; }
+	this->streamData += syncOffset;
+	this->streamBytesLeft -= syncOffset;
+
+	unsigned char* readPtr = (unsigned char*)this->streamData;
+	int err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+	if (err != 0) { this->stop(); return; }
+	AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+	this->streamData = readPtr;
+
+	WAVEFORMATEX wfx;
+	memset(&wfx, 0, sizeof(wfx));
+	wfx.wFormatTag = WAVE_FORMAT_PCM;
+	wfx.nChannels = (WORD)this->aacInfo.nChans;
+	wfx.nSamplesPerSec = (DWORD)this->aacInfo.sampRateCore;
+	wfx.wBitsPerSample = 16;
+	wfx.nBlockAlign = (wfx.nChannels * wfx.wBitsPerSample) / 8;
+	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+
+	MMRESULT res = waveOutOpen(&this->hWaveOut, WAVE_MAPPER, &wfx, 0, 0, CALLBACK_NULL);
+	if (res != MMSYSERR_NOERROR) {
+		this->stop();
+		return;
+	}
+	this->setVolume(this->currentVolume);
+
+	int numSamps = this->aacInfo.outputSamps;
+	this->winPcmBuffers[0].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+	memset(&this->waveHeaders[0], 0, sizeof(WAVEHDR));
+	this->waveHeaders[0].lpData = (LPSTR)this->winPcmBuffers[0].data();
+	this->waveHeaders[0].dwBufferLength = numSamps * sizeof(short);
+	waveOutPrepareHeader(this->hWaveOut, &this->waveHeaders[0], sizeof(WAVEHDR));
+	waveOutWrite(this->hWaveOut, &this->waveHeaders[0], sizeof(WAVEHDR));
+	this->winBufferInUse[0] = true;
+
+	for (int i = 1; i < 4; ++i) {
+		if (this->streamBytesLeft <= 0) break;
+		syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+		if (syncOffset < 0) break;
+		this->streamData += syncOffset;
+		this->streamBytesLeft -= syncOffset;
+		readPtr = (unsigned char*)this->streamData;
+		int beforeBytes = this->streamBytesLeft;
+		err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+		if (err == 0) {
+			AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+			this->streamData = readPtr;
+			numSamps = this->aacInfo.outputSamps;
+			this->winPcmBuffers[i].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+			memset(&this->waveHeaders[i], 0, sizeof(WAVEHDR));
+			this->waveHeaders[i].lpData = (LPSTR)this->winPcmBuffers[i].data();
+			this->waveHeaders[i].dwBufferLength = numSamps * sizeof(short);
+			waveOutPrepareHeader(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+			waveOutWrite(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+			this->winBufferInUse[i] = true;
+		} else {
+			if (this->streamBytesLeft == beforeBytes) {
+				this->streamData++;
+				this->streamBytesLeft--;
+			}
+		}
+	}
+	this->isPlaying = true;
+
+#elif HAS_OPENSLES
+	if (!SoundSystemSL::objEngine) {
+		this->stop();
+		return;
+	}
+
+	int syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+	if (syncOffset < 0) { this->stop(); return; }
+	this->streamData += syncOffset;
+	this->streamBytesLeft -= syncOffset;
+
+	unsigned char* readPtr = (unsigned char*)this->streamData;
+	int err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+	if (err != 0) { this->stop(); return; }
+	AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+	this->streamData = readPtr;
+
+	SLEngineItf engineItf;
+	(*SoundSystemSL::objEngine)->GetInterface(SoundSystemSL::objEngine, SL_IID_ENGINE, &engineItf);
+
+	if (!this->slOutputMix) {
+		const SLInterfaceID mixIds[1] = {SL_IID_ENVIRONMENTALREVERB};
+		const SLboolean mixReq[1] = {SL_BOOLEAN_FALSE};
+		(*engineItf)->CreateOutputMix(engineItf, &this->slOutputMix, 0, mixIds, mixReq);
+		if (this->slOutputMix) {
+			(*this->slOutputMix)->Realize(this->slOutputMix, SL_BOOLEAN_FALSE);
+		}
+	}
+
+	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 4};
+	SLDataFormat_PCM format_pcm = {
+		SL_DATAFORMAT_PCM,
+		(SLuint32)this->aacInfo.nChans,
+		(SLuint32)(this->aacInfo.sampRateCore * 1000),
+		SL_PCMSAMPLEFORMAT_FIXED_16,
+		SL_PCMSAMPLEFORMAT_FIXED_16,
+		(SLuint32)(this->aacInfo.nChans == 1 ? SL_SPEAKER_FRONT_CENTER : (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT)),
+		SL_BYTEORDER_LITTLEENDIAN
+	};
+	SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+	SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, this->slOutputMix};
+	SLDataSink audioSnk = {&loc_outmix, NULL};
+
+	const SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
+	const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+	SLresult sres = (*engineItf)->CreateAudioPlayer(engineItf, &this->slPlayerObj, &audioSrc, &audioSnk, 2, ids, req);
+	if (sres != SL_RESULT_SUCCESS || !this->slPlayerObj) {
+		this->stop();
+		return;
+	}
+	(*this->slPlayerObj)->Realize(this->slPlayerObj, SL_BOOLEAN_FALSE);
+	(*this->slPlayerObj)->GetInterface(this->slPlayerObj, SL_IID_PLAY, &this->slPlayItf);
+	(*this->slPlayerObj)->GetInterface(this->slPlayerObj, SL_IID_VOLUME, &this->slVolumeItf);
+	(*this->slPlayerObj)->GetInterface(this->slPlayerObj, SL_IID_BUFFERQUEUE, &this->slBufferQueueItf);
+
+	this->setVolume(this->currentVolume);
+
+	int numSamps = this->aacInfo.outputSamps;
+	this->slPcmBuffers[0].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+	(*this->slBufferQueueItf)->Enqueue(this->slBufferQueueItf, this->slPcmBuffers[0].data(), numSamps * sizeof(short));
+	this->slBufferIndex = 1;
+
+	for (int i = 1; i < 4; ++i) {
+		if (this->streamBytesLeft <= 0) break;
+		syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+		if (syncOffset < 0) break;
+		this->streamData += syncOffset;
+		this->streamBytesLeft -= syncOffset;
+		readPtr = (unsigned char*)this->streamData;
+		int beforeBytes = this->streamBytesLeft;
+		err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+		if (err == 0) {
+			AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+			this->streamData = readPtr;
+			numSamps = this->aacInfo.outputSamps;
+			this->slPcmBuffers[i].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+			(*this->slBufferQueueItf)->Enqueue(this->slBufferQueueItf, this->slPcmBuffers[i].data(), numSamps * sizeof(short));
+			this->slBufferIndex = (i + 1) % 4;
+		} else {
+			if (this->streamBytesLeft == beforeBytes) {
+				this->streamData++;
+				this->streamBytesLeft--;
+			}
+		}
+	}
+	(*this->slPlayItf)->SetPlayState(this->slPlayItf, SL_PLAYSTATE_PLAYING);
+	this->isPlaying = true;
 #endif
 }
 
@@ -245,6 +489,88 @@ void MusicEngine::streamBuffers() {
 		} else {
 			this->stop();
 		}
+	}
+
+#elif HAS_WINMM
+	if (!this->isPlaying || !this->hWaveOut || !this->isDecoderOpen) {
+		return;
+	}
+	bool anyInUse = false;
+	for (int i = 0; i < 4; ++i) {
+		if (this->winBufferInUse[i]) {
+			if (this->waveHeaders[i].dwFlags & WHDR_DONE) {
+				waveOutUnprepareHeader(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+				this->winBufferInUse[i] = false;
+				if (this->streamBytesLeft > 0) {
+					int syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+					if (syncOffset >= 0) {
+						this->streamData += syncOffset;
+						this->streamBytesLeft -= syncOffset;
+						unsigned char* readPtr = (unsigned char*)this->streamData;
+						int beforeBytes = this->streamBytesLeft;
+						int err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+						if (err == 0) {
+							AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+							this->streamData = readPtr;
+							int numSamps = this->aacInfo.outputSamps;
+							this->winPcmBuffers[i].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+							memset(&this->waveHeaders[i], 0, sizeof(WAVEHDR));
+							this->waveHeaders[i].lpData = (LPSTR)this->winPcmBuffers[i].data();
+							this->waveHeaders[i].dwBufferLength = numSamps * sizeof(short);
+							waveOutPrepareHeader(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+							waveOutWrite(this->hWaveOut, &this->waveHeaders[i], sizeof(WAVEHDR));
+							this->winBufferInUse[i] = true;
+							anyInUse = true;
+						} else {
+							if (this->streamBytesLeft == beforeBytes) {
+								this->streamData++;
+								this->streamBytesLeft--;
+							}
+						}
+					}
+				}
+			} else {
+				anyInUse = true;
+			}
+		}
+	}
+	if (!anyInUse && this->streamBytesLeft <= 0) {
+		this->stop();
+	}
+
+#elif HAS_OPENSLES
+	if (!this->isPlaying || !this->slBufferQueueItf || !this->isDecoderOpen) {
+		return;
+	}
+	SLAndroidSimpleBufferQueueState qState;
+	(*this->slBufferQueueItf)->GetState(this->slBufferQueueItf, &qState);
+	while (qState.count < 4 && this->streamBytesLeft > 0) {
+		int syncOffset = AACFindSyncWord((unsigned char*)this->streamData, this->streamBytesLeft);
+		if (syncOffset < 0) break;
+		this->streamData += syncOffset;
+		this->streamBytesLeft -= syncOffset;
+		unsigned char* readPtr = (unsigned char*)this->streamData;
+		int beforeBytes = this->streamBytesLeft;
+		int err = AACDecode(this->aacDec, &readPtr, &this->streamBytesLeft, this->pcmBuffer.data());
+		if (err == 0) {
+			AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
+			this->streamData = readPtr;
+			int numSamps = this->aacInfo.outputSamps;
+			int bIdx = this->slBufferIndex;
+			this->slPcmBuffers[bIdx].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
+			(*this->slBufferQueueItf)->Enqueue(this->slBufferQueueItf, this->slPcmBuffers[bIdx].data(), numSamps * sizeof(short));
+			this->slBufferIndex = (bIdx + 1) % 4;
+			(*this->slBufferQueueItf)->GetState(this->slBufferQueueItf, &qState);
+		} else {
+			if (this->streamBytesLeft == beforeBytes) {
+				this->streamData++;
+				this->streamBytesLeft--;
+			}
+			break;
+		}
+	}
+	if (qState.count == 0 && this->streamBytesLeft <= 0) {
+		this->stop();
 	}
 #endif
 }

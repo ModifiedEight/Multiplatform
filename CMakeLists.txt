@@ -5,6 +5,7 @@ if(ANDROID)
 endif()
 if(WIN32)
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
 endif()
 
 project(modifiedeight)

@@ -160,7 +160,7 @@ static void performPickBlock(Minecraft *mc) {
 #else
 
 #endif
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(WIN32)
 #include <sound/SoundSystemDirectSound.hpp>
 #endif
 std::string AppPlatform_sdl::getImagePath(const std::string &name, bool_t t) {
@@ -462,7 +462,7 @@ void AppPlatform_sdl::init() {
 
   NinecraftApp *mc = new NinecraftApp();
   this->hasContext = this->sdlCtxInit();
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(WIN32)
   ((SoundSystemDirectSound *)mc->soundEngine)->init();
 #endif
   ctx.platform = this;
@@ -596,7 +596,7 @@ void AppPlatform_sdl::init() {
         mc->setSize(this->screenWidth, this->screenHeight);
         break;
       case SDL_MOUSEMOTION:
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(WIN32)
         if (justGrabbed)
           break; // ignore first mouse motion even after grab
 #endif
