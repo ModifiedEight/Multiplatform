@@ -113,7 +113,10 @@ void DoublePlantTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_
 		}
 	} else {
 		if (level->getTile(x, y + 1, z) != this->blockID || !Bush::canSurvive(level, x, y, z)) {
-			this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, data & 7));
+			int32_t type = data & 7;
+			if (type >= 2) {
+				this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, type));
+			}
 			level->setTile(x, y, z, 0, 3);
 			if (level->getTile(x, y + 1, z) == this->blockID) {
 				level->setTile(x, y + 1, z, 0, 3);
@@ -123,20 +126,30 @@ void DoublePlantTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_
 }
 
 void DoublePlantTile::playerDestroy(Level* level, Player* player, int32_t x, int32_t y, int32_t z, int32_t meta) {
+	int32_t bData = meta;
+	int32_t bottomY = y;
+	if (meta & 8) {
+		bottomY = y - 1;
+		if (level->getTile(x, bottomY, z) == this->blockID) {
+			bData = level->getData(x, bottomY, z);
+		}
+	}
+	int32_t type = bData & 7;
+	bool hasShears = player && player->getSelectedItem() && player->getSelectedItem()->itemClass == Item::shears && Item::shears;
+
+	if (!level->isClientMaybe && player && !player->abilities.instabuild) {
+		if (type >= 2 || hasShears) {
+			this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, type));
+		}
+	}
+
 	if (meta & 8) {
 		if (level->getTile(x, y - 1, z) == this->blockID) {
-			int32_t bData = level->getData(x, y - 1, z);
-			if (player && !player->abilities.instabuild) {
-				this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, bData & 7));
-			}
 			level->setTile(x, y - 1, z, 0, 3);
 		}
 	} else {
 		if (level->getTile(x, y + 1, z) == this->blockID) {
 			level->setTile(x, y + 1, z, 0, 3);
-		}
-		if (player && !player->abilities.instabuild) {
-			this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, meta & 7));
 		}
 	}
 	level->setTile(x, y, z, 0, 3);
@@ -147,7 +160,14 @@ int32_t DoublePlantTile::getSpawnResourcesAuxValue(int32_t meta) {
 }
 
 int32_t DoublePlantTile::getResource(int32_t meta, Random* random) {
-	return this->blockID;
+	int32_t type = meta & 7;
+	if (type >= 2) {
+		return this->blockID;
+	}
+	if (random && (random->genrand_int32() % 8 == 0)) {
+		return Item::seeds_wheat->itemID;
+	}
+	return -1;
 }
 
 int32_t DoublePlantTile::getResourceCount(Random* random) {

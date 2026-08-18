@@ -472,21 +472,23 @@ void Touch::StartMenuScreen::init() {
   this->settingsButtonMaybe->width = 32;
   this->settingsButtonMaybe->height = 32;
   this->settingsButtonMaybe->setupPositions();
+#if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
   this->marketplaceButton.init(this->minecraft);
   this->marketplaceButton.active =
       (Options::instance && Options::instance->marketplace);
   this->marketplaceButton.visible =
       (Options::instance && Options::instance->marketplace);
+  this->buttons.emplace_back(&this->marketplaceButton);
+  this->field_2C.emplace_back(&this->marketplaceButton);
+#endif
   this->buttons.emplace_back(&this->playButton);
   this->buttons.emplace_back(&this->playOnRealmsButton);
-  this->buttons.emplace_back(&this->marketplaceButton);
   this->buttons.emplace_back(this->settingsButtonMaybe);
   this->field_2C.emplace_back(&this->playButton);
   this->field_2C.emplace_back(&this->playOnRealmsButton);
-  this->field_2C.emplace_back(&this->marketplaceButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
   this->field_138 =
-      "\x0fMojang AB, ModifiedEight New Additions 1.6.1.1 by eqozqq";
+      "\x0fMojang AB, ModifiedEight New Additions 1.6.2.1 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;
@@ -520,6 +522,7 @@ void Touch::StartMenuScreen::setupPositions() {
 
   this->playButton.posY = v13 + v14 - 30;
 
+#if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
   this->marketplaceButton.width = this->playButton.width;
   this->marketplaceButton.height = this->playButton.height;
   this->marketplaceButton.posX = this->playButton.posX;
@@ -531,6 +534,9 @@ void Touch::StartMenuScreen::setupPositions() {
     this->marketplaceButton.posY = -1000;
     this->playOnRealmsButton.posY = this->playButton.posY + 35;
   }
+#else
+  this->playOnRealmsButton.posY = this->playButton.posY + 35;
+#endif
   this->settingsButtonMaybe->height = 32;
   this->settingsButtonMaybe->width = 32;
   this->settingsButtonMaybe->posX =

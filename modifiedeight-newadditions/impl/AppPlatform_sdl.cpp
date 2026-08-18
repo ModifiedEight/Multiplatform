@@ -214,7 +214,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.1.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.2.1", 0);
 
   {
     int w, h, ch;
@@ -286,7 +286,8 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
 #include <unistd.h>
 #endif
 
-static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform, int sType = 0) {
+static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform,
+                           int sType = 0) {
   if (!mc || !platform)
     return;
   int w = platform->screenWidth;
@@ -330,8 +331,8 @@ static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform, int sType =
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
     char filename[128];
-    std::strftime(filename, sizeof(filename), "screenshots/%Y-%m-%d_%H.%M.%S.png",
-                  &tm);
+    std::strftime(filename, sizeof(filename),
+                  "screenshots/%Y-%m-%d_%H.%M.%S.png", &tm);
     path = filename;
   }
 
@@ -397,7 +398,8 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
       takeScreenshot(mc, this);
     }
   }
-  if ((key == SDLK_l || scancode == 46) && pressed && mc->player && !mc->currentScreen) {
+  if ((key == SDLK_l || scancode == 46) && pressed && mc->player &&
+      !mc->currentScreen) {
     takeScreenshot(mc, this, 2);
   }
   if (key == SDLK_F5 && mc->player && !mc->currentScreen && mc->mouseGrabbed) {
@@ -492,7 +494,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight New Additions 1.6.1",
+            "ModifiedEight New Additions 1.6.2",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -542,7 +544,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.1.1",
+              details, "icon", "ModifiedEight New Additions 1.6.2.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

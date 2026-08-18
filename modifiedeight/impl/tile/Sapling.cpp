@@ -40,14 +40,14 @@ bool_t Sapling::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {
 	return 1;
 }
 TextureUVCoordinateSet* Sapling::getTexture(int32_t a2, int32_t a3) {
-	int32_t v3; // r2
+	int32_t v3;
 
 	v3 = a3 & 3;
 	switch(v3) {
 		case 1:
-			return &this->field_B0;
-		case 2:
 			return &this->field_98;
+		case 2:
+			return &this->field_B0;
 		case 3:
 			return &this->field_C8;
 	}

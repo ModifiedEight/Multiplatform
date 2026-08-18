@@ -21,6 +21,7 @@ public:
 	virtual void tick(Level* level, int32_t x, int32_t y, int32_t z, Random* random);
 	virtual int32_t getResource(int32_t meta, Random* random);
 	virtual int32_t getResourceCount(Random* random);
+	virtual void playerDestroy(Level* level, Player* player, int32_t x, int32_t y, int32_t z, int32_t meta);
 	virtual bool_t onFertilized(Level* level, int32_t x, int32_t y, int32_t z);
 
 	static bool_t canAttachTo(LevelSource* level, int32_t x, int32_t y, int32_t z);

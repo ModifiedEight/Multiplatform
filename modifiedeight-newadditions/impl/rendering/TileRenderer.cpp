@@ -3229,13 +3229,18 @@ bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t 
 }
 
 bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int32_t z) {
-	TextureUVCoordinateSet* tex = tile->getTexture(0);
-	float brightness = tile->getBrightness(this->levelSource, x, y, z);
-	int32_t color = tile->getColor(this->levelSource, x, y, z);
-	float r = brightness * (float)((color >> 16) & 0xFF) / 255.0f;
-	float g = brightness * (float)((color >> 8) & 0xFF) / 255.0f;
-	float b = brightness * (float)(color & 0xFF) / 255.0f;
-	Tesselator::instance.color(r, g, b);
+	TextureUVCoordinateSet* tex;
+	if (this->hasUVCoords) {
+		tex = &this->field_8;
+	} else {
+		tex = tile->getTexture(0);
+		float brightness = tile->getBrightness(this->levelSource, x, y, z);
+		int32_t color = tile->getColor(this->levelSource, x, y, z);
+		float r = brightness * (float)((color >> 16) & 0xFF) / 255.0f;
+		float g = brightness * (float)((color >> 8) & 0xFF) / 255.0f;
+		float b = brightness * (float)(color & 0xFF) / 255.0f;
+		Tesselator::instance.color(r, g, b);
+	}
 
 	float u0 = tex->minX;
 	float u1 = tex->maxX;

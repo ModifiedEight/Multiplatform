@@ -4,7 +4,9 @@
 #include <level/biome/Biome.hpp>
 #include <tile/material/Material.hpp>
 #include <tile/BlockColorRegistry.hpp>
+#include <item/Item.hpp>
 #include <item/ItemInstance.hpp>
+#include <entity/Player.hpp>
 #include <util/Random.hpp>
 
 VineTile::VineTile(int32_t id, const std::string& name)
@@ -124,6 +126,14 @@ int32_t VineTile::getResource(int32_t, Random*) {
 
 int32_t VineTile::getResourceCount(Random*) {
 	return 0;
+}
+
+void VineTile::playerDestroy(Level* level, Player* player, int32_t x, int32_t y, int32_t z, int32_t meta) {
+	if(!level->isClientMaybe && player && player->getSelectedItem() && player->getSelectedItem()->itemClass == Item::shears && Item::shears) {
+		this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, 0));
+	} else {
+		Tile::playerDestroy(level, player, x, y, z, meta);
+	}
 }
 
 bool_t VineTile::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {

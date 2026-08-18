@@ -105,10 +105,42 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	TextureData* td = this->minecraft->texturesPtr->loadAndGetTextureData(v7->field_2C);
 	if (!td || !td->pixels) return v7;
 
-	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, Color4::WHITE);
+	Color4 colorTint = Color4::WHITE;
+	int32_t col = -1;
+	int32_t id = a3.getId();
+	int32_t aux = a3.getAuxValue();
+	if (id == 31 || (Tile::tallgrass && (id == Tile::tallgrass->blockID || (a3.tileClass && a3.tileClass == Tile::tallgrass)))) {
+		col = (aux == 2) ? 0x5B8F32 : 0x66A538;
+	} else if (id == 106) {
+		col = 0x30BB0B;
+	} else if (id == 111) {
+		col = 0x529141;
+	} else if (id == 175) {
+		int32_t sub = aux & 7;
+		col = (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+	} else if (id == 18 || (Tile::leaves && (id == Tile::leaves->blockID || (a3.tileClass && a3.tileClass == Tile::leaves)))) {
+		int32_t v5 = aux & 3;
+		if (v5 == 1) col = 0x619961;
+		else if (v5 == 2) col = 0x80A755;
+		else col = 0x48B518;
+	} else if (a3.tileClass) {
+		col = a3.tileClass->getColor(aux);
+	}
+	if(col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+		float r = (float)((col >> 16) & 0xFF) / 255.0f;
+		float g = (float)((col >> 8) & 0xFF) / 255.0f;
+		float b = (float)(col & 0xFF) / 255.0f;
+		colorTint = Color4(r, g, b, 1.0f);
+	}
+
+	v7->colorR = colorTint.r;
+	v7->colorG = colorTint.g;
+	v7->colorB = colorTint.b;
+
+	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, colorTint);
 	v7->field_4 = textes.tesselate();
 
-	v7->field_32 = a3.itemClass->isEmissive(a3.getAuxValue());
+	v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
 	return v7;
 }
 void ItemInHandRenderer::render(float a2) {
@@ -353,7 +385,12 @@ void ItemInHandRenderer::renderItem(struct Mob* a2, ItemInstance* a3) {
 			DisableState v19(v12);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_COLOR_MATERIAL);
+			glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+			glColor4f(v7->colorR, v7->colorG, v7->colorB, 1.0f);
 			v7->field_4.render();
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			glDisable(GL_COLOR_MATERIAL);
 			if(graphics) {
 				glLightModelf(0xB52u, 0.0);
 			}

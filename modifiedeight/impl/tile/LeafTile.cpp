@@ -19,6 +19,7 @@ LeafTile::LeafTile(int32_t id, const std::string& name)
 	}
 
 	this->field_5C = 3;
+	this->setTicking(true);
 }
 LeafTile::~LeafTile() {
 	if(this->treeBlocksNearby) delete[] this->treeBlocksNearby;
@@ -34,115 +35,64 @@ bool_t LeafTile::isSolidRender() {
 	return 0;
 }
 void LeafTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* random) {
-	//TODO fix this
-	int32_t v10;			   // r10
-	int32_t v11;			   // r0
-	int32_t v12;			   // r3
-	int32_t zz;				   // r12
-	int32_t* treeBlocksNearby; // r10
-	int32_t* v15;			   // r11
-	int32_t* v16;			   // r11
-	int32_t* v17;			   // r11
-	int32_t* v18;			   // r11
-	int32_t* v19;			   // r11
-	int32_t v20;			   // r12
-	int32_t v21;			   // r6
-	int32_t v22;			   // r3
-	int32_t v23;			   // r2
-	int32_t j;				   // r1
-	int32_t i;				   // r0
-	int32_t v27;			   // r0
-	int32_t yy;				   // [sp+14h] [bp-44h]
-	int32_t v29;			   // [sp+18h] [bp-40h]
-	int32_t v30;			   // [sp+1Ch] [bp-3Ch]
-	int32_t xx;				   // [sp+20h] [bp-38h]
-	int32_t v32;			   // [sp+24h] [bp-34h]
+	if(level->isClientMaybe) return;
+	int32_t meta = level->getData(x, y, z);
+	if((meta & 8) != 0) return;
+	if((meta & 4) == 0) return;
 
-	if(!level->isClientMaybe) {
-		v32 = level->getData(x, y, z);
-		if((v32 & 0xC) == 4) {
-			if(!this->treeBlocksNearby) {
-				this->treeBlocksNearby = new int[0x8000];
+	if(!level->hasChunksAt(x - 5, y - 5, z - 5, x + 5, y + 5, z + 5)) return;
+
+	const int R = 4;
+	const int D = 2 * R + 1;
+	const int SZ = D * D * D;
+	int dist[SZ];
+	for(int i = 0; i < SZ; ++i) dist[i] = -1;
+
+	for(int dx = -R; dx <= R; ++dx) {
+		for(int dy = -R; dy <= R; ++dy) {
+			for(int dz = -R; dz <= R; ++dz) {
+				int t = level->getTile(x + dx, y + dy, z + dz);
+				int idx = (dx + R) * (D * D) + (dy + R) * D + (dz + R);
+				if(t == Tile::treeTrunk->blockID) {
+					dist[idx] = 0;
+				} else if(t == Tile::leaves->blockID) {
+					dist[idx] = -2;
+				}
 			}
-			if(level->hasChunksAt(x - 5, y - 5, z - 5, x + 5, y + 5, z + 5)) {
-				v10 = 384;
-				xx = x - 4;
-				do {
-					for(yy = -4; yy != 5; ++yy) {
-						zz = -4;
-						v30 = ((yy + v10) << 7) + 2096;
-						do {
-							v29 = zz;
-							v11 = level->getTile(xx, yy + y, zz + z);
-							if(v11 == Tile::treeTrunk->blockID) {
-								this->treeBlocksNearby[v30 / 4] = 0;
-								// *(int*)((char*)this->treeBlocksNearby + v30) = 0;
-							} else {
-								if(v11 == Tile::leaves->blockID) {
-									v12 = -2;
-								} else {
-									v12 = -1;
-								}
-								this->treeBlocksNearby[v30 / 4] = v12;
-								// *(int*)((char*)this->treeBlocksNearby + v30) = v12;
-							}
-							zz = v29 + 1;
-							v30 += 4;
-						} while(v29 != 4);
-					}
-					v10 += 32;
-					++xx;
-				} while(v10 != 672);
+		}
+	}
 
-				for(i = 1; i != 5; ++i) {
-					for(j = 384; j != 672; j += 32) {
-						v22 = 0;
-						v23 = (j << 7) + 1584;
-						do {
-							v20 = -4;
-							v21 = v23 + v22;
-							do {
-								treeBlocksNearby = this->treeBlocksNearby;
-								if(treeBlocksNearby[v21 / 4] == i - 1) {
-									if(treeBlocksNearby[(v21 - 4096) / 4] == -2) {
-										treeBlocksNearby[(v21 - 4096) / 4] = i;
-									}
-									v15 = this->treeBlocksNearby;
-									if(v15[(v21 + 4096) / 4] == -2) {
-										v15[(v21 + 4096) / 4] = i;
-									}
-									v16 = this->treeBlocksNearby;
-									if(v16[(v21 - 128) / 4] == -2) {
-										v16[(v21 - 128) / 4] = i;
-									}
-									v17 = this->treeBlocksNearby;
-									if(v17[(v21 + 128) / 4] == -2) {
-										v17[(v21 + 128) / 4] = i;
-									}
-									v18 = this->treeBlocksNearby;
-									if(v18[(v21 - 4) / 4] == -2) {
-										v18[(v21 - 4) / 4] = i;
-									}
-									v19 = this->treeBlocksNearby;
-									if(v19[(v21 + 4) / 4] == -2) {
-										v19[(v21 + 4) / 4] = i;
-									}
-								}
-								++v20;
-								v21 += 4;
-							} while(v20 != 5);
-							v22 += 128;
-						} while(v22 != 1152);
+	for(int pass = 1; pass <= R; ++pass) {
+		for(int dx = -R; dx <= R; ++dx) {
+			for(int dy = -R; dy <= R; ++dy) {
+				for(int dz = -R; dz <= R; ++dz) {
+					int idx = (dx + R) * (D * D) + (dy + R) * D + (dz + R);
+					if(dist[idx] == pass - 1) {
+						if(dx > -R && dist[idx - (D * D)] == -2) dist[idx - (D * D)] = pass;
+						if(dx < R && dist[idx + (D * D)] == -2) dist[idx + (D * D)] = pass;
+						if(dy > -R && dist[idx - D] == -2) dist[idx - D] = pass;
+						if(dy < R && dist[idx + D] == -2) dist[idx + D] = pass;
+						if(dz > -R && dist[idx - 1] == -2) dist[idx - 1] = pass;
+						if(dz < R && dist[idx + 1] == -2) dist[idx + 1] = pass;
 					}
 				}
 			}
-			if(this->treeBlocksNearby[16912] < 0) {
-				v27 = level->getData(x, y, z);
-				this->spawnResources(level, x, y, z, v27 & 3, 0.0);
-				level->setTile(x, y, z, 0, 3);
-			} else {
-				level->setDataNoUpdate(x, y, z, v32 & 0xFFFFFFFB);
-			}
+		}
+	}
+
+	int centerIdx = R * (D * D) + R * D + R;
+	if(dist[centerIdx] >= 0) {
+		level->setDataNoUpdate(x, y, z, meta & ~4);
+	} else {
+		this->spawnResources(level, x, y, z, meta & 3, 0.0f);
+		level->setTile(x, y, z, 0, 3);
+	}
+}
+void LeafTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t fromTileId) {
+	if(!level->isClientMaybe) {
+		int32_t meta = level->getData(x, y, z);
+		if((meta & 8) == 0 && (meta & 4) == 0) {
+			level->setDataNoUpdate(x, y, z, meta | 4);
 		}
 	}
 }
@@ -183,25 +133,38 @@ int32_t LeafTile::getResourceCount(Random* a2) {
 	return a2->genrand_int32() % 20 == 0;
 }
 void LeafTile::spawnResources(Level* level, int32_t x, int32_t y, int32_t z, int32_t meta, float a7) {
-	Random* p_random; // r7
-	int32_t v12;	  // r0
-	int32_t v13;	  // [sp+Ch] [bp-44h]
-	ItemInstance v14; // [sp+14h] [bp-3Ch] BYREF
+	Random* p_random;
+	int32_t v12;
+	int32_t v13;
 
 	if(!level->isClientMaybe) {
 		p_random = &level->random;
-		if(!(level->random.genrand_int32() % 0x14)) {
+		int32_t chance = 20;
+		if((meta & 3) == 3) {
+			chance = 40;
+		}
+		if(!(level->random.genrand_int32() % chance)) {
 			v13 = this->getResource(meta, p_random);
 			v12 = this->getSpawnResourcesAuxValue(meta);
 			this->popResource(level, x, y, z, ItemInstance(v13, 1, v12));
 		}
-		if(!(meta << 30) && !(p_random->genrand_int32() % 0xC8)) {
+		if((meta & 3) == 0 && !(p_random->genrand_int32() % 200)) {
 			this->popResource(level, x, y, z, ItemInstance(Item::apple, 1, 0));
 		}
 	}
 }
 int32_t LeafTile::getRenderLayer() {
 	return 3;
+}
+int32_t LeafTile::getColor(int32_t aux) {
+	int32_t v5 = aux & 3;
+	if(v5 == 1) {
+		return 0x619961;
+	}
+	if(v5 == 2) {
+		return 0x80A755;
+	}
+	return 0x48B518;
 }
 int32_t LeafTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	int32_t v5;		// r3

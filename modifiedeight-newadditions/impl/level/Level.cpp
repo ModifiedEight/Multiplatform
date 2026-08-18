@@ -2362,10 +2362,8 @@ void Level::tick() {
 		if(this->levelData.getSpawnMobs()) {
 			if(_D6E4DF90 + 1 > 1) {
 				_D6E4DF90 = 0;
-				bool spawnMonsters = this->spawnMonstersMaybe;
-				if(spawnMonsters) spawnMonsters = this->difficulty > 0;
-				bool spawnAnimals = this->spawnAnimalsMaybe;
-				if(spawnAnimals) spawnAnimals = (this->getTime() % 400) <= 1;
+				bool spawnMonsters = this->spawnMonstersMaybe && this->difficulty > 0;
+				bool spawnAnimals = this->spawnAnimalsMaybe && (this->getTime() % 400) <= 1;
 				MobSpawner::tick(this, spawnMonsters, spawnAnimals);
 			} else {
 				++_D6E4DF90;

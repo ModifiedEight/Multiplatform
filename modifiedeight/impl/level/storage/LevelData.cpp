@@ -59,13 +59,9 @@ LevelData::LevelData(const struct LevelSettings& settings, const std::string& a3
 	} else {
 		this->generatorVersion = a4 & ~(a4 >> 31);
 	}
-	v9 = 1 - settings.gameType;
 	this->gameType = settings.gameType;
-	if((uint32_t)settings.gameType > 1) {
-		v9 = 0;
-	}
-	this->spawnMobs = v9;
-	if(v9) {
+	this->spawnMobs = 1;
+	if(settings.gameType == 0) {
 		v10 = -1;
 	} else {
 		v10 = 5000;
@@ -92,7 +88,7 @@ LevelData::LevelData(void) {
 	this->dimensionID = 0;
 	this->storageVersion = 0;
 	this->generatorVersion = 0;
-	this->spawnMobs = 0;
+	this->spawnMobs = 1;
 	this->gameType = 1;
 	this->stopTime = 5000;
 }
@@ -178,13 +174,8 @@ void LevelData::getTagData(const CompoundTag* a2) {
 		} else {
 			this->stopTime = -1;
 		}
-SPAWN_MOBS_CHECK:
-		if(this->gameType == 1) {
-			if(a2->contains("spawnMobs", 1)) {
-				this->spawnMobs = a2->getByte("spawnMobs") != 0;
-				goto FINALS;
-			}
-			this->spawnMobs = this->gameType != 1;
+		if(a2->contains("spawnMobs", 1)) {
+			this->spawnMobs = a2->getByte("spawnMobs") != 0;
 		} else {
 			this->spawnMobs = 1;
 		}

@@ -15,6 +15,33 @@ TileRenderer* ItemRenderer::tileRenderer = new TileRenderer(0);
 bool_t ItemRenderer::inited = 0;
 float ItemRenderer::rndFloats[16];
 
+static int32_t getFoliageColor(Tile* tileClass, int32_t aux, int32_t id) {
+	if (id == 31) {
+		return (aux == 2) ? 0x5B8F32 : 0x66A538;
+	}
+	if (id == 106) {
+		return 0x30BB0B;
+	}
+	if (id == 111) {
+		return 0x529141;
+	}
+	if (id == 175) {
+		int32_t sub = aux & 7;
+		return (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+	}
+	if (id == 18) {
+		int32_t v5 = aux & 3;
+		if (v5 == 1) return 0x619961;
+		if (v5 == 2) return 0x80A755;
+		return 0x48B518;
+	}
+	if (tileClass) {
+		int32_t col = tileClass->getColor(aux);
+		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) return col;
+	}
+	return -1;
+}
+
 ItemRenderer::ItemRenderer()
 	: EntityRenderer() {
 	if(!ItemRenderer::inited) {
@@ -342,13 +369,13 @@ void ItemRenderer::renderGuiItemNew(Textures* a1, const ItemInstance* a2, int32_
 		ItemRenderer::renderGuiItemInChunk(IRCT_THREE, a1, (ItemInstance*)a2, a4, a5, a7, a6, a8);
 	} else {
 		itemClass = a2->itemClass;
-		if(itemClass) {
+		if(itemClass || tileClass) {
 			if(tileClass) {
 				a1->loadAndBindTexture("terrain-atlas.tga");
-				v16 = tileClass->getColor(a2->getAuxValue());
+				v16 = getFoliageColor(tileClass, a2->getAuxValue(), a2->getId());
 			} else {
 				a1->loadAndBindTexture(itemClass->itemTexture);
-				v16 = -1;
+				v16 = getFoliageColor(0, a2->getAuxValue(), a2->getId());
 			}
 			ItemRenderer::iconBlit(a4 - 1.0, a5 + 1.0, *a2->getIcon(a3, 0), 16.0, 16.0, a7, 1.0, v16, a8);
 		}
@@ -438,6 +465,16 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		maxY = Icon->maxY;
 		Tesselator::instance.begin(4 * v16);
 		Tesselator::instance.normal(Vec3::UNIT_Z.x, Vec3::UNIT_Z.y, Vec3::UNIT_Z.z);
+		int32_t col = getFoliageColor(p_itemInstance->tileClass, p_itemInstance->getAuxValue(), p_itemInstance->getId());
+		float r = 1.0f, g = 1.0f, b = 1.0f;
+		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
+			r = (float)((col >> 16) & 0xFF) / 255.0f;
+			g = (float)((col >> 8) & 0xFF) / 255.0f;
+			b = (float)(col & 0xFF) / 255.0f;
+			Tesselator::instance.color(r, g, b, 1.0f);
+		} else {
+			Tesselator::instance.color(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 		v30 = &ItemRenderer::rndFloats[3];
 		while(1) {
 			Tesselator::instance.vertexUV(-0.5, -0.25, 0.0, minX, maxY);
@@ -484,7 +521,9 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		glEnable(0xBC0u);
 		glScalef(0.5, 0.5, 0.5);
 		glRotatef(180.0 - EntityRenderer::entityRenderDispatcher->field_14, 0.0, 1.0, 0.0);
+		glColor4f(r, g, b, 1.0f);
 		Tesselator::instance.draw(0);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		Tesselator::instance.offset(Vec3::ZERO);
 		glDisable(0xBC0u);
 	}

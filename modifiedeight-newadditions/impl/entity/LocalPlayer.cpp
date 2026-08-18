@@ -582,18 +582,21 @@ float LocalPlayer::getWalkingSpeedModifier() {
 }
 
 void LocalPlayer::travel(float a2, float a3) {
-  if (this->isInWater() && this->isSprinting) {
-    float speed = 0.045f;
+  if (this->isInWater()) {
+    float speed = this->isSprinting ? 0.045f : 0.02f;
     float pitchRad = this->pitch * 0.0174532925f;
     float lookY = -sinf(pitchRad);
     if (a3 > 0.0f) {
-      this->motionY += lookY * 0.025f;
+      this->motionY += lookY * (this->isSprinting ? 0.035f : 0.02f);
     }
     this->moveRelative(a2, a3, speed);
     this->move(this->motionX, this->motionY, this->motionZ);
-    this->motionX *= 0.85f;
-    this->motionY *= 0.85f;
-    this->motionZ *= 0.85f;
+    this->motionX *= 0.8f;
+    this->motionY = (this->motionY * 0.8f) - 0.02f;
+    this->motionZ *= 0.8f;
+    if (this->isCollidedHorizontally) {
+      this->motionY = 0.35f;
+    }
   } else {
     Player::travel(a2, a3);
   }

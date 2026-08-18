@@ -23,7 +23,9 @@ struct LeafTile : TransparentTile{
 	virtual int32_t getResourceCount(Random*);
 	virtual void spawnResources(Level*, int32_t, int32_t, int32_t, int32_t, float);
 	virtual int32_t getRenderLayer();
+	virtual int32_t getColor(int32_t);
 	virtual int32_t getColor(LevelSource*, int32_t, int32_t, int32_t);
+	virtual void neighborChanged(Level*, int32_t, int32_t, int32_t, int32_t);
 	virtual void playerDestroy(Level*, Player*, int32_t, int32_t, int32_t, int32_t);
 	virtual int32_t getSpawnResourcesAuxValue(int32_t);
 };

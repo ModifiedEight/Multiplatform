@@ -456,8 +456,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
 
         if (!this->minecraftInst->options.hideGUI) {
           float startY = 2.0f;
-          if (this->minecraftInst->gameMode->isSurvivalType() &&
-              this->minecraftInst->useTouchscreen()) {
+          if (this->minecraftInst->gameMode->isSurvivalType()) {
             startY = 14.0f;
           }
 
@@ -474,7 +473,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight Classic 1.6.1 (%d fps)", fps);
+            sprintf(dbgText1, "ModifiedEight Classic 1.6.2 (%d fps)", fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 
@@ -521,8 +520,10 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
 
             float rawYaw = this->minecraftInst->player->yaw;
             float yaw = fmodf(rawYaw, 360.0f);
-            if (yaw > 180.0f) yaw -= 360.0f;
-            if (yaw < -180.0f) yaw += 360.0f;
+            if (yaw > 180.0f)
+              yaw -= 360.0f;
+            if (yaw < -180.0f)
+              yaw += 360.0f;
             int dir = ((int)floorf(rawYaw * 4.0f / 360.0f + 0.5f)) & 3;
             if (dir < 0)
               dir = (dir % 4 + 4) % 4;
@@ -894,10 +895,8 @@ void Gui::renderSleepAnimation(int32_t a2, int32_t a3) {
   this->fill(0, 0, a2, a3, ((int32_t)(float)(v7 * 220.0) << 24) | 0x101020);
 }
 void Gui::renderSlot(int32_t a2, int32_t a3, int32_t a4, float a5) {
-  LocalPlayer *player; // r0
-  ItemInstance *v9;    // r0
-  Item *itemClass;     // r0
-  int32_t v12;         // r2
+  LocalPlayer *player;
+  ItemInstance *v9;
 
   player = this->minecraftInst->player;
   if (player->abilities.instabuild) {
@@ -905,13 +904,7 @@ void Gui::renderSlot(int32_t a2, int32_t a3, int32_t a4, float a5) {
   }
   v9 = player->inventory->getItem(a2);
   if (v9) {
-    itemClass = v9->itemClass;
-    if (itemClass->field_10) {
-      v12 = itemClass->getAnimationFrameFor(this->minecraftInst->player);
-    } else {
-      v12 = 0;
-    }
-    ItemRenderer::renderGuiItemNew(this->minecraftInst->texturesPtr, v9, v12,
+    ItemRenderer::renderGuiItemNew(this->minecraftInst->texturesPtr, v9, 0,
                                    (float)a3, (float)a4, 1.0, 1.0, 1.0);
   }
 }

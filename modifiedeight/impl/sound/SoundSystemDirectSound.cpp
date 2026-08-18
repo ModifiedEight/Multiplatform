@@ -1,4 +1,4 @@
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(WIN32)
 #include <sound/SoundSystemDirectSound.hpp>
 #include <sound/SoundDesc.hpp>
 #include <math.h>
@@ -31,13 +31,13 @@ void SoundSystemDirectSound::init(void) {
 		printf("DirectSoundCreate8 fail: %x\n", hr);
 		return;
 	}
-	HWND wnd;
+	HWND wnd = NULL;
 	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
 	if (SDL_GetWMInfo(&info)) {
 		wnd = info.window;
 	}else{
-		printf("GetWMInfo returned <= 0, cant continue\n");
-		return;
+		wnd = GetActiveWindow();
 	}
 	hr = this->dsound->SetCooperativeLevel(wnd, DSSCL_NORMAL);
 	if(FAILED(hr)){

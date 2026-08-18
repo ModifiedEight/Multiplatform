@@ -103,23 +103,24 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 
 	Color4 colorTint = Color4::WHITE;
 	int32_t col = -1;
-	if (a3.tileClass) {
-		col = a3.tileClass->getColor(a3.getAuxValue());
-	}
-	if (col == -1 || (col & 0xFFFFFF) == 0xFFFFFF) {
-		int32_t id = a3.getId();
-		if (Tile::tallgrass && id == Tile::tallgrass->blockID) {
-			col = (a3.getAuxValue() == 2) ? 0x5B8F32 : 0x66A538;
-		} else if (Tile::vine && id == Tile::vine->blockID) {
-			col = 0x30BB0B;
-		} else if (Tile::waterLily && id == Tile::waterLily->blockID) {
-			col = 0x529141;
-		} else if (Tile::doublePlant && id == Tile::doublePlant->blockID) {
-			int32_t sub = a3.getAuxValue() & 7;
-			col = (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
-		} else if (Tile::seagrass && id == Tile::seagrass->blockID) {
-			col = 0xFFFFFF;
-		}
+	int32_t id = a3.getId();
+	int32_t aux = a3.getAuxValue();
+	if (id == 31 || (Tile::tallgrass && (id == Tile::tallgrass->blockID || (a3.tileClass && a3.tileClass == Tile::tallgrass)))) {
+		col = (aux == 2) ? 0x5B8F32 : 0x66A538;
+	} else if (id == 106 || (Tile::vine && (id == Tile::vine->blockID || (a3.tileClass && a3.tileClass == Tile::vine)))) {
+		col = 0x30BB0B;
+	} else if (id == 111 || (Tile::waterLily && (id == Tile::waterLily->blockID || (a3.tileClass && a3.tileClass == Tile::waterLily)))) {
+		col = 0x529141;
+	} else if (id == 175 || (Tile::doublePlant && (id == Tile::doublePlant->blockID || (a3.tileClass && a3.tileClass == Tile::doublePlant)))) {
+		int32_t sub = aux & 7;
+		col = (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+	} else if (id == 18 || (Tile::leaves && (id == Tile::leaves->blockID || (a3.tileClass && a3.tileClass == Tile::leaves)))) {
+		int32_t v5 = aux & 3;
+		if (v5 == 1) col = 0x619961;
+		else if (v5 == 2) col = 0x80A755;
+		else col = 0x48B518;
+	} else if (a3.tileClass) {
+		col = a3.tileClass->getColor(aux);
 	}
 	if(col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
 		float r = (float)((col >> 16) & 0xFF) / 255.0f;
@@ -380,9 +381,12 @@ void ItemInHandRenderer::renderItem(struct Mob* a2, ItemInstance* a3) {
 			DisableState v19(v12);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_COLOR_MATERIAL);
+			glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 			glColor4f(v7->colorR, v7->colorG, v7->colorB, 1.0f);
 			v7->field_4.render();
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			glDisable(GL_COLOR_MATERIAL);
 			if(graphics) {
 				glLightModelf(0xB52u, 0.0);
 			}

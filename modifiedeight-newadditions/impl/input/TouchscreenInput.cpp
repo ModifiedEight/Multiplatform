@@ -347,9 +347,7 @@ void TouchscreenInput::tick(Player *a2) {
           }
         }
       LABEL_35:
-        if (a2->isInWater()) {
-          this->jumpingMaybe = 1;
-        } else if (!this->idkWhatIsThis2) {
+        if (!this->idkWhatIsThis2) {
           v5 = 1;
         }
         v13 = 100;

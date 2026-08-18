@@ -16,22 +16,28 @@ bool_t ItemRenderer::inited = 0;
 float ItemRenderer::rndFloats[16];
 
 static int32_t getFoliageColor(Tile* tileClass, int32_t aux, int32_t id) {
+	if (Tile::tallgrass && (id == Tile::tallgrass->blockID || (tileClass && tileClass == Tile::tallgrass))) {
+		return (aux == 2) ? 0x5B8F32 : 0x66A538;
+	}
+	if (Tile::vine && (id == Tile::vine->blockID || (tileClass && tileClass == Tile::vine))) {
+		return 0x30BB0B;
+	}
+	if (Tile::waterLily && (id == Tile::waterLily->blockID || (tileClass && tileClass == Tile::waterLily))) {
+		return 0x529141;
+	}
+	if (Tile::doublePlant && (id == Tile::doublePlant->blockID || (tileClass && tileClass == Tile::doublePlant))) {
+		int32_t sub = aux & 7;
+		return (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
+	}
+	if (Tile::leaves && (id == Tile::leaves->blockID || (tileClass && tileClass == Tile::leaves))) {
+		int32_t v5 = aux & 3;
+		if (v5 == 1) return 0x619961;
+		if (v5 == 2) return 0x80A755;
+		return 0x48B518;
+	}
 	if (tileClass) {
 		int32_t col = tileClass->getColor(aux);
 		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) return col;
-	}
-	if (Tile::tallgrass && id == Tile::tallgrass->blockID) {
-		return (aux == 2) ? 0x5B8F32 : 0x66A538;
-	}
-	if (Tile::vine && id == Tile::vine->blockID) {
-		return 0x30BB0B;
-	}
-	if (Tile::waterLily && id == Tile::waterLily->blockID) {
-		return 0x529141;
-	}
-	if (Tile::doublePlant && id == Tile::doublePlant->blockID) {
-		int32_t sub = aux & 7;
-		return (sub == 1) ? 0x5B8F32 : ((sub == 0) ? 0x66A538 : -1);
 	}
 	return -1;
 }
@@ -461,10 +467,11 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		Tesselator::instance.begin(4 * v16);
 		Tesselator::instance.normal(Vec3::UNIT_Z.x, Vec3::UNIT_Z.y, Vec3::UNIT_Z.z);
 		int32_t col = getFoliageColor(p_itemInstance->tileClass, p_itemInstance->getAuxValue(), p_itemInstance->getId());
+		float r = 1.0f, g = 1.0f, b = 1.0f;
 		if (col != -1 && (col & 0xFFFFFF) != 0xFFFFFF) {
-			float r = (float)((col >> 16) & 0xFF) / 255.0f;
-			float g = (float)((col >> 8) & 0xFF) / 255.0f;
-			float b = (float)(col & 0xFF) / 255.0f;
+			r = (float)((col >> 16) & 0xFF) / 255.0f;
+			g = (float)((col >> 8) & 0xFF) / 255.0f;
+			b = (float)(col & 0xFF) / 255.0f;
 			Tesselator::instance.color(r, g, b, 1.0f);
 		} else {
 			Tesselator::instance.color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -515,7 +522,9 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		glEnable(0xBC0u);
 		glScalef(0.5, 0.5, 0.5);
 		glRotatef(180.0 - EntityRenderer::entityRenderDispatcher->field_14, 0.0, 1.0, 0.0);
+		glColor4f(r, g, b, 1.0f);
 		Tesselator::instance.draw(0);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		Tesselator::instance.offset(Vec3::ZERO);
 		glDisable(0xBC0u);
 	}

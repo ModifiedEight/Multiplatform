@@ -83,7 +83,9 @@ void OptionsScreen::generateOptionScreens(void) {
 	grp->addOptionItem(&Options::Option::HUD_CAMERA_BUTTON, this->minecraft);
 	grp->addOptionItem(&Options::Option::SHOW_COORDINATES, this->minecraft);
 	grp->addOptionItem(&Options::Option::CLASSIC_TEXTURES, this->minecraft);
+#if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
 	grp->addOptionItem(&Options::Option::MARKETPLACE, this->minecraft);
+#endif
 	grp->addOptionItem(&Options::Option::SHOW_FPS, this->minecraft);
 	grp->addOptionItem(&Options::Option::DEBUG_SCREEN, this->minecraft);
 	grp->addOptionItem(&Options::Option::DISCORD_RPC, this->minecraft);

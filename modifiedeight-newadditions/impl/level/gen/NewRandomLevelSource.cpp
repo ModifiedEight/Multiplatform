@@ -22,6 +22,7 @@
 #include <tile/HeavyTile.hpp>
 #include <tile/material/Material.hpp>
 #include <utils.h>
+#include <string.h>
 
 NewRandomLevelSource::NewRandomLevelSource(struct Level* a2, int32_t a3, int32_t a4, bool a5) 
 	: random(a3),
@@ -537,6 +538,21 @@ struct LevelChunk* NewRandomLevelSource::getChunk(int32_t chunkX, int32_t chunkZ
 	this->random.setSeed(132899541 * chunkZ + 341872712 * chunkX);
 	uint8_t* chunkData = new uint8_t[0x8000u];
 	LevelChunk* chunk = new LevelChunk(this->level, chunkData, chunkX, chunkZ);
+
+	if (this->level->getLevelData()->getGeneratorVersion() == 2) {
+		memset(chunkData, 0, 0x8000);
+		for (int32_t bx = 0; bx < 16; ++bx) {
+			for (int32_t bz = 0; bz < 16; ++bz) {
+				int32_t baseIdx = (bx << 11) | (bz << 7);
+				chunkData[baseIdx + 0] = Tile::unbreakable->blockID;
+				chunkData[baseIdx + 1] = Tile::dirt->blockID;
+				chunkData[baseIdx + 2] = Tile::dirt->blockID;
+				chunkData[baseIdx + 3] = Tile::grass->blockID;
+			}
+		}
+		chunk->recalcHeightmap();
+		return chunk;
+	}
 
 	Biome** v16 = this->level->getBiomeSource()->getBiomeBlock(16 * chunkX, 16 * chunkZ, 16, 16);
 	this->prepareHeights(chunkX, chunkZ, chunkData, 0, this->level->getBiomeSource()->rainfallNoises);

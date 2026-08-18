@@ -269,8 +269,12 @@ void MusicEngine::update(Minecraft* mc) {
 		return;
 	}
 
-	bool inMenu = (mc->currentScreen != nullptr && !mc->currentScreen->renderGameBehind()) || (mc->level == nullptr);
-	int32_t neededMode = inMenu ? MUSIC_MODE_MENU : MUSIC_MODE_GAME;
+	if (!this->isInitialized) {
+		this->init();
+	}
+
+	bool inGame = (mc->level != nullptr);
+	int32_t neededMode = inGame ? MUSIC_MODE_GAME : MUSIC_MODE_MENU;
 
 	if (this->isPlaying && this->currentMode != neededMode) {
 		this->stop();

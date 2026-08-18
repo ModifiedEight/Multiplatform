@@ -149,6 +149,7 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Tile::wood, 4, 0), "#", definition<ItemInstance>('#', ItemInstance(Tile::treeTrunk, 1, 0)));
 	this->addShapedRecipe(ItemInstance(Tile::wood, 4, 1), "#", definition<ItemInstance>('#', ItemInstance(Tile::treeTrunk, 1, 1)));
 	this->addShapedRecipe(ItemInstance(Tile::wood, 4, 2), "#", definition<ItemInstance>('#', ItemInstance(Tile::treeTrunk, 1, 2)));
+	this->addShapedRecipe(ItemInstance(Tile::wood, 4, 3), "#", definition<ItemInstance>('#', ItemInstance(Tile::treeTrunk, 1, 3)));
 	this->addShapedRecipe(ItemInstance(Item::stick, 4), "#", "#", definition<Tile*>('#', Tile::wood));
 	this->addShapedRecipe(ItemInstance(Tile::torch, 4), "X", "#", definition<Item*, Item*>('X', Item::coal, '#', Item::stick));
 	this->addShapedRecipe(ItemInstance(Tile::torch, 4), "X", "#", definition<ItemInstance, Item*>('X', ItemInstance(Item::coal, 1, 1), '#', Item::stick));
