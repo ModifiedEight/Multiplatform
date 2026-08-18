@@ -386,7 +386,6 @@ void ItemInHandRenderer::renderItem(struct Mob* a2, ItemInstance* a3) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glEnable(GL_COLOR_MATERIAL);
-			glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 			glColor4f(v7->colorR, v7->colorG, v7->colorB, 1.0f);
 			v7->field_4.render();
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
