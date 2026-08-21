@@ -1,4 +1,5 @@
 #include <tile/Tile.hpp>
+#include <level/LevelHeight.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <tile/LeverTile.hpp>
 #include <tile/RedstoneLampTile.hpp>
@@ -866,7 +867,7 @@ float Tile::getBrightness(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	return level->getBrightness(x, y, z);
 }
 bool_t Tile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t face) {
-	if(y < 0 || y > 127) return 0;
+	if(!LevelHeight::inRange(y)) return 0;
 	if(face == 0) {
 		if(this->minY > 0) return 1;
 	} else if(face == 1) {

@@ -1,4 +1,5 @@
 #include <level/Level.hpp>
+#include <level/LevelHeight.hpp>
 #include <algorithm>
 #include <entity/EntityFactory.hpp>
 #include <entity/Player.hpp>
@@ -767,7 +768,7 @@ int32_t Level::getBrightness(const struct LightLayer& ll, int32_t x, int32_t y, 
 	LevelChunk* chunk; // r0
 
 	v7 = x;
-	if((uint32_t)y > 0x7F) {
+	if(!LevelHeight::inRange(y)) {
 		return ll.baseLight;
 	}
 	v10 = x >> 4;
@@ -1097,7 +1098,7 @@ int32_t Level::getRawBrightness(int32_t x, int32_t y, int32_t z, bool_t recursiv
 		}
 	} else if(y < 0) {
 		return 0;
-	} else if(y <= 127) {
+	} else if(y <= LevelHeight::maxY()) {
 		chunk = this->getChunk(x >> 4, z >> 4);
 		if(!chunk) return 0;
 		return chunk->getRawBrightness(x & 0xF, y, z & 0xF, this->skyDarken);
@@ -1384,7 +1385,7 @@ int32_t Level::getTopSolidBlock(int32_t x, int32_t z) {
 	int32_t v12;		 // r6
 	const Material* mat; // r0
 
-	v6 = 127;
+	v6 = LevelHeight::maxY();
 	chunk = this->getChunkAt(x, z);
 	while(1) {
 		v8 = this->getMaterial(x, v6, z);
@@ -1411,7 +1412,7 @@ int32_t Level::getTopSolidBlock(int32_t x, int32_t z) {
 	return -1;
 }
 int32_t Level::getTopTileY(int32_t x, int32_t z) {
-	int32_t y = 127;
+	int32_t y = LevelHeight::maxY();
 	while(y > 0 && this->isEmptyTile(x, y, z)) {
 		--y;
 	}
@@ -1425,7 +1426,7 @@ bool_t Level::hasChunk(int32_t x, int32_t z) {
 	return this->chunkSource->hasChunk(x, z);
 }
 bool_t Level::hasChunkAt(int32_t x, int32_t y, int32_t z) {
-	return (uint32_t)y <= 127 && this->hasChunk(x >> 4, z >> 4);
+	return LevelHeight::inRange(y) && this->hasChunk(x >> 4, z >> 4);
 }
 bool_t Level::hasChunksAt(int32_t x, int32_t y, int32_t z, int32_t radius) {
 	return this->hasChunksAt(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius);
@@ -1436,7 +1437,7 @@ bool_t Level::hasChunksAt(int32_t minX, int32_t minY, int32_t minZ, int32_t maxX
 	bool_t result; // r0
 	int32_t zz;	   // r4
 
-	if(maxY < 0 || minY > 127) {
+	if(maxY < 0 || minY > LevelHeight::maxY()) {
 		return 0;
 	}
 	xx = minX >> 4;
@@ -1469,9 +1470,9 @@ bool_t Level::hasNeighborSignal(int32_t x, int32_t y, int32_t z) {
 bool_t Level::inRange(int32_t x, int32_t y, int32_t z) {
 	// Infinite worlds have no horizontal bounds
 	if(this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4) {
-		return (uint32_t)y <= 127;
+		return LevelHeight::inRange(y);
 	}
-	return (uint32_t)x <= 0xff && y <= 127 && z >= 0 && z <= 255;
+	return (uint32_t)x <= 0xff && y <= LevelHeight::maxY() && z >= 0 && z <= 255;
 }
 bool_t Level::isDay() {
 	return this->skyDarken <= 3;
@@ -1483,7 +1484,7 @@ bool_t Level::isSkyLit(int32_t x, int32_t y, int32_t z) {
 	int8_t xx = x;
 	int8_t zz = z;
 	if(y < 0) return 0;
-	if(y > 127) return 1;
+	if(y > LevelHeight::maxY()) return 1;
 	int32_t v9 = x >> 4;
 	int32_t v10 = z >> 4;
 	if(!this->hasChunk(x >> 4, z >> 4)) return 0;
@@ -1689,7 +1690,7 @@ void Level::setBrightness(const struct LightLayer& ll, int32_t x, int32_t y, int
 	int32_t v10;	   // r9
 	LevelChunk* chunk; // r0
 
-	if(y >= 0 && y <= 127) {
+	if(LevelHeight::inRange(y)) {
 		v10 = x >> 4;
 		if(this->hasChunk(x >> 4, z >> 4)) {
 			chunk = this->getChunk(v10, z >> 4);
@@ -1705,7 +1706,7 @@ bool_t Level::setData(int32_t x, int32_t y, int32_t z, int32_t data, int32_t fla
 	int v11;		   // r5
 	int v12;		   // r9
 
-	if(y < 0 || y > 127) {
+	if(!LevelHeight::inRange(y)) {
 		return 0;
 	}
 	chunk = this->getChunk(x >> 4, z >> 4);
@@ -1795,7 +1796,7 @@ bool_t Level::setTileAndData(int32_t x, int32_t y, int32_t z, int32_t id, int32_
 	int32_t curid;		// r11
 	bool_t res;			// r9
 
-	if(y < 0 || y > 127) {
+	if(!LevelHeight::inRange(y)) {
 		return 0;
 	}
 	chunk = this->getChunk(x >> 4, z >> 4);
@@ -1919,7 +1920,7 @@ void Level::tick(struct Entity* ent, bool_t a3) {
 
 	v6 = Mth::floor(ent->posX);
 	v7 = Mth::floor(ent->posZ);
-	if(!a3 || this->hasChunksAt(v6 - 32, 0, v7 - 32, v6 + 32, 128, v7 + 32)) {
+	if(!a3 || this->hasChunksAt(v6 - 32, 0, v7 - 32, v6 + 32, LevelHeight::height, v7 + 32)) {
 		ent->prevPosX = ent->posX;
 		ent->prevPosY = ent->posY;
 		ent->prevPosZ = ent->posZ;
@@ -2309,7 +2310,7 @@ Level::~Level() {
 	}
 }
 int32_t Level::getTile(int32_t x, int32_t y, int32_t z) {
-	if(y < 0 || y > 127) return 0;
+	if(!LevelHeight::inRange(y)) return 0;
 	LevelChunk* chunk = this->getChunk(x >> 4, z >> 4);
 	if(!chunk) return 0;
 	return chunk->getTile(x & 0xf, y, z & 0xf);
@@ -2321,7 +2322,7 @@ float Level::getBrightness(int32_t x, int32_t y, int32_t z) {
 	return this->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
 }
 int32_t Level::getData(int32_t x, int32_t y, int32_t z) {
-	if(y < 0 || y > 127) {
+	if(!LevelHeight::inRange(y)) {
 		return 0;
 	}
 	LevelChunk* chunk = this->getChunk(x >> 4, z >> 4);
@@ -2517,7 +2518,7 @@ void Level::tickTiles() {
 				uint32_t randXYZ = this->constRandom + 3 * this->prevRandomNumber;
 				int32_t x = (randXYZ >> 2) & 0xF;
 				int32_t z = (randXYZ >> 10) & 0xF;
-				int32_t y = (randXYZ >> 18) & 0x7F;
+				int32_t y = (randXYZ >> 18) & LevelHeight::maxY();
 				this->prevRandomNumber = randXYZ;
 				int32_t v21 = chunk->getTile(x, y, z);
 				if(Tile::shouldTick[v21]) {

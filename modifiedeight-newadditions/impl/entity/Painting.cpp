@@ -4,8 +4,17 @@
 #include <level/Level.hpp>
 #include <nbt/CompoundTag.hpp>
 
+/*
+ * The load-from-NBT / EntityFactory constructor.  readAdditionalSaveData() is
+ * what normally supplies the motive, but nothing guarantees it runs - a
+ * CreateEntity(83) that is never given save data leaves the field as whatever
+ * the allocation happened to contain, and getWidth() and PaintingRenderer both
+ * dereference it unconditionally.  Start from a real Motive so a painting that
+ * is never told what it depicts is merely wrong, not fatal.
+ */
 Painting::Painting(Level* a2)
 	: HangingEntity(a2) {
+	this->motive = Motive::DefaultImage;
 	this->entityRenderId = PAINTING;
 }
 Painting::Painting(Level* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6)
@@ -51,6 +60,7 @@ int32_t Painting::getEntityTypeId() const {
 	return 83;
 }
 void Painting::readAdditionalSaveData(CompoundTag* a2) {
+	// getMotiveByName falls back to DefaultImage, so this cannot leave it null.
 	this->motive = Motive::getMotiveByName(a2->getString("Motive"));
 	HangingEntity::readAdditionalSaveData(a2);
 }
@@ -61,10 +71,10 @@ void Painting::addAdditonalSaveData(CompoundTag* a2) {
 	HangingEntity::addAdditonalSaveData(a2);
 }
 int32_t Painting::getWidth() {
-	return this->motive->w;
+	return this->motive ? this->motive->w : Motive::DefaultImage->w;
 }
 int32_t Painting::getHeight() {
-	return this->motive->h;
+	return this->motive ? this->motive->h : Motive::DefaultImage->h;
 }
 void Painting::dropItem() {
 	if(this->level->getLevelData()->getGameType() != 1) {

@@ -1,3 +1,4 @@
+#include <level/LevelHeight.hpp>
 #include <tile/SpongeTile.hpp>
 #include <tile/material/Material.hpp>
 #include <level/Level.hpp>
@@ -23,7 +24,7 @@ void SpongeTile::_absorbWater(Level* level, int32_t x, int32_t y, int32_t z) {
 					int32_t tx = x + dx;
 					int32_t ty = y + dy;
 					int32_t tz = z + dz;
-					if (ty >= 0 && ty < 128) {
+					if (LevelHeight::inRange(ty)) {
 						if (level->getMaterial(tx, ty, tz) == Material::water) {
 							level->setTileAndData(tx, ty, tz, 0, 0, 3);
 						}

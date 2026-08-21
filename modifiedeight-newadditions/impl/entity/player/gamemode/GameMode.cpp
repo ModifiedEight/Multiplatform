@@ -163,7 +163,9 @@ bool_t GameMode::useItemOn(Player* player, Level* level, ItemInstance* a4, int32
 	}
 	int32_t bid = level->getTile(x, y, z);
 	if(bid == Tile::invisible_bedrock->blockID) return 0;
-	if(bid > 0 && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
+	// Tile::tiles[] is sparse: an id with no tile behind it (a block this build
+	// does not implement, translated in from a Java server) must not be used.
+	if(bid > 0 && Tile::tiles[bid] && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
 	if(!ItemInstance::isItem(sel)) {
 		return 0;
 	}

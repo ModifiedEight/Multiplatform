@@ -1,4 +1,5 @@
 #include <level/LightUpdate.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/Level.hpp>
 #include <level/LightLayer.hpp>
 #include <level/chunk/LevelChunk.hpp>
@@ -139,8 +140,8 @@ void LightUpdate::update(Level* a2) {
 						if(this->minY < 0) {
 							this->minY = 0;
 						}
-						if(this->maxY > 127) {
-							this->maxY = 127;
+						if(this->maxY > LevelHeight::maxY()) {
+							this->maxY = LevelHeight::maxY();
 						}
 						v6 = this->minY + 1;
 						z = a5 - 2;

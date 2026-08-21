@@ -6,11 +6,28 @@
 #include <gui/screens/PlayScreen.hpp>
 #include <rendering/Tesselator.hpp>
 #include <gui/NinePatchFactory.hpp>
+#include <gui/buttons/Touch_TButton.hpp>
 #include <util/IntRectangle.hpp>
 #include <stdlib.h>
 
+AddExternalServerScreen::AddExternalServerScreen() {
+	this->isJavaServer = 0;
+}
+
 void AddExternalServerScreen::closeScreen() {
 	this->minecraft->setScreen(new PlayScreen(1));
+}
+
+void AddExternalServerScreen::refreshJavaToggle() {
+	if(this->javaToggleButton) {
+		this->javaToggleButton->setMsg(this->isJavaServer ? "Java Server (1.8.x): YES"
+		                                                 : "Java Server (1.8.x): NO");
+	}
+	if(this->field_9C) {
+		this->field_9C->setText(this->isJavaServer
+			? "Add a Minecraft Java Edition 1.8.x server. The default port is 25565."
+			: "Add server by IP/Address.");
+	}
 }
 
 AddExternalServerScreen::~AddExternalServerScreen() {
@@ -41,11 +58,13 @@ void AddExternalServerScreen::init() {
 	this->field_94 = std::shared_ptr<TextBox>(new TextBox(this->minecraft, "Server Port", 6, numChars, strlen(numChars), 0, 0, 0, 0));
 	this->field_94->setText("19132");
 	this->field_9C = std::shared_ptr<Label>(new Label("Add server by IP/Address.", this->minecraft, -1, 0, 0, 0, 1));
+	this->javaToggleButton = std::shared_ptr<Button>(new Touch::TButton(3, "Java Server (1.8.x): NO", this->minecraft));
 	NinePatchFactory factory(this->minecraft->texturesPtr, "gui/spritesheet.png");
 	this->field_A4 = std::shared_ptr<NinePatchLayer>(factory.createSymmetrical(IntRectangle{34, 43, 14, 14}, 3, 3, 32, 32));
 	this->buttons.emplace_back(this->field_5C.get());
 	this->buttons.emplace_back(this->closeScreenButton.get());
 	this->buttons.emplace_back(this->addServerButton.get());
+	this->buttons.emplace_back(this->javaToggleButton.get());
 	this->elements.emplace_back(this->serverNameLabel.get());
 	this->elements.emplace_back(this->serverNameTextBox.get());
 	this->elements.emplace_back(this->addressLabel.get());
@@ -53,6 +72,7 @@ void AddExternalServerScreen::init() {
 	this->elements.emplace_back(this->portLabel.get());
 	this->elements.emplace_back(this->field_94.get());
 	this->elements.emplace_back(this->field_9C.get());
+	this->refreshJavaToggle();
 }
 void AddExternalServerScreen::setupPositions() {
 	int32_t height; // r0
@@ -91,8 +111,11 @@ void AddExternalServerScreen::setupPositions() {
 	this->field_9C->posY = this->field_5C->height + 10;
 	this->field_9C->setWidth(this->width / 2 - 20);
 	this->field_9C->setupPositions();
+	this->javaToggleButton->posX = this->width / 2 + 10;
+	this->javaToggleButton->posY = this->field_9C->posY + this->field_9C->height + 10;
+	this->javaToggleButton->width = this->width / 2 - 20;
 	this->addServerButton->posX = this->addServerButton->width / -2 + 3 * ((this->width - 10) / 4);
-	this->addServerButton->posY = this->field_9C->posY + this->field_9C->height + 30;
+	this->addServerButton->posY = this->javaToggleButton->posY + this->javaToggleButton->height + 14;
 	this->field_A4->setSize((float)this->width - 10.0, (float)(this->height - this->field_5C->height - 10));
 }
 bool_t AddExternalServerScreen::handleBackEvent(bool_t a2) {
@@ -113,12 +136,25 @@ bool_t AddExternalServerScreen::handleBackEvent(bool_t a2) {
 void AddExternalServerScreen::buttonClicked(Button* a2) {
 	if(a2 == this->closeScreenButton.get()) {
 		this->closeScreen();
+	} else if(a2 == this->javaToggleButton.get()) {
+		this->isJavaServer = !this->isJavaServer;
+		// Nudge the port to the right default, but only while it still holds the
+		// other edition's one - a port the player typed is left alone.
+		if(this->isJavaServer) {
+			if(this->field_94->text == "19132") {
+				this->field_94->setText("25565");
+			}
+		} else if(this->field_94->text == "25565") {
+			this->field_94->setText("19132");
+		}
+		this->refreshJavaToggle();
+		this->setupPositions();
 	} else if(a2 == this->addServerButton.get()) {
 		long v3 = strtol(this->field_94->text.c_str(), 0, 0);
 		if(v3 > 0) {
 			if(this->serverNameTextBox->text.size()) {
 				if(this->serverAddressTextBox->text.size()) {
-					this->minecraft->externalServerFile->addServer(this->serverNameTextBox->text, this->serverAddressTextBox->text, v3);
+					this->minecraft->externalServerFile->addServer(this->serverNameTextBox->text, this->serverAddressTextBox->text, v3, this->isJavaServer);
 					this->minecraft->setScreen(new PlayScreen(1));
 				}
 			}

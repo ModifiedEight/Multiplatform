@@ -98,7 +98,9 @@ void ChestTile::onRemove(Level* level, int32_t x, int32_t y, int32_t z) {
 }
 bool_t ChestTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) {
 	TileEntity* te = level->getTileEntity(x, y, z);
-	if(te->isType(2)) {
+	// Null when the block is no longer a chest - the server can replace it
+	// between the click and this call - and every other use() here checks.
+	if(te && te->isType(2)) {
 		if(!level->isClientMaybe) {
 			if(((ChestTileEntity*)te)->canOpen()) {
 				((ChestTileEntity*)te)->openBy(player);

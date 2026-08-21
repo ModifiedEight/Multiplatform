@@ -1,4 +1,5 @@
 #include <level/storage/DataLayer.hpp>
+#include <level/LevelHeight.hpp>
 #include <string.h>
 
 DataLayer::DataLayer(int32_t size){
@@ -13,14 +14,14 @@ DataLayer::~DataLayer(){
 }
 
 int32_t DataLayer::get(int32_t x, int32_t y, int32_t z){
-	int32_t index = y | (x << 11) | (z << 7);
+	int32_t index = LevelHeight::index(x, y, z);
 	uint8_t bt = this->data[index >> 1];
 	if((index & 1) != 0) return bt >> 4;
 	return bt & 0xf;
 }
 
 void DataLayer::set(int32_t x, int32_t y, int32_t z, int32_t d){
-	int32_t index = y | (x << 11) | (z << 7);
+	int32_t index = LevelHeight::index(x, y, z);
 	uint8_t bt = this->data[index >> 1];
 	uint8_t res;
 	if((index & 1) != 0) res = (bt & 0xf) | (16*d);

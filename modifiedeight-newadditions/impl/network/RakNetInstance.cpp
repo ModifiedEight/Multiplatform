@@ -3,6 +3,7 @@
 #include <network/MinecraftPackets.hpp>
 #include <network/NetEventCallback.hpp>
 #include <network/Packet.hpp>
+#include <java/JavaBridge.hpp>
 
 static RakNet::SystemAddress _D6E0A1B0;
 
@@ -124,6 +125,7 @@ void RakNetInstance::clearServerList() {
 	this->serverList.clear();
 }
 void RakNetInstance::disconnect() {
+	JavaBridge::shutdown();
 	if(this->rakPeerInstance->IsActive()) {
 		this->rakPeerInstance->Shutdown(500);
 	}
@@ -155,6 +157,9 @@ bool_t RakNetInstance::isMyLocalGuid(const RakNet::RakNetGUID& a2) {
 	return 0;
 }
 void RakNetInstance::runEvents(NetEventCallback* a2) {
+	// A Java session has no RakNet peer to receive from; this is simply the one
+	// place in the frame that is guaranteed to run, so it is where it ticks.
+	JavaBridge::pump();
 	while(1) {
 		RakNet::Packet* v8 = this->rakPeerInstance->Receive();
 		if(!v8) break;
@@ -221,6 +226,9 @@ void RakNetInstance::runEvents(NetEventCallback* a2) {
 	}
 }
 void RakNetInstance::send(Packet& a2) {
+	if(JavaBridge::interceptSend(&a2)) {
+		return;
+	}
 	RakNet::BitStream v14;
 	a2.write(&v14);
 	if(this->_isServer) {
@@ -232,6 +240,9 @@ void RakNetInstance::send(Packet& a2) {
 	}
 }
 void RakNetInstance::send(const RakNet::RakNetGUID& a2, Packet& a3) {
+	if(JavaBridge::interceptSend(&a3)) {
+		return;
+	}
 	RakNet::BitStream v11;
 	a3.write(&v11);
 	this->rakPeerInstance->Send(&v11, a3.packetPriorityMaybe, a3.packetReliabilityMaybe, 0, RakNet::AddressOrGUID(a2), 0, 0);

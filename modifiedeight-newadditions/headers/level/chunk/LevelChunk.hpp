@@ -1,5 +1,6 @@
 #pragma once
 #include <_types.h>
+#include <level/LevelHeight.hpp>
 #include <level/storage/DataLayer.hpp>
 #include <vector>
 #include <unordered_map>
@@ -14,7 +15,19 @@ struct LevelChunk
 	int8_t field_9, field_A, field_B;
 	struct Level* level;
 	DataLayer tileMeta, skyLight, blockLight;
-	uint8_t heightMap[256];
+	/*
+	 * The lowest y in a column with nothing opaque above it.  A 256 tall world
+	 * can push that to 256, one past what a byte holds, so this is wider than
+	 * the one the original game had - nothing serialises it (it is recomputed
+	 * on load), so widening it costs nothing.
+	 */
+	uint16_t heightMap[256];
+	/*
+	 * Per column bitmask of which 16 block sections changed.  Deliberately still
+	 * eight bits wide: its only readers are the region files and the MCPE chunk
+	 * packet, both of which are 128 tall formats, so sections above 128 are not
+	 * tracked and neither of those two ever sees a tall level.
+	 */
 	int8_t updateMap[256];
 	int32_t topBlockY;
 	int32_t chunkX, chunkZ;
@@ -25,7 +38,7 @@ struct LevelChunk
 	int32_t field_250;
 	uint8_t* tiles;
 	int8_t field_258, field_259, field_25A, field_25B;
-	std::vector<struct Entity*> miniChunkEntities[8];
+	std::vector<struct Entity*> miniChunkEntities[CHUNK_MINIS];
 	std::unordered_map<TilePos, struct TileEntity*> tileEntities;
 
 	LevelChunk(struct Level*, int32_t, int32_t);

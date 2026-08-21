@@ -62,7 +62,10 @@ void HumanoidMobRenderer::additionalRendering(Mob* a2, float a3) {
 			glScalef(0.625, 0.625, 0.625);
 			v10 = -100.0;
 		} else {
-			if(!v6->itemClass->isHandEquipped()) {
+			// itemClass is null for a stack whose id nothing local could
+			// represent - id 0 still calls itself valid - and a remote player
+			// may well be holding one of those on a Java server.
+			if(!v6->itemClass || !v6->itemClass->isHandEquipped()) {
 				glTranslatef(0.25, 0.1875, -0.1875);
 				glScalef(0.375, 0.375, 0.375);
 				glRotatef(60.0, 0.0, 0.0, 1.0);

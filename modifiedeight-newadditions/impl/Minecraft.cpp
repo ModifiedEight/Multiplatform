@@ -1,3 +1,5 @@
+#include <java/JavaBridge.hpp>
+#include <level/LevelHeight.hpp>
 #include <Minecraft.hpp>
 #include <ExternalServerFile.hpp>
 #include <ExternalServer.hpp>
@@ -482,7 +484,13 @@ bool_t Minecraft::isLevelGenerated(void) {
 	return 0;
 }
 bool_t Minecraft::isOnline(void) {
-	return this->serverSideNetworkHandler != 0;
+	/*
+	 * "There is a server on the other end."  A Java (1.8.x) session has no
+	 * ServerSideNetworkHandler - the server is a real Minecraft server across a
+	 * TCP socket - but everything this gates (block removals, held item and
+	 * container updates, position reports) is exactly what has to reach it.
+	 */
+	return this->serverSideNetworkHandler != 0 || JavaBridge::isActive();
 }
 bool_t Minecraft::isOnlineClient(void) {
 	if(this->level) return this->level->isClientMaybe;
@@ -534,6 +542,8 @@ void Minecraft::leaveGame(bool_t a2, bool_t a3) {
 			}
 			delete this->level;
 			this->level = 0;
+			// Back to the shape everything but a Java session uses.
+			LevelHeight::set(MCPE_HEIGHT);
 		}
 		this->player = 0;
 		this->viewEntityMaybe = 0;
@@ -769,6 +779,8 @@ void Minecraft::respawnPlayer(void) {
 }
 void Minecraft::selectLevel(const std::string& a2, const std::string& a3, const struct LevelSettings& a4) {
 	LevelStorage* v7 = this->levelStorageSource->selectLevel(a2, 0);
+	// A world on disk is 128 tall and has to stay that way.
+	LevelHeight::set(MCPE_HEIGHT);
 	this->level = new ServerLevel(v7, a3, a4, a4.generatorType, 0);
 	this->setLevel(this->level, "Generating level", 0);
 	this->setIsCreativeMode(this->level->getLevelData()->getGameType() == 1);

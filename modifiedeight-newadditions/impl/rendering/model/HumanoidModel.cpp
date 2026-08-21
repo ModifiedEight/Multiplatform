@@ -1,3 +1,4 @@
+#include <level/LevelHeight.hpp>
 #include <rendering/model/HumanoidModel.hpp>
 #include <entity/Entity.hpp>
 #include <entity/Mob.hpp>
@@ -67,7 +68,7 @@ void HumanoidModel::render(Entity* a2, float a3, float a4, float a5, float a6, f
 				int pz = (int)floorf(m->posZ);
 				for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
 					int py = (int)floorf(m->posY + yo);
-					if (py >= 0 && py < 128) {
+					if (LevelHeight::inRange(py)) {
 						Material* mat = m->level->getMaterial(px, py, pz);
 						int tile = m->level->getTile(px, py, pz);
 						if ((mat && mat == Material::water) || tile == Tile::water->blockID || tile == Tile::calmWater->blockID || (Tile::seagrass && tile == Tile::seagrass->blockID)) {

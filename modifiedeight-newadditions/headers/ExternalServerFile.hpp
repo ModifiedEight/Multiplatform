@@ -11,7 +11,9 @@ struct ExternalServerFile
 
 	ExternalServerFile(const std::string&);
 	void addServer(const std::string&, const std::string&, int32_t);
+	void addServer(const std::string&, const std::string&, int32_t, bool_t);
 	void editServer(int32_t, const std::string&, const std::string&, int32_t);
+	void editServer(int32_t, const std::string&, const std::string&, int32_t, bool_t);
 	std::unordered_map<int32_t, ExternalServer>* getExternalServers();
 	void load();
 	void removeServer(int32_t);

@@ -1,3 +1,4 @@
+#include <level/LevelHeight.hpp>
 #include <entity/Player.hpp>
 #include <entity/ItemEntity.hpp>
 #include <inventory/BaseContainerMenu.hpp>
@@ -524,7 +525,7 @@ void Player::tick() {
 			int px = Mth::floor(this->posX);
 			int py = Mth::floor(this->posY);
 			int pz = Mth::floor(this->posZ);
-			if (py >= 0 && py < 128) {
+			if (LevelHeight::inRange(py)) {
 				int t = this->level->getTile(px, py, pz);
 				if (t == Tile::water->blockID || t == Tile::calmWater->blockID) {
 					inWater = true;

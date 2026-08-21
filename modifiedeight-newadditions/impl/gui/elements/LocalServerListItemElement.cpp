@@ -18,6 +18,7 @@
 #include <gui/screens/PlayScreen.hpp>
 #include <gui/screens/ProgressScreen.hpp>
 #include <gui/screens/RenameMPLevelScreen.hpp>
+#include <java/JavaBridge.hpp>
 #include <gui/screens/Touch_DeleteWorldScreen.hpp>
 #include <input/Mouse.hpp>
 #include <level/LevelSettings.hpp>
@@ -485,6 +486,18 @@ void LocalServerListItemElement::mouseReleased(Minecraft *a2, int32_t a3,
   if (this->field_3C || this->server) {
     if (this->server) {
       if (a2->platform()->isNetworkEnabled(1)) {
+        // A Java Edition entry never touches RakNet - the Java session dials
+        // the server itself and builds the level once it is through login.
+        if (this->server->isJava) {
+          if (!JavaBridge::begin(a2, this->server->field_4, this->server->field_8,
+                                 this->server->field_C)) {
+            a2->setScreen(new DisconnectionScreen(
+                "Could not start the Java Edition connection"));
+            return;
+          }
+          a2->setScreen(new ProgressScreen());
+          return;
+        }
         PingedCompatibleServer v43;
         v43.field_4.FromStringExplicitPort(this->server->field_8.c_str(),
                                            this->server->field_C, 0);

@@ -1,4 +1,5 @@
 #include <item/WaterLilyTileItem.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/Level.hpp>
 #include <tile/Tile.hpp>
 #include <tile/material/Material.hpp>
@@ -26,7 +27,7 @@ bool_t WaterLilyTileItem::useOn(ItemInstance* item, Player* player, Level* level
 	int32_t curTile = level->getTile(targetX, targetY, targetZ);
 	Material* curMat = level->getMaterial(targetX, targetY, targetZ);
 	if (curTile == Tile::water->blockID || curTile == Tile::calmWater->blockID || (curMat && curMat == Material::water)) {
-		while (targetY < 127) {
+		while (targetY < LevelHeight::maxY()) {
 			int32_t t = level->getTile(targetX, targetY + 1, targetZ);
 			Material* m = level->getMaterial(targetX, targetY + 1, targetZ);
 			if (t == Tile::water->blockID || t == Tile::calmWater->blockID || (m && m == Material::water)) {

@@ -13,25 +13,33 @@
 
 bool_t LevelChunk::touchedSky = 0;
 
+/*
+ * Every size and every index in here comes from LevelHeight rather than a
+ * constant: 32768 tiles indexed y | (x << 11) | (z << 7) for the 128 tall world
+ * the game has always had, 65536 and one bit wider for a Java session.  The second
+ * constructor adopts a column buffer somebody else built - a level generator or
+ * the region file loader - and both of those only ever exist at MCPE height.
+ */
+
 LevelChunk::LevelChunk(struct Level* a2, int32_t a3, int32_t a4)
-	: tileMeta(32768)
-	, skyLight(32768)
-	, blockLight(32768) {
+	: tileMeta(LevelHeight::tiles)
+	, skyLight(LevelHeight::tiles)
+	, blockLight(LevelHeight::tiles) {
 	this->level = a2;
-	this->field_4 = 32768;
+	this->field_4 = LevelHeight::tiles;
 	this->field_258 = 1;
 	this->chunkX = a3;
 	this->chunkZ = a4;
 	this->chunkXworld = a3 * 16;
 	this->chunkZworld = a4 * 16;
-	this->tiles = new uint8_t[0x8000];
-	memset(this->tiles, 0, 0x8000);
+	this->tiles = new uint8_t[LevelHeight::tiles];
+	memset(this->tiles, 0, LevelHeight::tiles);
 	this->init();
 }
 LevelChunk::LevelChunk(struct Level* a2, uint8_t* a3, int32_t x, int32_t z)
-	: tileMeta(32768)
-	, skyLight(32768)
-	, blockLight(32768) {
+	: tileMeta(LevelHeight::tiles)
+	, skyLight(LevelHeight::tiles)
+	, blockLight(LevelHeight::tiles) {
 	this->level = a2;
 	this->chunkX = x;
 	this->chunkZ = z;
@@ -56,6 +64,10 @@ void LevelChunk::clearUpdateMap() {
 }
 void LevelChunk::deleteBlockData() {
 	if(this->tiles) delete[] this->tiles;
+	// Callers hand the chunk to the destructor right after this, and the
+	// destructor frees `tiles` again whenever the chunk allocated it itself
+	// (field_258).  Dropping the pointer here makes the pair safe either way.
+	this->tiles = 0;
 }
 struct TileEntity* LevelChunk::getTileEntity(int32_t x, int32_t y, int32_t z) {
 	TilePos xyz{x, y, z};
@@ -133,7 +145,7 @@ void LevelChunk::recalcHeight(int32_t x, int32_t y, int32_t z) {
 
 	xzIndex = x | (16 * z);
 	hm = this->heightMap[xzIndex];
-	v8 = (x << 11) | (z << 7);
+	v8 = (x << LevelHeight::xShift) | (z << LevelHeight::zShift);
 	if(hm < y) {
 		v9 = y;
 	} else {
@@ -150,7 +162,7 @@ void LevelChunk::recalcHeight(int32_t x, int32_t y, int32_t z) {
 		this->heightMap[xzIndex] = v9;
 		if(v9 >= this->topBlockY) {
 			v16 = 0;
-			v15 = 127;
+			v15 = LevelHeight::maxY();
 			do {
 				for(i = 0; i != 16; ++i) {
 					v12 = v16 | (16 * i);
@@ -222,13 +234,13 @@ void LevelChunk::setTileEntity(int32_t x, int32_t y, int32_t z, struct TileEntit
 	}
 }
 void LevelChunk::setTileRaw(int32_t x, int32_t y, int32_t z, int32_t id) {
-	int32_t in = y | (x << 11) | (z << 7);
+	int32_t in = LevelHeight::index(x, y, z);
 	this->tiles[in] = id;
 }
 
 
 LevelChunk::~LevelChunk() {
-	if(this->field_258) delete this->tiles;
+	if(this->field_258) delete[] this->tiles;
 }
 bool_t LevelChunk::isAt(int32_t x, int32_t z) {
 	return x == this->chunkX && z == this->chunkZ;
@@ -238,18 +250,18 @@ int32_t LevelChunk::getHeightmap(int32_t x, int32_t z) {
 }
 void LevelChunk::recalcHeightmap() {
 	int32_t v2 = 0;
-	int32_t v3 = 127;
+	int32_t v3 = LevelHeight::maxY();
 	do {
 		for(int32_t i = 0; i != 16; ++i) {
-			int32_t v4 = 127;
-			int32_t v5 = (v2 << 11) | (i << 7);
+			int32_t v4 = LevelHeight::maxY();
+			int32_t v5 = (v2 << LevelHeight::xShift) | (i << LevelHeight::zShift);
 			do {
 				if(Tile::lightBlock[this->tiles[v5 - 1 + v4]]) break;
 				--v4;
 			} while(v4);
 			this->heightMap[v2 | (16 * i)] = v4;
 			if(!this->level->dimensionPtr->hasNoSkyMaybe) {
-				int32_t v8 = 127;
+				int32_t v8 = LevelHeight::maxY();
 				int32_t v6 = 15;
 				do {
 					v6 -= Tile::lightBlock[this->tiles[v8 + v5]];
@@ -274,12 +286,12 @@ void LevelChunk::recalcHeightmap() {
 }
 void LevelChunk::recalcHeightmapOnly() {
 	int32_t v1 = 0;
-	int32_t v2 = 127;
+	int32_t v2 = LevelHeight::maxY();
 	do {
 		for(int32_t i = 0; i != 16; ++i) {
-			int32_t v4 = 127;
+			int32_t v4 = LevelHeight::maxY();
 			do {
-				if(Tile::lightBlock[this->tiles[((v1 << 11) | (i << 7)) - 1 + v4]]) --v4;
+				if(Tile::lightBlock[this->tiles[((v1 << LevelHeight::xShift) | (i << LevelHeight::zShift)) - 1 + v4]]) --v4;
 			} while(v4);
 			int32_t v6 = v1 | (16 * i);
 			if(v2 >= v4) v2 = v4;
@@ -319,7 +331,7 @@ void LevelChunk::addEntity(struct Entity* a2) {
 	float v2 = a2->posY * 0.0625;
 	int32_t v5 = Mth::floor(v2);
 	if(v5 < 0) v5 = 0;
-	else if(v5 >= 7) v5 = 7;
+	else if(v5 >= CHUNK_MINIS - 1) v5 = CHUNK_MINIS - 1;
 	a2->field_FD = 1;
 	a2->field_30 = v5;
 	a2->field_2C = this->chunkX;
@@ -331,7 +343,7 @@ void LevelChunk::removeEntity(struct Entity* a2) {
 }
 void LevelChunk::removeEntity(struct Entity* a2, int32_t a3) {
 	if(a3 < 0) a3 = 0;
-	if(a3 >= 7) a3 = 7;
+	if(a3 >= CHUNK_MINIS - 1) a3 = CHUNK_MINIS - 1;
 
 	auto e = std::find(this->miniChunkEntities[a3].begin(), this->miniChunkEntities[a3].end(), a2);
 	if(e != this->miniChunkEntities[a3].end()) {
@@ -341,9 +353,9 @@ void LevelChunk::removeEntity(struct Entity* a2, int32_t a3) {
 void LevelChunk::getEntitiesOfClass(int32_t a2, const struct AABB& a3, std::vector<struct Entity*>& a4) {
 	int32_t minChunkY = Mth::floor((a3.minY - 2) * 0.0625);
 	int32_t maxChunkY = Mth::floor((a3.maxY + 2) * 0.0625);
-	if(minChunkY > 0b111) minChunkY = 0b111; //usat(3, v);
+	if(minChunkY > CHUNK_MINIS - 1) minChunkY = CHUNK_MINIS - 1; //usat(3, v);
 	else if(minChunkY < 0) minChunkY = 0;
-	if(maxChunkY > 0b111) maxChunkY = 0b111; //usat(3, v);
+	if(maxChunkY > CHUNK_MINIS - 1) maxChunkY = CHUNK_MINIS - 1; //usat(3, v);
 	else if(minChunkY < 0) minChunkY = 0;
 
 	while(minChunkY <= maxChunkY) {
@@ -358,9 +370,9 @@ void LevelChunk::getEntitiesOfClass(int32_t a2, const struct AABB& a3, std::vect
 void LevelChunk::getEntitiesOfType(int32_t a2, const struct AABB& a3, std::vector<struct Entity*>& a4) {
 	int32_t minChunkY = Mth::floor((a3.minY - 2) * 0.0625);
 	int32_t maxChunkY = Mth::floor((a3.maxY + 2) * 0.0625);
-	if(minChunkY > 0b111) minChunkY = 0b111; //usat(3, v);
+	if(minChunkY > CHUNK_MINIS - 1) minChunkY = CHUNK_MINIS - 1; //usat(3, v);
 	else if(minChunkY < 0) minChunkY = 0;
-	if(maxChunkY > 0b111) maxChunkY = 0b111; //usat(3, v);
+	if(maxChunkY > CHUNK_MINIS - 1) maxChunkY = CHUNK_MINIS - 1; //usat(3, v);
 	else if(minChunkY < 0) minChunkY = 0;
 
 	while(minChunkY <= maxChunkY) {
@@ -400,14 +412,14 @@ int32_t LevelChunk::countEntities() {
 	do {
 		entCnt += this->miniChunkEntities[v1].size();
 		++v1;
-	} while(v1 != 8);
+	} while(v1 != CHUNK_MINIS);
 	return entCnt;
 }
 void LevelChunk::getEntities(struct Entity* a2, const struct AABB& bb, std::vector<struct Entity*>& a4) {
 	int32_t minChunkY = Mth::floor((bb.minY - 2) * 0.0625);
 	int32_t maxChunkY = Mth::floor((bb.maxY + 2) * 0.0625);
 	minChunkY = minChunkY & ~(minChunkY >> 31);
-	if(maxChunkY >= 7) maxChunkY = 7;
+	if(maxChunkY >= CHUNK_MINIS - 1) maxChunkY = CHUNK_MINIS - 1;
 
 	while(minChunkY <= maxChunkY) {
 		for(auto e: this->miniChunkEntities[minChunkY]) {
@@ -420,11 +432,11 @@ void LevelChunk::getEntities(struct Entity* a2, const struct AABB& bb, std::vect
 	}
 }
 int32_t LevelChunk::getTile(int32_t x, int32_t y, int32_t z) {
-	return this->tiles[y | (x << 11) | (z << 7)];
+	return this->tiles[LevelHeight::index(x, y, z)];
 }
 bool_t LevelChunk::setTile(int32_t x, int32_t y, int32_t z, int32_t id) {
 	int32_t v21 = x | (16 * z);
-	int32_t v10 = y | (x << 11) | (z << 7);
+	int32_t v10 = LevelHeight::index(x, y, z);
 	int32_t v22 = this->heightMap[v21];
 	int32_t oldID = this->tiles[v10];
 	if(oldID == id) return 0;
@@ -447,13 +459,13 @@ bool_t LevelChunk::setTile(int32_t x, int32_t y, int32_t z, int32_t id) {
 		if(!this->level->isClientMaybe) Tile::tiles[id]->onPlace(this->level, worldX, y, worldZ);
 	}
 	this->unsaved = 1;
-	this->updateMap[v21] |= 1 << (y >> 4);
+	if(y < MCPE_HEIGHT) this->updateMap[v21] |= 1 << (y >> 4);
 	return 1;
 }
 bool_t LevelChunk::setTileAndData(int32_t x, int32_t y, int32_t z, int32_t id, int32_t meta) {
 	int32_t v22 = x | (16 * z);
 	int32_t v23 = this->heightMap[v22];
-	int32_t v9 = y | (x << 11) | (z << 7);
+	int32_t v9 = LevelHeight::index(x, y, z);
 	int32_t oldid = this->tiles[v9];
 	if(oldid == id) {
 		int32_t m = this->tileMeta.get(x, y, z);
@@ -490,7 +502,7 @@ bool_t LevelChunk::setTileAndData(int32_t x, int32_t y, int32_t z, int32_t id, i
 		}
 	}
 	this->unsaved = 1;
-	this->updateMap[v22] |= 1 << (y >> 4);
+	if(y < MCPE_HEIGHT) this->updateMap[v22] |= 1 << (y >> 4);
 	return 1;
 }
 
@@ -505,7 +517,7 @@ bool_t LevelChunk::setData(int32_t x, int32_t y, int32_t z, int32_t d) {
 }
 void LevelChunk::setBlocks(uint8_t* data, int32_t y) {
 	for(int32_t i = 0; i != 8192; ++i) {
-		this->tiles[8192 * y + i] = data[i];
+		this->tiles[(LevelHeight::tiles / 4) * y + i] = data[i];
 	}
 	int32_t v5 = 4 * y;
 	int32_t v6 = 4 * y;
@@ -516,9 +528,9 @@ void LevelChunk::setBlocks(uint8_t* data, int32_t y) {
 		}
 		++v6;
 	}
-	this->level->updateLight(LightLayer::Sky, v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, 128, this->chunkZworld + 16);
-	this->level->updateLight(LightLayer::Block, v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, 128, this->chunkZworld + 16);
-	this->level->setTilesDirty(v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, 128, this->chunkZworld);
+	this->level->updateLight(LightLayer::Sky, v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, LevelHeight::height, this->chunkZworld + 16);
+	this->level->updateLight(LightLayer::Block, v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, LevelHeight::height, this->chunkZworld + 16);
+	this->level->setTilesDirty(v5 + this->chunkXworld, 0, this->chunkZworld, v5 + this->chunkXworld + 4, LevelHeight::height, this->chunkZworld);
 }
 int32_t LevelChunk::getBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9) {
 	int32_t v9; // r7
@@ -566,10 +578,10 @@ int32_t LevelChunk::getBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(v12 >= a6) {
 			break;
 		}
-		v18 = a4 | (v12 << 11);
+		v18 = a4 | (v12 << LevelHeight::xShift);
 		v17 = a5;
 		while(v17 < a8) {
-			v16 = v18 | (v17++ << 7);
+			v16 = v18 | (v17++ << LevelHeight::zShift);
 			v37 = v19;
 			v41 = v18;
 			memcpy(&a2[v19], &this->tiles[v16], v13);
@@ -586,10 +598,10 @@ int32_t LevelChunk::getBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(v20 >= a6) {
 			break;
 		}
-		v25 = a4 | (v20 << 11);
+		v25 = a4 | (v20 << LevelHeight::xShift);
 		v24 = a5;
 		while(v24 < a8) {
-			v23 = v25 | (v24++ << 7);
+			v23 = v25 | (v24++ << LevelHeight::zShift);
 			v38 = v26;
 			v42 = v25;
 			memcpy(&a2[v26], &this->tileMeta.data[v23 >> 1], v21);
@@ -603,10 +615,10 @@ int32_t LevelChunk::getBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(j >= a6) {
 			break;
 		}
-		v30 = a4 | (j << 11);
+		v30 = a4 | (j << LevelHeight::xShift);
 		v29 = a5;
 		while(v29 < a8) {
-			v28 = v30 | (v29++ << 7);
+			v28 = v30 | (v29++ << LevelHeight::zShift);
 			v39 = v31;
 			v43 = v30;
 			memcpy(&a2[v31], &this->blockLight.data[v28 >> 1], v21);
@@ -620,10 +632,10 @@ int32_t LevelChunk::getBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(v9 >= a6) {
 			break;
 		}
-		v34 = a4 | (v9 << 11);
+		v34 = a4 | (v9 << LevelHeight::xShift);
 		v33 = a5;
 		while(v33 < a8) {
-			v32 = v34 | (v33++ << 7);
+			v32 = v34 | (v33++ << LevelHeight::zShift);
 			v40 = v34;
 			memcpy(&a2[v35], &this->skyLight.data[v32 >> 1], v21);
 			v34 = v40;
@@ -680,10 +692,10 @@ int32_t LevelChunk::setBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(v14 >= a6) {
 			break;
 		}
-		v18 = a4 | (v14 << 11);
+		v18 = a4 | (v14 << LevelHeight::xShift);
 		v17 = a5;
 		while(v17 < a8) {
-			v16 = v18 | (v17 << 7);
+			v16 = v18 | (v17 << LevelHeight::zShift);
 			v37 = v18;
 			v41 = i;
 			++v17;
@@ -702,10 +714,10 @@ int32_t LevelChunk::setBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(j >= a6) {
 			break;
 		}
-		v25 = a4 | (j << 11);
+		v25 = a4 | (j << LevelHeight::xShift);
 		v24 = a5;
 		while(v24 < a8) {
-			v23 = v25 | (v24 << 7);
+			v23 = v25 | (v24 << LevelHeight::zShift);
 			v38 = v25;
 			++v24;
 			memcpy(&this->tileMeta.data[v23 >> 1], &a2[v26], v20);
@@ -719,10 +731,10 @@ int32_t LevelChunk::setBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(k >= a6) {
 			break;
 		}
-		v30 = a4 | (k << 11);
+		v30 = a4 | (k << LevelHeight::xShift);
 		v29 = a5;
 		while(v29 < a8) {
-			v28 = v30 | (v29 << 7);
+			v28 = v30 | (v29 << LevelHeight::zShift);
 			v39 = v30;
 			++v29;
 			memcpy(&this->blockLight.data[v28 >> 1], &a2[v31], v20);
@@ -736,10 +748,10 @@ int32_t LevelChunk::setBlocksAndData(uint8_t* a2, int32_t a3, int32_t a4, int32_
 		if(m >= a6) {
 			break;
 		}
-		v35 = a4 | (m << 11);
+		v35 = a4 | (m << LevelHeight::xShift);
 		v34 = a5;
 		while(v34 < a8) {
-			v33 = v35 | (v34 << 7);
+			v33 = v35 | (v34 << LevelHeight::zShift);
 			v40 = v35;
 			++v34;
 			memcpy(&this->skyLight.data[v33 >> 1], &a2[v36], v20);

@@ -1,4 +1,5 @@
 #include <tile/WaterLilyTile.hpp>
+#include <level/LevelHeight.hpp>
 #include <tile/material/Material.hpp>
 #include <level/Level.hpp>
 #include <level/LevelSource.hpp>
@@ -40,14 +41,14 @@ bool_t WaterLilyTile::isCubeShaped() {
 }
 
 bool_t WaterLilyTile::canSurvive(Level* level, int32_t x, int32_t y, int32_t z) {
-	if (y <= 0 || y >= 128) return 0;
+	if (y <= 0 || y >= LevelHeight::height) return 0;
 	int32_t belowTile = level->getTile(x, y - 1, z);
 	Material* belowMat = level->getMaterial(x, y - 1, z);
 	return (belowTile == Tile::water->blockID || belowTile == Tile::calmWater->blockID || (belowMat && belowMat == Material::water));
 }
 
 bool_t WaterLilyTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	if (y <= 0 || y >= 128) return 0;
+	if (y <= 0 || y >= LevelHeight::height) return 0;
 	int32_t cur = level->getTile(x, y, z);
 	if (cur != 0) return 0;
 	return this->canSurvive(level, x, y, z);

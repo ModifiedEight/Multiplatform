@@ -28,8 +28,13 @@ ItemInHandRenderer::ItemInHandRenderer(struct Minecraft* a2)
 int32_t ItemInHandRenderer::_getFrameID(struct Mob* a2, ItemInstance* a3) {
 	int32_t v7 = (a3->getId() | (((uint16_t)a3->getAuxValue()) << 12));
 	if(a2) {
-		v7 |= a2->getEntityTypeId() << 16;					 //byte2
-		v7 |= a3->itemClass->getAnimationFrameFor(a2) << 24; //hibyte
+		v7 |= a2->getEntityTypeId() << 16; //byte2
+		// A stack the id table could not represent has neither an item nor a
+		// tile behind it and still reports itself valid, which is how id 0 is
+		// spelled.  Frame 0 for it, rather than a null dereference.
+		if(a3->itemClass) {
+			v7 |= a3->itemClass->getAnimationFrameFor(a2) << 24; //hibyte
+		}
 	}
 	return v7;
 }
@@ -61,24 +66,24 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 			if(v24 != 1) {
 				if(!a3.tileClass->goodGraphics) {
 					v7->field_31 = 0;
-					v7->field_32 = a3.itemClass->isEmissive(a3.getAuxValue());
+					v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
 					return v7;
 				}
 				if(v24 != 3) {
 					v7->field_31 = 0;
-					v7->field_32 = a3.itemClass->isEmissive(a3.getAuxValue());
+					v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
 					return v7;
 				}
 			}
 			v7->field_31 = 1;
-			v7->field_32 = a3.itemClass->isEmissive(a3.getAuxValue());
+			v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
 			return v7;
 		}
 	}
 	int v25 = a3.getId();
 	v7->field_30 = 1;
 	v7->field_0 = v25;
-	if(a3.tileClass) {
+	if(a3.tileClass || !a3.itemClass) {
 		v7->field_2C = "terrain-atlas.tga";
 	} else {
 		v7->field_2C = a3.itemClass->itemTexture;
@@ -280,7 +285,7 @@ LABEL_21:
 	glRotatef(50.0, 0.0, 1.0, 0.0);
 	glRotatef(335.0, 0.0, 0.0, 1.0);
 LABEL_22:
-	if(this->field_4.itemClass->isMirroredArt()) {
+	if(this->field_4.itemClass && this->field_4.itemClass->isMirroredArt()) {
 		glRotatef(180.0, 0.0, 1.0, 0.0);
 	}
 	if(this->minecraft->options.viewBobbing) {
