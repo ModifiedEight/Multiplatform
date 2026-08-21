@@ -1,4 +1,5 @@
 #include <java/JavaBridge.hpp>
+#include <level/LevelHeight.hpp>
 #include <Minecraft.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <entity/player/User.hpp>
@@ -630,7 +631,7 @@ void LocalPlayer::travel(float a2, float a3) {
     int pz = (int)floorf(this->posZ);
     for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
       int py = (int)floorf(this->posY + yo);
-      if (py >= 0 && py < 128) {
+      if (LevelHeight::inRange(py)) {
         int tile = this->level->getTile(px, py, pz);
         Material *mat = this->level->getMaterial(px, py, pz);
         if (tile == Tile::water->blockID || tile == Tile::calmWater->blockID ||

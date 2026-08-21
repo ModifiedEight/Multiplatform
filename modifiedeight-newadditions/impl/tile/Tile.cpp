@@ -1,4 +1,6 @@
 #include <tile/Tile.hpp>
+#include <cstdio>
+#include <I18n.hpp>
 #include <level/LevelHeight.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <tile/LeverTile.hpp>
