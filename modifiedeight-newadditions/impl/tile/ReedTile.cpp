@@ -111,9 +111,6 @@ int32_t ReedTile::getColor(int32_t) {
 }
 
 int32_t ReedTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
-		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
-	}
 	if (level) {
 		Biome* b = level->getBiome(x, z);
 		if (b == Biome::swampland) {

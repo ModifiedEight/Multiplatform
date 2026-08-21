@@ -87,6 +87,11 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.classictextures.desc") { a2 = "Loads textures from terrain-atlas / items-opaque"; return 1; }
 	if (a1 == "options.marketplace") { a2 = "Texture Packs button"; return 1; }
 	if (a1 == "options.fogenabled") { a2 = "Fog"; return 1; }
+	if (a1 == "options.animatetextures") { a2 = "Animated Textures"; return 1; }
+	if (a1 == "options.animatetextures.desc") { a2 = "Toggles animated swaying for plants and animated water"; return 1; }
+	if (a1 == "options.animatewater") { a2 = "Animated Water"; return 1; }
+	if (a1 == "options.animatelava") { a2 = "Animated Lava"; return 1; }
+	if (a1 == "options.animatefire") { a2 = "Animated Fire"; return 1; }
 	if (a1 == "tile.grassPath.name") { a2 = "Grass Path"; return 1; }
 
 	auto&& v3 = I18n::_strings.find(a1);
@@ -116,6 +121,11 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "options.classictextures.desc") return "Loads textures from terrain-atlas / items-opaque";
 	if (a2 == "options.marketplace") return "Texture Packs button";
 	if (a2 == "options.fogenabled") return "Fog";
+	if (a2 == "options.animatetextures") return "Animated Textures";
+	if (a2 == "options.animatetextures.desc") return "Toggles animated swaying for plants and animated water";
+	if (a2 == "options.animatewater") return "Animated Water";
+	if (a2 == "options.animatelava") return "Animated Lava";
+	if (a2 == "options.animatefire") return "Animated Fire";
 	if (a2 == "options.showfps") return "Show FPS";
 	if (a2 == "options.debugscreen") return "Debug Screen";
 	if (a2 == "options.discordrpc") return "Discord Integration";

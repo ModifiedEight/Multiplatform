@@ -148,7 +148,11 @@ bool_t LocalPlayer::isSolidTile(int32_t a2, int32_t a3, int32_t a4) {
   int32_t v4; // r0
 
   v4 = this->level->getTile(a2, a3, a4);
-  if (v4 <= 0) {
+  if (v4 <= 0 || !Tile::tiles[v4]) {
+    return 0;
+  }
+  if (!Tile::tiles[v4]->isSolidRender() &&
+      Tile::tiles[v4]->getAABB(this->level, a2, a3, a4) == nullptr) {
     return 0;
   }
   return Tile::tiles[v4]->material->isSolid();
@@ -360,8 +364,14 @@ void LocalPlayer::ride(Entity *a2) {
 
   if (a2) {
     if (!this->ridingAt) {
-      this->minecraft->gui.showTipMessage("Tap Jump to leave the minecart");
+      this->minecraft->gui.showTipMessage("Tap Jump to leave");
     }
+  } else if (this->ridingAt) {
+    this->noclip = false;
+    this->setPos(this->posX, this->ridingAt->posY + this->ridingHeight + 0.5f, this->posZ);
+    this->fallDistance = 0.0f;
+    this->motionY = 0.0f;
+    this->onGround = true;
   }
   Player::ride(a2);
   level = this->level;
@@ -582,7 +592,26 @@ float LocalPlayer::getWalkingSpeedModifier() {
 }
 
 void LocalPlayer::travel(float a2, float a3) {
-  if (this->isInWater()) {
+  bool inWater = this->isInWater() || this->isUnderLiquid(Material::water);
+  if (!inWater && this->level) {
+    int px = (int)floorf(this->posX);
+    int pz = (int)floorf(this->posZ);
+    for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
+      int py = (int)floorf(this->posY + yo);
+      if (py >= 0 && py < 128) {
+        int tile = this->level->getTile(px, py, pz);
+        Material *mat = this->level->getMaterial(px, py, pz);
+        if (tile == Tile::water->blockID || tile == Tile::calmWater->blockID ||
+            (Tile::seagrass && tile == Tile::seagrass->blockID) ||
+            (mat && mat == Material::water)) {
+          inWater = true;
+          break;
+        }
+      }
+    }
+  }
+  if (inWater) {
+    this->onGround = false;
     float speed = this->isSprinting ? 0.045f : 0.02f;
     float pitchRad = this->pitch * 0.0174532925f;
     float lookY = -sinf(pitchRad);

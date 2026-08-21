@@ -1,5 +1,10 @@
 #include <rendering/textures/FireTexture.hpp>
 #include <tile/Tile.hpp>
+#include <Options.hpp>
+
+bool_t FireTexture::isEnabled() {
+	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateFire) : 1;
+}
 
 FireTexture::FireTexture()
 	: DynamicTexture(Tile::fire->textureUV, 1) {

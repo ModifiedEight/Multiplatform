@@ -457,8 +457,8 @@ bool_t Item::useOn(struct ItemInstance*, struct Player* player, Level* level, in
 					te->bottomColor = 0xFFFFFF;
 				}
 
-				if (BlockColorRegistry::hasBlockColor(x, y, z)) {
-					BlockColorRegistry::clearBlockColor(x, y, z);
+				if (BlockColorRegistry::hasBlockFaceColor(x, y, z, side)) {
+					BlockColorRegistry::clearBlockFaceColor(x, y, z, side);
 				}
 
 				level->sendTileUpdated(x, y, z);
@@ -466,8 +466,8 @@ bool_t Item::useOn(struct ItemInstance*, struct Player* player, Level* level, in
 			}
 		}
 
-		if (BlockColorRegistry::hasBlockColor(x, y, z)) {
-			BlockColorRegistry::clearBlockColor(x, y, z);
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, side)) {
+			BlockColorRegistry::clearBlockFaceColor(x, y, z, side);
 			level->sendTileUpdated(x, y, z);
 			return 1;
 		}

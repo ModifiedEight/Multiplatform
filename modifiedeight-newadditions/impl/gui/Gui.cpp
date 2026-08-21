@@ -192,17 +192,6 @@ void Gui::addMessage(const std::string &a2, const std::string &a3, int32_t a4) {
     GuiMessage v13(a2, a3, a4);
     this->chatMessages.emplace(this->chatMessages.begin(), v13);
 
-    if (!this->minecraftInst->isOnlineClient() && v13.field_8[0] == '/') {
-      // TODO - proper command handling
-      // std::string v10 = ServerCommandParser::executeCommand
-      std::string cmd = v13.field_8.substr(1);
-      std::string v10 = cmd == "" ? "Error: no command provided"
-                                  : "Error: Command " + cmd + " not found";
-
-      this->chatMessages.emplace(this->chatMessages.begin(),
-                                 GuiMessage("server", v10, 200));
-    }
-
     while (1) { // TODO check
       if (this->chatMessages.size() <= 30)
         break;
@@ -473,8 +462,8 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight New Additions 1.6.2.1 (%d fps)",
-                    fps);
+            sprintf(dbgText1,
+                    "ModifiedEight New Additions 1.6.3.1pre1 (%d fps)", fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 

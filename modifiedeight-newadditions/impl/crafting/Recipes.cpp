@@ -126,6 +126,9 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Tile::stoneSlabHalf, 6, 3), "###", definition<Tile*>('#', Tile::stoneBrick));
 	this->addShapedRecipe(ItemInstance(Tile::stoneSlabHalf, 6, 0), "###", definition<Tile*>('#', Tile::rock));
 	this->addShapedRecipe(ItemInstance(Tile::stoneSlabHalf, 6, 1), "###", definition<Tile*>('#', Tile::sandStone));
+	if (Tile::dirtSlabHalf) this->addShapedRecipe(ItemInstance(Tile::dirtSlabHalf, 6, 0), "###", definition<Tile*>('#', Tile::dirt));
+	if (Tile::grassSlabHalf) this->addShapedRecipe(ItemInstance(Tile::grassSlabHalf, 6, 0), "###", definition<Tile*>('#', Tile::grass));
+	if (Tile::rockSlabHalf) this->addShapedRecipe(ItemInstance(Tile::rockSlabHalf, 6, 0), "###", definition<Tile*>('#', Tile::rock));
 
 
 	for(int32_t a3 = 0; a3 != 4; ++a3) {
@@ -141,7 +144,12 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Item::door_wood, 1), "##", "##", "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 0)));
 	this->addShapedRecipe(ItemInstance(Item::door_spruce, 1), "##", "##", "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
 	this->addShapedRecipe(ItemInstance(Item::door_birch, 1), "##", "##", "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	this->addShapedRecipe(ItemInstance(Item::door_iron, 1), "##", "##", "##", definition<Item*>('#', Item::ironIngot));
 	this->addShapedRecipe(ItemInstance(Tile::trapdoor, 2), "###", "###", definition<Tile*>('#', Tile::wood));
+	this->addShapedRecipe(ItemInstance(Tile::trapdoor_spruce, 2), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
+	this->addShapedRecipe(ItemInstance(Tile::trapdoor_birch, 2), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	this->addShapedRecipe(ItemInstance(Tile::fence_spruce, 3), "#X#", "#X#", definition<Item*, ItemInstance>('#', Item::stick, 'X', ItemInstance(Tile::wood, 1, 1)));
+	this->addShapedRecipe(ItemInstance(Tile::fence_birch, 3), "#X#", "#X#", definition<Item*, ItemInstance>('#', Item::stick, 'X', ItemInstance(Tile::wood, 1, 2)));
 	this->addShapedRecipe(ItemInstance(Item::sign, 1), "###", "###", " X ", definition<Tile*, Item*>('#', Tile::wood, 'X', Item::stick) /*inlined*/);
 	std::vector<ItemInstance> cakestuff = {ItemInstance(Item::cake, 1), ItemInstance(Item::bucket, 3)};
 	this->addShapedRecipe(cakestuff, Recipes::Shape("AAA", "BEB", "CCC").shape, definition<ItemInstance, Item*, Item*, Item*>('A', ItemInstance(Item::bucket, 1, 1), 'B', Item::sugar, 'C', Item::wheat, 'E', Item::egg));

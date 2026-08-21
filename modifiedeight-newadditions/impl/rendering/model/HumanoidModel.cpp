@@ -53,6 +53,7 @@ void HumanoidModel::render(Entity* a2, float a3, float a4, float a5, float a6, f
 	ItemInstance* item; // r7
 
 	if(a2) {
+		this->field_4 = a2->isRiding();
 		if(a2->isMob()) {
 			Mob* m = (Mob*)a2;
 			item = m->getCarriedItem();

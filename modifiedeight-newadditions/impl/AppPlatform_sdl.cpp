@@ -214,7 +214,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.2.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.3.1pre1", 0);
 
   {
     int w, h, ch;
@@ -304,7 +304,9 @@ static void takeScreenshot(Minecraft *mc, AppPlatform_sdl *platform,
   }
 
   std::string path;
-  if (sType == 2 || (mc->options.panoramaAngle > 0 && sType == 0)) {
+  if (sType == 2) {
+    if (mc->options.panoramaAngle <= 0)
+      return;
     int index = mc->options.panoramaAngle - 1;
     if (index < 0)
       index = 0;
@@ -395,12 +397,14 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
   }
   if (key == SDLK_F2) {
     if (pressed) {
-      takeScreenshot(mc, this);
+      takeScreenshot(mc, this, 0);
     }
   }
   if ((key == SDLK_l || scancode == 46) && pressed && mc->player &&
       !mc->currentScreen) {
-    takeScreenshot(mc, this, 2);
+    if (mc->options.panoramaAngle > 0) {
+      takeScreenshot(mc, this, 2);
+    }
   }
   if (key == SDLK_F5 && mc->player && !mc->currentScreen && mc->mouseGrabbed) {
     if (pressed) {
@@ -494,7 +498,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight New Additions 1.6.2",
+            "ModifiedEight New Additions 1.6.3",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -544,7 +548,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.2.1",
+              details, "icon", "ModifiedEight New Additions 1.6.3.1pre1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

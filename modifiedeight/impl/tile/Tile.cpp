@@ -18,6 +18,8 @@
 #include <tile/CakeTile.hpp>
 #include <tile/CarrotTile.hpp>
 #include <tile/ChestTile.hpp>
+#include <tile/Tile.hpp>
+#include <tile/PressurePlateTile.hpp>
 #include <tile/ClayTile.hpp>
 #include <tile/ClothTile.hpp>
 #include <tile/ColoredPlanksTile.hpp>

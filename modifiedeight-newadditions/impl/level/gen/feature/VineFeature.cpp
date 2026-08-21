@@ -13,10 +13,16 @@ VineFeature::~VineFeature() {
 
 bool_t VineFeature::place(Level* level, Random* random, int32_t x, int32_t y, int32_t z) {
 	if (!Tile::vine) return 0;
+	int32_t genVer = (level && level->getLevelData()) ? level->getLevelData()->getGeneratorVersion() : -1;
+	bool isOldWorld = (genVer == 0 || genVer == 4);
 	for (int32_t i = 0; i < 64; ++i) {
 		int32_t rx = x + (random->genrand_int32() & 7) - (random->genrand_int32() & 7);
 		int32_t ry = y + (random->genrand_int32() & 3) - (random->genrand_int32() & 3);
 		int32_t rz = z + (random->genrand_int32() & 7) - (random->genrand_int32() & 7);
+
+		if (isOldWorld && (rx <= 3 || rx >= 252 || rz <= 3 || rz >= 252)) {
+			continue;
+		}
 
 		if (level->isEmptyTile(rx, ry, rz)) {
 			int32_t meta = 0;

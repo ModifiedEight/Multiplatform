@@ -101,12 +101,14 @@ bool_t TreeFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 	} while(v21 < v25);
 
 	if (this->meta == 3 || this->meta == 4) {
+		int32_t genVer = (level && level->getLevelData()) ? level->getLevelData()->getGeneratorVersion() : -1;
+		bool isOldWorld = (genVer == 0 || genVer == 4);
 		int32_t canopyStart = y - 3 + v25;
 		for (int32_t cy = y; cy < canopyStart; ++cy) {
-			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z - 1)) this->placeBlock(level, x, cy, z - 1, Tile::vine ? Tile::vine->blockID : 0, 4);
-			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z + 1)) this->placeBlock(level, x, cy, z + 1, Tile::vine ? Tile::vine->blockID : 0, 1);
-			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x - 1, cy, z)) this->placeBlock(level, x - 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 2);
-			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x + 1, cy, z)) this->placeBlock(level, x + 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 8);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z - 1) && (!isOldWorld || (x > 3 && x < 252 && z - 1 > 3 && z - 1 < 252))) this->placeBlock(level, x, cy, z - 1, Tile::vine ? Tile::vine->blockID : 0, 4);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x, cy, z + 1) && (!isOldWorld || (x > 3 && x < 252 && z + 1 > 3 && z + 1 < 252))) this->placeBlock(level, x, cy, z + 1, Tile::vine ? Tile::vine->blockID : 0, 1);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x - 1, cy, z) && (!isOldWorld || (x - 1 > 3 && x - 1 < 252 && z > 3 && z < 252))) this->placeBlock(level, x - 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 2);
+			if (random->genrand_int32() % 3 == 0 && level->isEmptyTile(x + 1, cy, z) && (!isOldWorld || (x + 1 > 3 && x + 1 < 252 && z > 3 && z < 252))) this->placeBlock(level, x + 1, cy, z, Tile::vine ? Tile::vine->blockID : 0, 8);
 		}
 		for (int32_t ly = canopyStart; ly <= v28; ++ly) {
 			int32_t v17 = 1 - (ly - v28) / 2;
@@ -115,28 +117,28 @@ bool_t TreeFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 					if (level->getTile(lx, ly, lz) == Tile::leaves->blockID) {
 						if (random->genrand_int32() % 3 == 0) {
 							int32_t vlen = 3 + (random->genrand_int32() % 4);
-							if (level->isEmptyTile(lx, ly, lz - 1)) {
+							if (level->isEmptyTile(lx, ly, lz - 1) && (!isOldWorld || (lx > 3 && lx < 252 && lz - 1 > 3 && lz - 1 < 252))) {
 								for (int32_t dy = 0; dy < vlen; ++dy) {
 									int32_t vy = ly - dy;
 									if (vy <= 0 || !level->isEmptyTile(lx, vy, lz - 1)) break;
 									this->placeBlock(level, lx, vy, lz - 1, Tile::vine ? Tile::vine->blockID : 0, 4);
 								}
 							}
-							if (level->isEmptyTile(lx, ly, lz + 1)) {
+							if (level->isEmptyTile(lx, ly, lz + 1) && (!isOldWorld || (lx > 3 && lx < 252 && lz + 1 > 3 && lz + 1 < 252))) {
 								for (int32_t dy = 0; dy < vlen; ++dy) {
 									int32_t vy = ly - dy;
 									if (vy <= 0 || !level->isEmptyTile(lx, vy, lz + 1)) break;
 									this->placeBlock(level, lx, vy, lz + 1, Tile::vine ? Tile::vine->blockID : 0, 1);
 								}
 							}
-							if (level->isEmptyTile(lx - 1, ly, lz)) {
+							if (level->isEmptyTile(lx - 1, ly, lz) && (!isOldWorld || (lx - 1 > 3 && lx - 1 < 252 && lz > 3 && lz < 252))) {
 								for (int32_t dy = 0; dy < vlen; ++dy) {
 									int32_t vy = ly - dy;
 									if (vy <= 0 || !level->isEmptyTile(lx - 1, vy, lz)) break;
 									this->placeBlock(level, lx - 1, vy, lz, Tile::vine ? Tile::vine->blockID : 0, 2);
 								}
 							}
-							if (level->isEmptyTile(lx + 1, ly, lz)) {
+							if (level->isEmptyTile(lx + 1, ly, lz) && (!isOldWorld || (lx + 1 > 3 && lx + 1 < 252 && lz > 3 && lz < 252))) {
 								for (int32_t dy = 0; dy < vlen; ++dy) {
 									int32_t vy = ly - dy;
 									if (vy <= 0 || !level->isEmptyTile(lx + 1, vy, lz)) break;

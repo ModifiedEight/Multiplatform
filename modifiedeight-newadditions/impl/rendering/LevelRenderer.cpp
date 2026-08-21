@@ -366,7 +366,7 @@ void LevelRenderer::cullAndSort(FrustumCuller* a2, float a3, float a4) {
 			Vec3 v38(v37.x - (float)v19->xPos, v37.y - (float)v19->yPos, v37.z - (float)v19->zPos);
 			Vec3 v39(v38.x - _D6E0698C.x, v38.y - _D6E0698C.y, v38.z - _D6E0698C.z);
 
-			float v21 = (float)((float)((float)(v39.y + v39.y) * (float)(v39.y + v39.y)) + (float)(v39.x * v39.x)) + (float)(v39.z * v39.z);
+			float v21 = (float)((v39.y * v39.y) + (v39.x * v39.x) + (v39.z * v39.z));
 			if(v21 >= (float)(v17 * 0.5)) {
 				this->farChunks.insert({v21, v19});
 			} else {
@@ -418,9 +418,11 @@ void LevelRenderer::generateSky() {
 		v3 = v2;
 		Vec3 v4(2000.0, 0, 0);
 		++v2;
-		v4.yRot((float)((float)v3 / 10.0) * 6.2832);
+		v4.y = 0.0;
+		v4.x = 2000.0 * Mth::cos((float)((float)v3 * 3.1416) / 4.0);
+		v4.z = 2000.0 * Mth::sin((float)((float)v3 * 3.1416) / 4.0);
 		Tesselator::instance.vertex(v4.x, 128.0, v4.z);
-	} while(v2 != 11);
+	} while(v2 != 9);
 	this->skyMesh = Tesselator::instance.end();
 }
 int32_t LevelRenderer::getLayerFeature(int32_t a1, bool_t a2) {
@@ -491,15 +493,13 @@ int32_t LevelRenderer::renderChunks(int32_t a2, float a3, bool_t a4) {
 				glPopMatrix();
 			}
 		}
-		if(a2 == 2) {
-			for(auto&& i = this->farChunks.begin(); i != this->farChunks.end(); ++i) {
-				MeshBuffer* mb = i->second->getRenderChunk(2);
-				if(mb->isValid()) {
-					glPushMatrix();
-					glTranslatef(mb->transformX, mb->transformY, mb->transformZ);
-					v10 += this->_renderChunk(*mb);
-					glPopMatrix();
-				}
+		for(auto&& i = this->farChunks.begin(); i != this->farChunks.end(); ++i) {
+			MeshBuffer* mb = i->second->getRenderChunk(a2);
+			if(mb->isValid()) {
+				glPushMatrix();
+				glTranslatef(mb->transformX, mb->transformY, mb->transformZ);
+				v10 += this->_renderChunk(*mb);
+				glPopMatrix();
 			}
 		}
 	}
@@ -541,7 +541,7 @@ void LevelRenderer::renderClouds(float a2) {
 	v13 = v10;
 	Color4 v30 = this->level->getCloudColor(a2);
 	v14 = this->field_15C;
-	v30.a = 0.7;
+	v30.a = 0.45f;
 	if(v11 != v14 || v12 != this->field_160 || !this->cloudsMesh.isValid() || (float)((float)(fabsf(v30.r - this->field_164.r) + fabsf(v30.g - this->field_164.g)) + fabsf(v30.b - this->field_164.b)) > 0.06) {
 		td = this->textures->loadAndGetTextureData("environment/clouds.png");
 		TextureTesselator textes(td, v11 - 32, v12 - 32, v11 + 32, v12 + 32, Vec3(0, 0.70711, 0.70711), Color4(0.6, 0.6, 0.6, 1), v30); // [sp+54h] [bp-84h] BYREF

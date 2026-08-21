@@ -10,4 +10,5 @@ struct WaterTexture: DynamicTexture
 
 	virtual ~WaterTexture();
 	virtual void tick();
+	virtual bool_t isEnabled();
 };

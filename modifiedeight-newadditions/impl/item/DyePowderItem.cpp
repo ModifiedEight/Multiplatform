@@ -137,7 +137,7 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 				}
 			}
 		} else {
-			BlockColorRegistry::setBlockColor(x, y, z, colorHex);
+			BlockColorRegistry::setBlockFaceColor(x, y, z, face, colorHex);
 		}
 
 		Tile* tile = Tile::tiles[tileId];

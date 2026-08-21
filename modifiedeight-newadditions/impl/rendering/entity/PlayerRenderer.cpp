@@ -284,112 +284,117 @@ downloadSkinData(const std::string &username) {
   return {};
 }
 
+void PlayerRenderer::updateSkin(Player *a2) {
+  if (!a2) return;
+  std::string nick = a2->username;
+  if (nick.empty() && EntityRenderer::entityRenderDispatcher &&
+      EntityRenderer::entityRenderDispatcher->minecraft) {
+    if (a2 == EntityRenderer::entityRenderDispatcher->minecraft->player) {
+      nick =
+          EntityRenderer::entityRenderDispatcher->minecraft->options.username;
+      if (a2->username.empty())
+        a2->username = nick;
+    }
+  }
+
+  if (!nick.empty()) {
+    std::string texName = nick + "_skin";
+    Textures *tex = EntityRenderer::entityRenderDispatcher ? EntityRenderer::entityRenderDispatcher->textures : nullptr;
+
+    if (tex && (tex->textures.find(texName) == tex->textures.end() ||
+                tex->textures[texName].glTexId == 0)) {
+      mkdirPortable("skin_cache");
+      std::string cachePath = "skin_cache/" + nick + ".png";
+      int cw = 0, ch = 0, cch = 0;
+      unsigned char *cachedPx =
+          stbi_load(cachePath.c_str(), &cw, &ch, &cch, STBI_rgb_alpha);
+      if (cachedPx) {
+        uploadSkinTexture(nick, cachedPx, cw, ch);
+        stbi_image_free(cachedPx);
+      }
+    }
+
+    uint64_t now = getCurrentTimeMillis();
+    bool doCheck = false;
+    {
+      std::lock_guard<std::mutex> lock(skinMutex);
+      if (g_lastSkinCheckTime.find(nick) == g_lastSkinCheckTime.end() ||
+          now - g_lastSkinCheckTime[nick] >= 15000) {
+        g_lastSkinCheckTime[nick] = now;
+        doCheck = true;
+      }
+    }
+
+    if (doCheck) {
+      std::thread([nick]() {
+        auto bin = downloadSkinData(nick);
+        if (!bin.empty()) {
+          mkdirPortable("skin_cache");
+          std::string cachePath = "skin_cache/" + nick + ".png";
+          bool isDifferent = true;
+          FILE *rf = fopen(cachePath.c_str(), "rb");
+          if (rf) {
+            fseek(rf, 0, SEEK_END);
+            long sz = ftell(rf);
+            fseek(rf, 0, SEEK_SET);
+            if (sz == (long)bin.size()) {
+              std::vector<unsigned char> diskBuf(sz);
+              if (fread(diskBuf.data(), 1, sz, rf) == (size_t)sz) {
+                if (memcmp(diskBuf.data(), bin.data(), sz) == 0) {
+                  isDifferent = false;
+                }
+              }
+            }
+            fclose(rf);
+          }
+
+          if (isDifferent) {
+            FILE *wf = fopen(cachePath.c_str(), "wb");
+            if (wf) {
+              fwrite(bin.data(), 1, bin.size(), wf);
+              fclose(wf);
+            }
+          }
+
+          int w, h, ch;
+          unsigned char *px = stbi_load_from_memory(
+              bin.data(), (int)bin.size(), &w, &h, &ch, STBI_rgb_alpha);
+          if (px) {
+            std::lock_guard<std::mutex> lock(skinMutex);
+            if (g_pendingSkinsData.find(nick) != g_pendingSkinsData.end()) {
+              stbi_image_free(g_pendingSkinsData[nick]);
+            }
+            g_pendingSkinsData[nick] = px;
+            g_pendingSkinsDims[nick] = {w, h};
+          }
+        }
+      }).detach();
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(skinMutex);
+      auto it = g_pendingSkinsData.find(nick);
+      if (it != g_pendingSkinsData.end()) {
+        unsigned char *px = it->second;
+        int w = g_pendingSkinsDims[nick].first;
+        int h = g_pendingSkinsDims[nick].second;
+        uploadSkinTexture(nick, px, w, h);
+        stbi_image_free(px);
+        g_pendingSkinsData.erase(it);
+      }
+    }
+
+    if (tex && tex->textures.count(texName) &&
+        tex->textures[texName].glTexId != 0) {
+      a2->skin = texName;
+    }
+  }
+}
+
 void PlayerRenderer::setupPosition(Entity *a2_, float a3, float a4, float a5) {
   Player *a2 = (Player *)a2_;
   if (a2) {
-    std::string nick = a2->username;
-    if (nick.empty() && EntityRenderer::entityRenderDispatcher &&
-        EntityRenderer::entityRenderDispatcher->minecraft) {
-      if (a2 == EntityRenderer::entityRenderDispatcher->minecraft->player) {
-        nick =
-            EntityRenderer::entityRenderDispatcher->minecraft->options.username;
-        if (a2->username.empty())
-          a2->username = nick;
-      }
-    }
-
-    if (!nick.empty()) {
-      std::string texName = nick + "_skin";
-      Textures *tex = EntityRenderer::entityRenderDispatcher->textures;
-
-      if (tex && (tex->textures.find(texName) == tex->textures.end() ||
-                  tex->textures[texName].glTexId == 0)) {
-        mkdirPortable("skin_cache");
-        std::string cachePath = "skin_cache/" + nick + ".png";
-        int cw = 0, ch = 0, cch = 0;
-        unsigned char *cachedPx =
-            stbi_load(cachePath.c_str(), &cw, &ch, &cch, STBI_rgb_alpha);
-        if (cachedPx) {
-          uploadSkinTexture(nick, cachedPx, cw, ch);
-          stbi_image_free(cachedPx);
-        }
-      }
-
-      uint64_t now = getCurrentTimeMillis();
-      bool doCheck = false;
-      {
-        std::lock_guard<std::mutex> lock(skinMutex);
-        if (g_lastSkinCheckTime.find(nick) == g_lastSkinCheckTime.end() ||
-            now - g_lastSkinCheckTime[nick] >= 15000) {
-          g_lastSkinCheckTime[nick] = now;
-          doCheck = true;
-        }
-      }
-
-      if (doCheck) {
-        std::thread([nick]() {
-          auto bin = downloadSkinData(nick);
-          if (!bin.empty()) {
-            mkdirPortable("skin_cache");
-            std::string cachePath = "skin_cache/" + nick + ".png";
-            bool isDifferent = true;
-            FILE *rf = fopen(cachePath.c_str(), "rb");
-            if (rf) {
-              fseek(rf, 0, SEEK_END);
-              long sz = ftell(rf);
-              fseek(rf, 0, SEEK_SET);
-              if (sz == (long)bin.size()) {
-                std::vector<unsigned char> diskBuf(sz);
-                if (fread(diskBuf.data(), 1, sz, rf) == (size_t)sz) {
-                  if (memcmp(diskBuf.data(), bin.data(), sz) == 0) {
-                    isDifferent = false;
-                  }
-                }
-              }
-              fclose(rf);
-            }
-
-            if (isDifferent) {
-              FILE *wf = fopen(cachePath.c_str(), "wb");
-              if (wf) {
-                fwrite(bin.data(), 1, bin.size(), wf);
-                fclose(wf);
-              }
-            }
-
-            int w, h, ch;
-            unsigned char *px = stbi_load_from_memory(
-                bin.data(), (int)bin.size(), &w, &h, &ch, STBI_rgb_alpha);
-            if (px) {
-              std::lock_guard<std::mutex> lock(skinMutex);
-              if (g_pendingSkinsData.find(nick) != g_pendingSkinsData.end()) {
-                stbi_image_free(g_pendingSkinsData[nick]);
-              }
-              g_pendingSkinsData[nick] = px;
-              g_pendingSkinsDims[nick] = {w, h};
-            }
-          }
-        }).detach();
-      }
-
-      {
-        std::lock_guard<std::mutex> lock(skinMutex);
-        auto it = g_pendingSkinsData.find(nick);
-        if (it != g_pendingSkinsData.end()) {
-          unsigned char *px = it->second;
-          int w = g_pendingSkinsDims[nick].first;
-          int h = g_pendingSkinsDims[nick].second;
-          uploadSkinTexture(nick, px, w, h);
-          stbi_image_free(px);
-          g_pendingSkinsData.erase(it);
-        }
-      }
-
-      if (tex && tex->textures.count(texName) &&
-          tex->textures[texName].glTexId != 0) {
-        a2->skin = texName;
-      }
-    }
+    updateSkin(a2);
   }
 
   float v11, v12;

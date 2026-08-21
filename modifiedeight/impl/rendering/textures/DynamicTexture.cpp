@@ -14,3 +14,6 @@ DynamicTexture::~DynamicTexture() {
 void DynamicTexture::bindTexture(struct Textures* a2) {
 	a2->loadAndBindTexture("terrain-atlas.tga");
 }
+bool_t DynamicTexture::isEnabled() {
+	return 1;
+}

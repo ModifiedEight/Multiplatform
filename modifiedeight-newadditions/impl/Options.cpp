@@ -1,12 +1,15 @@
 #include <Options.hpp>
 #include <I18n.hpp>
 #include <Minecraft.hpp>
+#include <level/Level.hpp>
+#include <level/dimension/Dimension.hpp>
 #include <OptionStrings.hpp>
 #include <entity/player/User.hpp>
 #include <math.h>
 #include <network/mco/MojangConnector.hpp>
 #include <sstream>
 #include <util/Util.hpp>
+#include <rendering/LevelRenderer.hpp>
 
 Options* Options::instance = nullptr;
 
@@ -49,6 +52,10 @@ Options::Option Options::Option::SHOW_FPS{0, "options.showfps", 35};
 Options::Option Options::Option::DEBUG_SCREEN{0, "options.debugscreen", 36};
 Options::Option Options::Option::DISCORD_RPC{0, "options.discordrpc", 39};
 Options::Option Options::Option::PANORAMA_ANGLE{3, "options.panoramaAngle", 40};
+Options::Option Options::Option::ANIMATE_WATER{0, "options.animatewater", 41};
+Options::Option Options::Option::ANIMATE_LAVA{0, "options.animatelava", 42};
+Options::Option Options::Option::ANIMATE_FIRE{0, "options.animatefire", 43};
+Options::Option Options::Option::BRIGHTNESS{1, "options.gamma", 44};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -104,6 +111,12 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->fancySkies);
 						} else if(v13[i] == OptionStrings::Graphics_AnimateTextures) {
 							this->readBool(v13[i + 1], this->animateTextures);
+						} else if(v13[i] == OptionStrings::Graphics_AnimateWater || v13[i] == "options.animatewater") {
+							this->readBool(v13[i + 1], this->animateWater);
+						} else if(v13[i] == OptionStrings::Graphics_AnimateLava || v13[i] == "options.animatelava") {
+							this->readBool(v13[i + 1], this->animateLava);
+						} else if(v13[i] == OptionStrings::Graphics_AnimateFire || v13[i] == "options.animatefire") {
+							this->readBool(v13[i + 1], this->animateFire);
 						} else if(v13[i] == "options.newadditions") {
 							// this->readBool(v13[i + 1], this->newAdditions);
 						} else if(v13[i] == "options.classicbackground") {
@@ -140,6 +153,8 @@ void Options::update() {
 							this->readInt(v13[i + 1], this->chatBgColor);
 						} else if(v13[i] == "options.panoramaangle") {
 							this->readInt(v13[i + 1], this->panoramaAngle);
+						} else if(v13[i] == OptionStrings::Graphics_Gamma) {
+							this->readFloat(v13[i + 1], this->brightness);
 						} else if(v13[i] == OptionStrings::Game_ThirdPerson) {
 							this->readBool(v13[i + 1], this->thirdPerson);
 						} else if(v13[i] == OptionStrings::Controls_UseTouchScreen) {
@@ -213,7 +228,7 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 	} else if(a2 == &Options::Option::VIEW_BOBBING) {
 		this->viewBobbing ^= 1u;
 	} else if(a2 == &Options::Option::THIRD_PERSON) {
-		this->thirdPerson ^= 1u;
+		this->thirdPerson = (this->thirdPerson + 1) % 3;
 	} else if(a2 == &Options::Option::HIDE_GUI) {
 		this->hideGUI ^= 1u;
 	} else if(a2 == &Options::Option::SERVER_VISIBLE) {
@@ -232,6 +247,12 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->fancySkies ^= 1u;
 	} else if(a2 == &Options::Option::ANIMATE_TEXTURES) {
 		this->animateTextures ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+		this->animateWater ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+		this->animateLava ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+		this->animateFire ^= 1u;
 	} else if(a2 == &Options::Option::CLASSIC_BACKGROUND) {
 		this->classicBackground ^= 1u;
 	} else if(a2 == &Options::Option::CLASSIC_GUI) {
@@ -311,6 +332,14 @@ void Options::set(const Options::Option* a2, float a3) {
 		this->fov = a3;
 	} else if(a2 == &Options::Option::SENSITIVITY) {
 		this->sensitity = a3;
+	} else if(a2 == &Options::Option::BRIGHTNESS) {
+		this->brightness = a3;
+		if(this->minecraft && this->minecraft->level && this->minecraft->level->dimensionPtr) {
+			this->minecraft->level->dimensionPtr->updateLightRamp();
+			if(this->minecraft->levelRenderer) {
+				this->minecraft->levelRenderer->allChanged();
+			}
+		}
 	} else if(a2 == &Options::Option::PIXELS_PER_MILLIMETER) {
 		this->pixelDensity = a3;
 	}
@@ -321,6 +350,7 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, OptionStrings::Multiplayer_Username, this->username);
 	this->addOptionToSaveOutput(v4, OptionStrings::Game_DifficultyLevel, this->difficulty);
 	this->addOptionToSaveOutput(v4, OptionStrings::Game_ThirdPerson, this->thirdPerson);
+	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_Gamma, this->brightness);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_PixelsPerMilimeter, this->pixelDensity);
 	this->addOptionToSaveOutput(v4, OptionStrings::Multiplayer_ServerVisible, this->serverVisible);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_Sensitivity, this->sensitity);
@@ -333,6 +363,9 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_FancyGraphics, this->graphics);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_FancySkies, this->fancySkies);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_AnimateTextures, this->animateTextures);
+	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_AnimateWater, this->animateWater);
+	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_AnimateLava, this->animateLava);
+	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_AnimateFire, this->animateFire);
 	this->addOptionToSaveOutput(v4, "options.newadditions", this->newAdditions);
 	this->addOptionToSaveOutput(v4, "options.classicbackground", this->classicBackground);
 	this->addOptionToSaveOutput(v4, "options.classicgui", this->classicGUI);
@@ -421,6 +454,7 @@ void Options::initDefaultValues(void) {
 	this->difficulty = 2;
 	this->destroyVibration = 1;
 	this->viewBobbing = 1;
+	this->brightness = 0.5f;
 	this->graphics = 1;
 	this->fancySkies = 1;
 	this->animateTextures = 1;
@@ -553,7 +587,7 @@ std::string Options::getStringValue(const Options::Option* a2) {
 	return "";
 }
 float Options::getProgrssMin(const Options::Option* a2) {
-	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY) {
+	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY || a2 == &Options::Option::BRIGHTNESS) {
 		return 0;
 	}
 	if(a2 == &Options::Option::FOV) {
@@ -565,7 +599,7 @@ float Options::getProgrssMin(const Options::Option* a2) {
 	return 0;
 }
 float Options::getProgrssMax(const Options::Option* a2) {
-	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY) {
+	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY || a2 == &Options::Option::BRIGHTNESS) {
 		return 1;
 	}
 	if(a2 == &Options::Option::FOV) {
@@ -585,6 +619,9 @@ float Options::getProgressValue(const Options::Option* a2) {
 	}
 	if(a2 == &Options::Option::SENSITIVITY) {
 		return this->sensitity;
+	}
+	if(a2 == &Options::Option::BRIGHTNESS) {
+		return this->brightness;
 	}
 	if(a2 == &Options::Option::FOV) {
 		return this->fov;
@@ -652,6 +689,12 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 		std::string modes[] = {"Tiny", "Short", "Normal", "Far", "Very Far", "Ultra", "Extreme"};
 		int idx = 3 - this->renderDistance;
 		if(idx >= 0 && idx < 7) return a4 + ": " + modes[idx];
+	}
+	if(a2 == &Options::Option::BRIGHTNESS) {
+		int percent = (int)(this->brightness * 100.0f);
+		if(percent <= 0) return a4 + ": Moody";
+		if(percent >= 100) return a4 + ": Bright";
+		return a4 + ": +" + std::to_string(percent) + "%";
 	}
 	return a4;
 }
@@ -724,6 +767,12 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->debugScreen;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		return this->discordIntegration;
+	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+		return this->animateWater;
+	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+		return this->animateLava;
+	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+		return this->animateFire;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {
 		return this->graphics;

@@ -2362,8 +2362,8 @@ void Level::tick() {
 		if(this->levelData.getSpawnMobs()) {
 			if(_D6E4DF90 + 1 > 1) {
 				_D6E4DF90 = 0;
-				bool spawnMonsters = this->spawnMonstersMaybe && this->difficulty > 0;
-				bool spawnAnimals = this->spawnAnimalsMaybe && (this->getTime() % 400) <= 1;
+				bool spawnMonsters = this->spawnMonstersMaybe && this->difficulty > 0 && this->levelData.spawnMonsters;
+				bool spawnAnimals = this->spawnAnimalsMaybe && this->levelData.spawnAnimals && (this->getTime() % 400) <= 1;
 				MobSpawner::tick(this, spawnMonsters, spawnAnimals);
 			} else {
 				++_D6E4DF90;
@@ -2388,6 +2388,7 @@ void Level::tick() {
 			this->prevTimeSent = this->getTime();
 		}
 	}
+	this->gameTickCounter++;
 	this->tickPendingTicks(0);
 	this->tickTiles();
 	for(int32_t v9 = 0; v9 < this->entities.size(); ++v9) {
@@ -2403,16 +2404,12 @@ void Level::tick() {
 }
 bool_t Level::tickPendingTicks(bool_t a2) {
 	int32_t v4 = 0;
-	int32_t v5 = (this->tickDataTreeImpl.size() >= 100) ? 100 : this->tickDataTreeImpl.size();
-	int32_t curTime = this->levelData.getTime();
+	int32_t v5 = (this->tickDataTreeImpl.size() >= 1000) ? 1000 : this->tickDataTreeImpl.size();
+	int32_t curTime = this->gameTickCounter;
 
 	while(v4 < v5 && !this->tickDataTreeImpl.empty()) {
 		auto it = this->tickDataTreeImpl.begin();
 		if(!a2 && it->delay > curTime) {
-			if(it->delay > curTime + 2000) {
-				this->tickDataTreeImpl.erase(it);
-				continue;
-			}
 			break;
 		}
 		TickNextTickData data = *it;
@@ -2431,7 +2428,6 @@ bool_t Level::tickPendingTicks(bool_t a2) {
 }
 void Level::addToTickNextTick(int32_t x, int32_t y, int32_t z, int32_t id, int32_t delay) {
 	int32_t v10;  // r0
-	int32_t Time; // r0
 	TickNextTickData v17(x, y, z, id);
 
 	if(this->instantTick) {
@@ -2443,8 +2439,7 @@ void Level::addToTickNextTick(int32_t x, int32_t y, int32_t z, int32_t id, int32
 		}
 	} else if(this->hasChunkAt(x, y, z)) {
 		if(id > 0) {
-			Time = this->levelData.getTime();
-			v17.setDelay(delay + Time);
+			v17.setDelay(delay + this->gameTickCounter);
 		}
 
 		this->tickDataTreeImpl.insert(v17);

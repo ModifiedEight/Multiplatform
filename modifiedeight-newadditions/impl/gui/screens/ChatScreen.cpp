@@ -424,7 +424,12 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
 		if (this->field_54[0] == '/') {
-			executeCommand(this->minecraft, this->field_54);
+			if (!this->minecraft->isOnlineClient()) {
+				executeCommand(this->minecraft, this->field_54);
+			} else {
+				MessagePacket v7(this->field_54, this->minecraft->player->username);
+				this->minecraft->rakNetInstance->send(v7);
+			}
 		} else {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);

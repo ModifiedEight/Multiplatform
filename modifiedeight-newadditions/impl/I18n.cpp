@@ -404,6 +404,50 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Toggles animated swaying for plants and animated water";
     return 1;
   }
+  if (a1 == "options.animatewater") {
+    a2 = "Animated Water";
+    return 1;
+  }
+  if (a1 == "options.animatelava") {
+    a2 = "Animated Lava";
+    return 1;
+  }
+  if (a1 == "options.animatefire") {
+    a2 = "Animated Fire";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateStone.name") {
+    a2 = "Stone Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateWood.name") {
+    a2 = "Oak Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateCobblestone.name") {
+    a2 = "Cobblestone Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateSpruce.name") {
+    a2 = "Spruce Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateBirch.name") {
+    a2 = "Birch Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateJungle.name") {
+    a2 = "Jungle Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateGold.name") {
+    a2 = "Gold Pressure Plate";
+    return 1;
+  }
+  if (a1 == "tile.pressurePlateIron.name") {
+    a2 = "Iron Pressure Plate";
+    return 1;
+  }
   if (a1 == "options.panoramaAngle") {
     a2 = "Panorama Angle";
     return 1;
@@ -415,6 +459,18 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   }
   if (a1 == "tile.grassPath.name") {
     a2 = "Grass Path";
+    return 1;
+  }
+  if (a1 == "tile.dirtSlab.name" || a1 == "item.dirtSlab.name") {
+    a2 = "Dirt Slab";
+    return 1;
+  }
+  if (a1 == "tile.grassSlab.name" || a1 == "item.grassSlab.name") {
+    a2 = "Grass Slab";
+    return 1;
+  }
+  if (a1 == "tile.rockSlab.name" || a1 == "item.rockSlab.name") {
+    a2 = "Stone Slab";
     return 1;
   }
   if (a1 == "tile.seagrass.name" || a1 == "item.seagrass.name") {
@@ -480,6 +536,28 @@ std::string I18n::get(const std::string &a2) {
     return "Animated Textures";
   if (a2 == "options.animatetextures.desc")
     return "Toggles animated swaying for plants and animated water";
+  if (a2 == "options.animatewater")
+    return "Animated Water";
+  if (a2 == "options.animatelava")
+    return "Animated Lava";
+  if (a2 == "options.animatefire")
+    return "Animated Fire";
+  if (a2 == "tile.pressurePlateStone.name")
+    return "Stone Pressure Plate";
+  if (a2 == "tile.pressurePlateWood.name")
+    return "Oak Pressure Plate";
+  if (a2 == "tile.pressurePlateCobblestone.name")
+    return "Cobblestone Pressure Plate";
+  if (a2 == "tile.pressurePlateSpruce.name")
+    return "Spruce Pressure Plate";
+  if (a2 == "tile.pressurePlateBirch.name")
+    return "Birch Pressure Plate";
+  if (a2 == "tile.pressurePlateJungle.name")
+    return "Jungle Pressure Plate";
+  if (a2 == "tile.pressurePlateGold.name")
+    return "Gold Pressure Plate";
+  if (a2 == "tile.pressurePlateIron.name")
+    return "Iron Pressure Plate";
   if (a2 == "options.panoramaAngle")
     return "Panorama Angle";
   if (a2 == "options.panoramaAngle.desc")

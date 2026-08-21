@@ -201,6 +201,7 @@ void LiquidTileDynamic::trySpreadTo(Level* level, int32_t x, int32_t y, int32_t 
 			}
 		}
 		level->setTileAndData(x, y, z, this->blockID, a6, 3);
+		level->addToTickNextTick(x, y, z, this->blockID, this->getTickDelay());
 	}
 }
 
@@ -301,6 +302,7 @@ LABEL_35:
 				v22 = depth + 8;
 			}
 			level->setTileAndData(x, y - 1, z, this->blockID, v22, 3);
+			level->addToTickNextTick(x, y - 1, z, this->blockID, tickDelay);
 		}
 	} else if(depth >= 0 && (!depth || this->isWaterBlocking(level, x, y - 1, z))) {
 		Spread = this->getSpread(level, x, y, z);

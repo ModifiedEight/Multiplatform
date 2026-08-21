@@ -4,6 +4,10 @@
 #include <input/Mouse.hpp>
 #include <string.h>
 ScrollingPane::GridItem::GridItem() {
+	this->field_14 = 0;
+	this->field_15 = 0;
+	this->field_16 = 0;
+	this->field_17 = 0;
 }
 ScrollingPane::GridItem::GridItem(int32_t f0, int32_t f4, int32_t f8, float fc, float f10) {
 	this->field_0 = f0;
@@ -11,6 +15,10 @@ ScrollingPane::GridItem::GridItem(int32_t f0, int32_t f4, int32_t f8, float fc, 
 	this->field_8 = f8;
 	this->field_C = fc;
 	this->field_10 = f10;
+	this->field_14 = 0;
+	this->field_15 = 0;
+	this->field_16 = 0;
+	this->field_17 = 0;
 }
 
 ScrollingPane::ScrollingPane(int32_t a2, const IntRectangle& a3, const IntRectangle& a4, int32_t a5, int32_t a6, float a7, const IntRectangle& a8)
@@ -357,8 +365,7 @@ void ScrollingPane::render(int32_t a2, int32_t a3, float a4) {
 						float v23 = this->field_4C.height * v9;
 						float fc = v10 + (float)(width * i);
 						ScrollingPane::GridItem v27(v13, (int32_t)fc, (int32_t)(v11 + v23), fc, v11 + v23);
-						//TODO v28 = (v14 & 0x20) != 0 ? this->field_1A4[v13] : (v13 == this->field_1A8)
-						//used later for (&griditem->field_10)+1 which doesnt exist
+						v27.field_14 = (v14 & 0x20) != 0 ? this->field_1A4[v13] : (v13 == this->field_1A8);
 
 						v24.emplace_back(v27);
 					}

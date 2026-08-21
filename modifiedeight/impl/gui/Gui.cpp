@@ -473,7 +473,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight Classic 1.6.2 (%d fps)", fps);
+            sprintf(dbgText1, "ModifiedEight Classic 1.6.3pre1 (%d fps)", fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 

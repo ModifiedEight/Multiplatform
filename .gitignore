@@ -4,8 +4,6 @@ minecraftpe/impl/pcm_data.c
 build/
 CMakeLists.txt.user
 assets/*
-faq/
-
 .gradle/
 .cxx/
 local.properties
@@ -16,3 +14,4 @@ local.properties
 .DS_Store
 captures/
 .externalNativeBuild/
+icon.jpg

@@ -48,6 +48,9 @@ Options::Option Options::Option::FOG_ENABLED{0, "options.fogenabled", 34};
 Options::Option Options::Option::SHOW_FPS{0, "options.showfps", 35};
 Options::Option Options::Option::DEBUG_SCREEN{0, "options.debugscreen", 36};
 Options::Option Options::Option::DISCORD_RPC{0, "options.discordrpc", 39};
+Options::Option Options::Option::ANIMATE_WATER{0, "options.animatewater", 41};
+Options::Option Options::Option::ANIMATE_LAVA{0, "options.animatelava", 42};
+Options::Option Options::Option::ANIMATE_FIRE{0, "options.animatefire", 43};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -132,6 +135,12 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->debugScreen);
 						} else if(v13[i] == "options.discordrpc") {
 							this->readBool(v13[i + 1], this->discordIntegration);
+						} else if(v13[i] == "options.animatewater") {
+							this->readBool(v13[i + 1], this->animateWater);
+						} else if(v13[i] == "options.animatelava") {
+							this->readBool(v13[i + 1], this->animateLava);
+						} else if(v13[i] == "options.animatefire") {
+							this->readBool(v13[i + 1], this->animateFire);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -254,6 +263,12 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->debugScreen ^= 1u;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		this->discordIntegration ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+		this->animateWater ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+		this->animateLava ^= 1u;
+	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+		this->animateFire ^= 1u;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
 		this->limitFramerate ^= 1u;
 	} else if(a2 == &Options::Option::DIFFICULTY) {
@@ -340,6 +355,9 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.showfps", this->showFps);
 	this->addOptionToSaveOutput(v4, "options.debugscreen", this->debugScreen);
 	this->addOptionToSaveOutput(v4, "options.discordrpc", this->discordIntegration);
+	this->addOptionToSaveOutput(v4, "options.animatewater", this->animateWater);
+	this->addOptionToSaveOutput(v4, "options.animatelava", this->animateLava);
+	this->addOptionToSaveOutput(v4, "options.animatefire", this->animateFire);
 	this->addOptionToSaveOutput(v4, "options.chatcolor", this->chatColor);
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
@@ -429,6 +447,9 @@ void Options::initDefaultValues(void) {
 	this->showFps = 0;
 	this->debugScreen = 0;
 	this->discordIntegration = 1;
+	this->animateWater = 1;
+	this->animateLava = 1;
+	this->animateFire = 1;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->field_F4 = 1.0;
@@ -704,6 +725,12 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->debugScreen;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		return this->discordIntegration;
+	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+		return this->animateWater;
+	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+		return this->animateLava;
+	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+		return this->animateFire;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {
 		return this->graphics;

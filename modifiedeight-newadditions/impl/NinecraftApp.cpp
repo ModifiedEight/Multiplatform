@@ -4,6 +4,7 @@
 #include <entity/LocalPlayer.hpp>
 #include <entity/MobCategory.hpp>
 #include <gui/Screen.hpp>
+#include <gui/screens/SplashScreen.hpp>
 #include <input/Mouse.hpp>
 #include <item/Item.hpp>
 #include <level/Level.hpp>
@@ -338,7 +339,7 @@ void NinecraftApp::init(void){
 	this->checkGLError("Init complete");
 	this->updateStatusUserAttributes();
 	this->options.validateVersion();
-	this->screenChooser.setScreen(START_MENU_SCREEN);
+	this->setScreen(new SplashScreen());
 }
 
 void NinecraftApp::teardown(void){

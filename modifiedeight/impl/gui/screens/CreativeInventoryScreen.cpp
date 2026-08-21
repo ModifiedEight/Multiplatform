@@ -89,7 +89,7 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 		case 4:
 			return Item::seeds_wheat ? ItemInstance(Item::seeds_wheat) : ItemInstance();
 		case 5:
-			return Tile::rose ? ItemInstance(Tile::rose) : ItemInstance();
+			return Tile::stainedGlass ? ItemInstance(Tile::stainedGlass, 1, 4) : (Tile::rose ? ItemInstance(Tile::rose) : ItemInstance());
 		case 6:
 			return Tile::coloredPlanks ? ItemInstance(Tile::coloredPlanks, 1, 6) : ItemInstance();
 		default:

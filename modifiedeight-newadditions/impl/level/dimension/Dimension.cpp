@@ -6,6 +6,7 @@
 #include <level/gen/NewRandomLevelSource.hpp>
 #include <math/Mth.hpp>
 #include <tile/Tile.hpp>
+#include <Options.hpp>
 
 Dimension::Dimension() {
 	this->biomeSourcePtr = 0;
@@ -87,7 +88,7 @@ Color4 Dimension::getSunriseColor(float a3, float a4) {
 		v6 = 1.0 - (float)((float)(1.0 - Mth::sin((float)(v5 * 3.1416))) * 0.99);
 		v7 = (float)(v5 * 0.3) + 0.7;
 		v8 = v5 * v5;
-		return Color4(v7, (float)(v8 * 0.7) + 0.2, (float)(v8 * 0.0) + 0.2, v6 * v6);
+		return Color4(v7 * 0.85f, ((float)(v8 * 0.7) + 0.2) * 0.85f, ((float)(v8 * 0.0) + 0.2) * 0.85f, (v6 * v6) * 0.75f);
 	}
 	return Color4(0, 0, 0, 0);
 }
@@ -107,16 +108,18 @@ Color4 Dimension::getFogColor(float a3, float a4) {
 	return Color4(v6 * 0.50196, v6 * 0.8549, v6, 1);
 }
 float Dimension::getCloudHeight() {
-	return 128;
+	return 192.0f;
 }
 bool_t Dimension::mayRespawn(void) {
 	return 1;
 }
 void Dimension::updateLightRamp(void) {
+	float bright = 0.5f;
+	if(Options::instance) bright = Options::instance->brightness;
 	for(int32_t i = 0; i != 16; ++i) {
-		float f = (float)i / 15.0f;
-		float f1 = f / (4.0f - 3.0f * f);
-		this->lightRamp[i] = f1 * 0.78f + 0.22f;
+		float f1 = 1.0f - (float)i / 15.0f;
+		float base = (1.0f - f1) / (f1 * 3.0f + 1.0f) * 0.95f + 0.05f;
+		this->lightRamp[i] = base + (1.0f - base) * bright * 0.85f;
 	}
 }
 void Dimension::init() {
