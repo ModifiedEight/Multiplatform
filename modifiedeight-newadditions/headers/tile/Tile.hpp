@@ -93,6 +93,12 @@ struct Tile{
 	static Tile* ironBlock;
 	static Tile* stoneSlab;
 	static Tile* stoneSlabHalf;
+	static Tile* dirtSlab;
+	static Tile* dirtSlabHalf;
+	static Tile* grassSlab;
+	static Tile* grassSlabHalf;
+	static Tile* rockSlab;
+	static Tile* rockSlabHalf;
 	static Tile* mixedSlab;
 	static Tile* redBrick;
 	static Tile* tnt;
@@ -118,6 +124,14 @@ struct Tile{
 	static Tile* stairs_stone;
 	static Tile* wallSign;
 	static Tile* door_iron;
+	static Tile* pressurePlateStone;
+	static Tile* pressurePlatePlanks;
+	static Tile* pressurePlate_cobblestone;
+	static Tile* pressurePlate_spruce;
+	static Tile* pressurePlate_birch;
+	static Tile* pressurePlate_jungle;
+	static Tile* pressurePlate_gold;
+	static Tile* pressurePlate_iron;
 	static Tile* redStoneOre;
 	static Tile* redStoneOre_lit;
 	static Tile* topSnow;
@@ -228,8 +242,8 @@ struct Tile{
 	bool_t containsY(const Vec3&);
 	bool_t containsZ(const Vec3&);
 	int32_t getIDByName(const std::string&, bool_t);
-	struct TextureAtlasTextureItem* getTextureItem(const std::string&);
-	TextureUVCoordinateSet getTextureUVCoordinateSet(const std::string&, int32_t);
+	static struct TextureAtlasTextureItem* getTextureItem(const std::string&);
+	static TextureUVCoordinateSet getTextureUVCoordinateSet(const std::string&, int32_t);
 	bool_t isFaceVisible(Level*, int32_t, int32_t, int32_t, int32_t);
 	void popResource(Level*, int32_t, int32_t, int32_t, const struct ItemInstance&);
 	Tile* setCategory(int32_t, int32_t);

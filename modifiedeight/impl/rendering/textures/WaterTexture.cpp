@@ -1,6 +1,11 @@
 #include <rendering/textures/WaterTexture.hpp>
 #include <tile/Tile.hpp>
 #include <math/Mth.hpp>
+#include <Options.hpp>
+
+bool_t WaterTexture::isEnabled() {
+	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateWater) : 1;
+}
 
 
 WaterTexture::WaterTexture(const TextureUVCoordinateSet& a2)

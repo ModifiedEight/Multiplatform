@@ -84,9 +84,6 @@ int32_t DoublePlantTile::getColor(LevelSource* level, int32_t x, int32_t y, int3
 		type = level->getData(x, y - 1, z) & 7;
 	}
 	if (type == 0 || type == 1) {
-		if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
-			return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
-		}
 		if (type == 1) return 0x5B8F32;
 		return Tile::grass ? Tile::grass->getColor(level, x, (data & 8) ? y - 1 : y, z) : 0x66A538;
 	}

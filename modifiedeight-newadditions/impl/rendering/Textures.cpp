@@ -170,11 +170,14 @@ static char_t byte_D6E06B78[0x1000];
 
 void Textures::tick(bool_t a2) {
 	for(int32_t i = 0; i < this->dynamicTextures.size(); ++i) {
-		this->dynamicTextures[i]->tick();
+		if(this->dynamicTextures[i]->isEnabled()) {
+			this->dynamicTextures[i]->tick();
+		}
 	}
 	if(a2) {
 		for(int32_t i = 0; i < this->dynamicTextures.size(); ++i) {
 			DynamicTexture* v7 = this->dynamicTextures[i];
+			if(!v7->isEnabled()) continue;
 			v7->bindTexture(this);
 			if(v7->field_18 == 1) {
 				int32_t subX = (int32_t)floorf(v7->uv.minX * (float)v7->uv.width);

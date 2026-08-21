@@ -13,6 +13,12 @@ MegaJungleTreeFeature::~MegaJungleTreeFeature() {
 }
 
 void MegaJungleTreeFeature::addVine(Level* level, int32_t x, int32_t y, int32_t z, int32_t meta) {
+	if (level && level->getLevelData()) {
+		int32_t genVer = level->getLevelData()->getGeneratorVersion();
+		if ((genVer == 0 || genVer == 4) && (x <= 3 || x >= 252 || z <= 3 || z >= 252)) {
+			return;
+		}
+	}
 	if (Tile::vine && level->isEmptyTile(x, y, z)) {
 		this->placeBlock(level, x, y, z, Tile::vine->blockID, meta);
 	}

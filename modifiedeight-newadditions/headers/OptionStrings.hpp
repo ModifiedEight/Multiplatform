@@ -21,6 +21,10 @@ struct OptionStrings{
 	static char_t* Last_Game_Version_Minor;
 	static char_t* Last_Game_Version_Patch;
 	static char_t* Graphics_AnimateTextures;
+	static char_t* Graphics_AnimateWater;
+	static char_t* Graphics_AnimateLava;
+	static char_t* Graphics_AnimateFire;
+	static char_t* Graphics_Gamma;
 	static char_t* Multiplayer_ServerVisible;
 	static char_t* Controls_FeedbackVibration;
 	static char_t* Graphics_PixelsPerMilimeter;

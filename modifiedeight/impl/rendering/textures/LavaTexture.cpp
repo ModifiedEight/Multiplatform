@@ -1,6 +1,11 @@
 #include <rendering/textures/LavaTexture.hpp>
 #include <tile/Tile.hpp>
 #include <math/Mth.hpp>
+#include <Options.hpp>
+
+bool_t LavaTexture::isEnabled() {
+	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateLava) : 1;
+}
 
 LavaTexture::LavaTexture()
 	: DynamicTexture(Tile::lava->textureUV, 1) {

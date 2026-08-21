@@ -16,5 +16,12 @@ void StructureRecipes::addRecipes(Recipes* a1) {
 	a1->addShapedRecipe(ItemInstance(Tile::netherBrick, 1), "NN", "NN", definition<Item*>('N', Item::netherbrick));
 	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 1), "NN", "NN", definition<Item*>('N', Item::netherQuartz));
 	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 1, 1), "#", "#", definition<ItemInstance>('#', ItemInstance(Tile::stoneSlabHalf, 1, 6)));
-	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 2, 2), "#", "#", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 0)));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlateStone, 1), "##", definition<Tile*>('#', Tile::rock));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_cobblestone, 1), "##", definition<Tile*>('#', Tile::stoneBrick));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlatePlanks, 1), "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 0)));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_spruce, 1), "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_birch, 1), "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_jungle, 1), "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_gold, 1), "##", definition<Item*>('#', Item::goldIngot));
+	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_iron, 1), "##", definition<Item*>('#', Item::ironIngot));
 }

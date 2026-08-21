@@ -389,7 +389,7 @@ void TouchscreenInput::tick(Player *a2) {
               goto LABEL_59;
             }
             this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
-            this->options->thirdPerson ^= 1;
+            this->options->thirdPerson = (this->options->thirdPerson + 1) % 3;
           }
           goto LABEL_57;
         }

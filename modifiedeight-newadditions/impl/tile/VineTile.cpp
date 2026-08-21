@@ -13,7 +13,6 @@ VineTile::VineTile(int32_t id, const std::string& name)
 	: Tile(id, name, Material::replaceable_plant) {
 	this->setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	this->replaceable = 1;
-	this->setTicking(true);
 }
 
 VineTile::~VineTile() {
@@ -44,9 +43,6 @@ int32_t VineTile::getColor(int32_t) {
 }
 
 int32_t VineTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	if (level && BlockColorRegistry::hasBlockColor(x, y, z)) {
-		return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
-	}
 	if (level) {
 		Biome* b = level->getBiome(x, z);
 		if (b == Biome::swampland) {

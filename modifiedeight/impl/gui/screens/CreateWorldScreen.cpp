@@ -44,6 +44,16 @@ CreateWorldScreen::CreateWorldScreen(CreateWorldScreenType a2,
   this->selectedWorldType = 0;
   this->worldTypeLabel = 0;
   this->btnAdvancedSettings = 0;
+  this->btnMoreOptions = 0;
+  this->btnCaves = 0;
+  this->btnMonsters = 0;
+  this->btnAnimals = 0;
+  this->btnTimeFreeze = 0;
+  this->currentTab = 0;
+  this->optCaves = 1;
+  this->optMonsters = 1;
+  this->optAnimals = 1;
+  this->optTimeFreeze = 0;
 }
 void CreateWorldScreen::closeScreen() {
   CreateWorldScreenType v2; // r6
@@ -72,7 +82,7 @@ void CreateWorldScreen::generateLocalGame() {
   else if (this->selectedWorldType == this->worldTypeOldButton)
     genType = CreateWorldScreen_useAdvancedGen ? 4 : 0;
   this->minecraft->selectLevel(
-      ret, text, LevelSettings{this->getSeed(), this->isCreative(), genType});
+      ret, text, LevelSettings{this->getSeed(), this->isCreative(), genType, this->optCaves, this->optMonsters, this->optAnimals, this->optTimeFreeze});
   this->minecraft->hostMultiplayer(19132);
   this->minecraft->setScreen(new ProgressScreen());
   std::string v16;
@@ -141,6 +151,59 @@ void CreateWorldScreen::waitForMCO() {
   this->field_168 = 1;
 }
 
+void CreateWorldScreen::updateTabVisibility() {
+  bool isMain = (this->currentTab == 0);
+
+  if (this->field_12C) {
+    this->field_12C->visible = isMain;
+    this->field_12C->active = isMain;
+  }
+  if (this->field_130) {
+    this->field_130->visible = isMain;
+    this->field_130->active = isMain;
+  }
+  if (this->worldTypeOldButton) {
+    this->worldTypeOldButton->visible = isMain;
+    this->worldTypeOldButton->active = isMain;
+  }
+  if (this->worldTypeInfButton) {
+    this->worldTypeInfButton->visible = isMain;
+    this->worldTypeInfButton->active = isMain;
+  }
+  if (this->worldTypeFlatButton) {
+    this->worldTypeFlatButton->visible = isMain;
+    this->worldTypeFlatButton->active = isMain;
+  }
+
+  if (this->btnAdvancedSettings) {
+    this->btnAdvancedSettings->visible = !isMain;
+    this->btnAdvancedSettings->active = !isMain;
+  }
+  if (this->btnCaves) {
+    this->btnCaves->visible = !isMain;
+    this->btnCaves->active = !isMain;
+  }
+  if (this->btnMonsters) {
+    this->btnMonsters->visible = !isMain;
+    this->btnMonsters->active = !isMain;
+  }
+  if (this->btnAnimals) {
+    this->btnAnimals->visible = !isMain;
+    this->btnAnimals->active = !isMain;
+  }
+  if (this->btnTimeFreeze) {
+    this->btnTimeFreeze->visible = !isMain;
+    this->btnTimeFreeze->active = !isMain;
+  }
+
+  if (this->btnMoreOptions) {
+    ((Touch::TButton*)this->btnMoreOptions)->setMsg(isMain ? "More options" : "< Basic options");
+  }
+  if (this->field_140) {
+    ((Touch::THeader*)this->field_140)->setMsg(isMain ? "Create a Local Game" : "More Options");
+  }
+}
+
 CreateWorldScreen::~CreateWorldScreen() {
   safeRemove<Button>(this->field_138);
   safeRemove<Button>(this->field_13C);
@@ -160,13 +223,18 @@ CreateWorldScreen::~CreateWorldScreen() {
   safeRemove<ImageButton>(this->worldTypeInfButton);
   safeRemove<ImageButton>(this->worldTypeFlatButton);
   safeRemove<Button>(this->btnAdvancedSettings);
+  safeRemove<Button>(this->btnMoreOptions);
+  safeRemove<Button>(this->btnCaves);
+  safeRemove<Button>(this->btnMonsters);
+  safeRemove<Button>(this->btnAnimals);
+  safeRemove<Button>(this->btnTimeFreeze);
   safeRemove<Label>(this->worldTypeLabel);
 }
 void CreateWorldScreen::render(int32_t a2, int32_t a3, float a4) {
   Label *v8; // r0
 
-  if (this->field_144->suppressOtherGUI() ||
-      this->field_148->suppressOtherGUI()) {
+  if (this->currentTab == 0 && (this->field_144->suppressOtherGUI() ||
+      this->field_148->suppressOtherGUI())) {
     this->renderBackground(0);
     this->field_144->topRender(this->minecraft, a2, a3);
     this->field_148->topRender(this->minecraft, a2, a3);
@@ -176,14 +244,14 @@ void CreateWorldScreen::render(int32_t a2, int32_t a3, float a4) {
                           (float)this->field_14C->posY - 5.0);
     if (this->field_168) {
       v8 = this->field_164;
-    } else {
+      v8->render(this->minecraft, a2, a3);
+    } else if (this->currentTab == 0) {
       this->field_14C->render(this->minecraft, a2, a3);
       this->field_144->render(this->minecraft, a2, a3);
       this->field_150->render(this->minecraft, a2, a3);
       this->field_148->render(this->minecraft, a2, a3);
-      v8 = this->field_154;
+      this->field_154->render(this->minecraft, a2, a3);
     }
-    v8->render(this->minecraft, a2, a3);
     Screen::render(a2, a3, a4);
   }
 }
@@ -281,12 +349,31 @@ void CreateWorldScreen::init() {
   ((Touch::TButton *)this->btnAdvancedSettings)->init(this->minecraft);
   this->btnAdvancedSettings->width = 100;
   this->btnAdvancedSettings->height = 26;
+
+  this->btnMoreOptions = new Touch::TButton(11, "More options", 0);
+  ((Touch::TButton *)this->btnMoreOptions)
+      ->init(this->minecraft, "gui/spritesheet.png", {8, 32, 8, 8},
+             {0, 32, 8, 8}, 2, 2, this->btnMoreOptions->width,
+             this->btnMoreOptions->height);
+
+  this->btnCaves = new Touch::TButton(12, this->optCaves ? "Caves: ON" : "Caves: OFF", 0);
+  ((Touch::TButton *)this->btnCaves)->init(this->minecraft);
+
+  this->btnMonsters = new Touch::TButton(13, this->optMonsters ? "Monsters: ON" : "Monsters: OFF", 0);
+  ((Touch::TButton *)this->btnMonsters)->init(this->minecraft);
+
+  this->btnAnimals = new Touch::TButton(14, this->optAnimals ? "Animals: ON" : "Animals: OFF", 0);
+  ((Touch::TButton *)this->btnAnimals)->init(this->minecraft);
+
+  this->btnTimeFreeze = new Touch::TButton(15, this->optTimeFreeze ? "Time Freeze: ON" : "Time Freeze: OFF", 0);
+  ((Touch::TButton *)this->btnTimeFreeze)->init(this->minecraft);
+
   this->worldTypeInfButton->visible = 1;
   this->worldTypeInfButton->active = 1;
-  this->worldTypeLabel =
-      new Label("World Type", this->minecraft, -1, 0, 0, 0, 1);
+  this->worldTypeLabel = nullptr;
   this->buttons.push_back(this->field_140);
   this->buttons.push_back(this->field_138);
+  this->buttons.push_back(this->btnMoreOptions);
   this->buttons.push_back(this->field_13C);
   this->buttons.emplace_back(this->field_12C);
   this->buttons.emplace_back(this->field_130);
@@ -294,14 +381,26 @@ void CreateWorldScreen::init() {
   this->buttons.emplace_back(this->worldTypeInfButton);
   this->buttons.emplace_back(this->worldTypeFlatButton);
   this->buttons.push_back(this->btnAdvancedSettings);
+  this->buttons.push_back(this->btnCaves);
+  this->buttons.push_back(this->btnMonsters);
+  this->buttons.push_back(this->btnAnimals);
+  this->buttons.push_back(this->btnTimeFreeze);
+
   this->field_2C.emplace_back(this->field_12C);
   this->field_2C.emplace_back(this->field_130);
   this->field_2C.push_back(this->field_13C);
   this->field_2C.push_back(this->field_138);
+  this->field_2C.push_back(this->btnMoreOptions);
   this->field_2C.emplace_back(this->worldTypeOldButton);
   this->field_2C.emplace_back(this->worldTypeInfButton);
   this->field_2C.emplace_back(this->worldTypeFlatButton);
   this->field_2C.push_back(this->btnAdvancedSettings);
+  this->field_2C.push_back(this->btnCaves);
+  this->field_2C.push_back(this->btnMonsters);
+  this->field_2C.push_back(this->btnAnimals);
+  this->field_2C.push_back(this->btnTimeFreeze);
+
+  this->updateTabVisibility();
 }
 void CreateWorldScreen::setupPositions() {
   int32_t v2;  // r5
@@ -315,7 +414,6 @@ void CreateWorldScreen::setupPositions() {
   this->field_140->posY = 0;
   this->field_140->width = this->width;
   this->field_140->height = this->field_13C->height + 8;
-  this->field_138->width = (int)(float)((float)this->width / 2.3);
   v2 = this->width / 2;
   this->field_154->setWidth(v2 - 12);
   this->field_154->posX = v2 + v2 / 2 - this->field_154->width / 2 - 3;
@@ -375,42 +473,87 @@ void CreateWorldScreen::setupPositions() {
       this->worldTypeFlatButton->posX = startX + 2 * btnW;
     }
   }
-  if (this->worldTypeLabel) {
-    this->worldTypeLabel->posX = 11;
-    this->worldTypeLabel->posY =
-        worldTypeRowY + (this->worldTypeOldButton
-                             ? this->worldTypeOldButton->height / 2 - 4
-                             : 0);
-  }
 
   int32_t worldTypeHeight =
       this->worldTypeOldButton ? this->worldTypeOldButton->height : 26;
   if (this->worldTypeOldButton && this->minecraft->supportNonTouchscreen()) {
     worldTypeHeight = 2 * this->worldTypeOldButton->height + 4;
   }
-  this->btnAdvancedSettings->posX = 11;
-  this->btnAdvancedSettings->posY =
-      this->field_148->posY + this->field_148->height + 10;
 
-  this->field_138->posX = v2 - this->field_138->width / 2;
-  this->field_138->posY = worldTypeRowY + worldTypeHeight + 8;
+  int32_t optBtnW = (this->width - 40) / 2;
+  if (optBtnW > 140) optBtnW = 140;
+  int32_t optBtnH = (this->height >= 260) ? 24 : 20;
+  int32_t optSpacing = (this->height >= 260) ? 6 : 4;
+  int32_t optTopY = this->field_14C->posY + 6;
+
+  this->btnAdvancedSettings->width = optBtnW;
+  this->btnAdvancedSettings->height = optBtnH;
+  this->btnAdvancedSettings->posX = this->width / 2 - optBtnW - 4;
+  this->btnAdvancedSettings->posY = optTopY;
+
+  this->btnCaves->width = optBtnW;
+  this->btnCaves->height = optBtnH;
+  this->btnCaves->posX = this->width / 2 + 4;
+  this->btnCaves->posY = optTopY;
+
+  this->btnMonsters->width = optBtnW;
+  this->btnMonsters->height = optBtnH;
+  this->btnMonsters->posX = this->width / 2 - optBtnW - 4;
+  this->btnMonsters->posY = optTopY + optBtnH + optSpacing;
+
+  this->btnAnimals->width = optBtnW;
+  this->btnAnimals->height = optBtnH;
+  this->btnAnimals->posX = this->width / 2 + 4;
+  this->btnAnimals->posY = this->btnMonsters->posY;
+
+  this->btnTimeFreeze->width = optBtnW * 2 + 8;
+  if (this->btnTimeFreeze->width > this->width - 24) this->btnTimeFreeze->width = this->width - 24;
+  this->btnTimeFreeze->height = optBtnH;
+  this->btnTimeFreeze->posX = this->width / 2 - this->btnTimeFreeze->width / 2;
+  this->btnTimeFreeze->posY = this->btnMonsters->posY + optBtnH + optSpacing;
+
+  int32_t bottomBtnW = (this->width - 40) / 2;
+  if (bottomBtnW > 140) bottomBtnW = 140;
+  int32_t bottomBtnH = (this->height >= 260) ? 24 : 20;
+  int32_t bottomBtnY = this->height - bottomBtnH - 6;
+  if (this->currentTab == 0) {
+    int32_t calcY = worldTypeRowY + worldTypeHeight + 8;
+    if (calcY < bottomBtnY) bottomBtnY = calcY;
+  } else {
+    int32_t optBottom = this->btnTimeFreeze->posY + this->btnTimeFreeze->height + 8;
+    if (bottomBtnY < optBottom) bottomBtnY = optBottom;
+  }
+
+  this->field_138->width = bottomBtnW;
+  this->field_138->height = bottomBtnH;
+  this->field_138->posX = this->width / 2 - bottomBtnW - 4;
+  this->field_138->posY = bottomBtnY;
+
+  this->btnMoreOptions->width = bottomBtnW;
+  this->btnMoreOptions->height = bottomBtnH;
+  this->btnMoreOptions->posX = this->width / 2 + 4;
+  this->btnMoreOptions->posY = bottomBtnY;
 
   this->field_15C->setSize((float)this->field_12C->width,
                            (float)this->field_12C->height);
   this->field_160->setSize((float)this->field_12C->width,
                            (float)this->field_12C->height);
 
+  int32_t boxTopY = this->field_14C->posY - 5;
+  int32_t boxBottomY = bottomBtnY + bottomBtnH + 5;
+  this->field_158->setSize((float)this->width - 10.0f, (float)(boxBottomY - boxTopY));
   this->field_164->posX = this->width / 2 - this->field_164->width / 2;
-  this->field_164->posY =
-      this->field_14C->posY - 5 + this->field_158->height / 2;
-  this->field_158->setSize(
-      (float)this->width - 10.0,
-      (float)((float)(this->field_138->posY + this->field_138->height) -
-              (float)this->field_14C->posY) +
-          10.0);
+  this->field_164->posY = boxTopY + this->field_158->height / 2;
+
   this->setGameType(this->isCreative());
+  this->updateTabVisibility();
 }
 bool_t CreateWorldScreen::handleBackEvent(bool_t a2) {
+  if (this->currentTab != 0) {
+    this->currentTab = 0;
+    this->updateTabVisibility();
+    return 1;
+  }
   if (!a2 && (!this->field_148->suppressOtherGUI() &&
                   !this->field_144->suppressOtherGUI() ||
               !this->field_148->backPressed(this->minecraft, 0) &&
@@ -440,7 +583,37 @@ void CreateWorldScreen::buttonClicked(Button *a2) {
   int32_t v5;               // r1
 
   if (a2 == this->field_13C) {
+    if (this->currentTab != 0) {
+      this->currentTab = 0;
+      this->updateTabVisibility();
+      return;
+    }
     this->closeScreen();
+    return;
+  }
+  if (a2 == this->btnMoreOptions) {
+    this->currentTab = (this->currentTab == 0) ? 1 : 0;
+    this->updateTabVisibility();
+    return;
+  }
+  if (a2 == this->btnCaves) {
+    this->optCaves = !this->optCaves;
+    ((Touch::TButton*)this->btnCaves)->setMsg(this->optCaves ? "Caves: ON" : "Caves: OFF");
+    return;
+  }
+  if (a2 == this->btnMonsters) {
+    this->optMonsters = !this->optMonsters;
+    ((Touch::TButton*)this->btnMonsters)->setMsg(this->optMonsters ? "Monsters: ON" : "Monsters: OFF");
+    return;
+  }
+  if (a2 == this->btnAnimals) {
+    this->optAnimals = !this->optAnimals;
+    ((Touch::TButton*)this->btnAnimals)->setMsg(this->optAnimals ? "Animals: ON" : "Animals: OFF");
+    return;
+  }
+  if (a2 == this->btnTimeFreeze) {
+    this->optTimeFreeze = !this->optTimeFreeze;
+    ((Touch::TButton*)this->btnTimeFreeze)->setMsg(this->optTimeFreeze ? "Time Freeze: ON" : "Time Freeze: OFF");
     return;
   }
   if (a2 == this->field_12C || a2 == this->field_130) {
@@ -482,64 +655,72 @@ void CreateWorldScreen::buttonClicked(Button *a2) {
 void CreateWorldScreen::mouseClicked(int32_t a2, int32_t a3, int32_t a4) {
   TextBox *v8; // r0
 
-  if (this->field_144->suppressOtherGUI()) {
-    v8 = this->field_144;
-  LABEL_5:
-    v8->focusuedMouseClicked(this->minecraft, a2, a3, a4);
-    return;
+  if (this->currentTab == 0) {
+    if (this->field_144->suppressOtherGUI()) {
+      v8 = this->field_144;
+    LABEL_5:
+      v8->focusuedMouseClicked(this->minecraft, a2, a3, a4);
+      return;
+    }
+    if (this->field_148->suppressOtherGUI()) {
+      v8 = this->field_148;
+      goto LABEL_5;
+    }
+    this->field_144->mouseClicked(this->minecraft, a2, a3, a4);
+    this->field_148->mouseClicked(this->minecraft, a2, a3, a4);
   }
-  if (this->field_148->suppressOtherGUI()) {
-    v8 = this->field_148;
-    goto LABEL_5;
-  }
-  this->field_144->mouseClicked(this->minecraft, a2, a3, a4);
-  this->field_148->mouseClicked(this->minecraft, a2, a3, a4);
   Screen::mouseClicked(a2, a3, a4);
 }
 void CreateWorldScreen::mouseReleased(int32_t a2, int32_t a3, int32_t a4) {
   TextBox *v8; // r0
 
-  if (this->field_144->suppressOtherGUI()) {
-    v8 = this->field_144;
-  LABEL_5:
-    v8->focusuedMouseReleased(this->minecraft, a2, a3, a4);
-    return;
+  if (this->currentTab == 0) {
+    if (this->field_144->suppressOtherGUI()) {
+      v8 = this->field_144;
+    LABEL_5:
+      v8->focusuedMouseReleased(this->minecraft, a2, a3, a4);
+      return;
+    }
+    if (this->field_148->suppressOtherGUI()) {
+      v8 = this->field_148;
+      goto LABEL_5;
+    }
+    this->field_144->mouseReleased(this->minecraft, a2, a3, a4);
+    this->field_148->mouseReleased(this->minecraft, a2, a3, a4);
   }
-  if (this->field_148->suppressOtherGUI()) {
-    v8 = this->field_148;
-    goto LABEL_5;
-  }
-  this->field_144->mouseReleased(this->minecraft, a2, a3, a4);
-  this->field_148->mouseReleased(this->minecraft, a2, a3, a4);
   Screen::mouseReleased(a2, a3, a4);
 }
 void CreateWorldScreen::keyPressed(int32_t a2) {
   TextBox *v4; // r0
 
-  if (this->field_144->suppressOtherGUI()) {
-    v4 = this->field_144;
-  LABEL_5:
-    v4->keyPressed(this->minecraft, a2);
-    return;
+  if (this->currentTab == 0) {
+    if (this->field_144->suppressOtherGUI()) {
+      v4 = this->field_144;
+    LABEL_5:
+      v4->keyPressed(this->minecraft, a2);
+      return;
+    }
+    if (this->field_148->suppressOtherGUI()) {
+      v4 = this->field_148;
+      goto LABEL_5;
+    }
+    this->field_144->keyPressed(this->minecraft, a2);
+    this->field_148->keyPressed(this->minecraft, a2);
   }
-  if (this->field_148->suppressOtherGUI()) {
-    v4 = this->field_148;
-    goto LABEL_5;
-  }
-  this->field_144->keyPressed(this->minecraft, a2);
-  this->field_148->keyPressed(this->minecraft, a2);
   Screen::keyPressed(a2);
 }
 void CreateWorldScreen::keyboardNewChar(const std::string &a2, bool_t a3) {
-  if (this->field_144->suppressOtherGUI()) {
+  if (this->currentTab == 0) {
+    if (this->field_144->suppressOtherGUI()) {
+      this->field_144->keyboardNewChar(this->minecraft, a2, a3);
+      return;
+    }
+    if (this->field_148->suppressOtherGUI()) {
+      this->field_148->keyboardNewChar(this->minecraft, a2, a3);
+      return;
+    }
     this->field_144->keyboardNewChar(this->minecraft, a2, a3);
-    return;
-  }
-  if (this->field_148->suppressOtherGUI()) {
     this->field_148->keyboardNewChar(this->minecraft, a2, a3);
-    return;
   }
-  this->field_144->keyboardNewChar(this->minecraft, a2, a3);
-  this->field_148->keyboardNewChar(this->minecraft, a2, a3);
   Screen::keyboardNewChar(a2, a3);
 }

@@ -2,6 +2,7 @@
 #include <Minecraft.hpp>
 #include <rendering/LevelRenderer.hpp>
 #include <entity/LocalPlayer.hpp>
+#include <entity/ItemEntity.hpp>
 #include <level/Level.hpp>
 #include <level/dimension/Dimension.hpp>
 #include <item/Item.hpp>
@@ -17,6 +18,8 @@
 
 #include <tile/entity/MixedSlabTileEntity.hpp>
 #include <tile/MixedSlabTile.hpp>
+
+#include <util/CushionManager.hpp>
 
 GameMode::GameMode(Minecraft* a2) {
 	this->minecraft = a2;
@@ -50,6 +53,18 @@ bool_t GameMode::destroyBlock(int32_t x, int32_t y, int32_t z, int32_t side) {
 	if(level->adventureSettings.allowInteract && tile != Tile::leaves && tile->material != Material::plant) {
 		return 0;
 	}
+
+	if (CushionManager::hasCushion(level, x, y, z)) {
+		int color = CushionManager::getCushionColor(level, x, y, z);
+		CushionManager::removeCushion(level, x, y, z);
+		if (!level->isClientMaybe && this->minecraft->player && !this->minecraft->player->abilities.instabuild) {
+			ItemEntity* dropped = new ItemEntity(level, (float)x + 0.5f, (float)y + 0.6f, (float)z + 0.5f, ItemInstance(Tile::cloth, 1, color));
+			level->addEntity(dropped);
+		}
+		this->minecraft->soundEngine->play("step.cloth", (float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, 1.0f, 1.0f);
+		return 0;
+	}
+
 	this->minecraft->particleEngine->destroy(x, y, z);
 	meta = level->getData(x, y, z);
 
@@ -163,9 +178,8 @@ bool_t GameMode::useItemOn(Player* player, Level* level, ItemInstance* a4, int32
 	}
 	int32_t bid = level->getTile(x, y, z);
 	if(bid == Tile::invisible_bedrock->blockID) return 0;
-	// Tile::tiles[] is sparse: an id with no tile behind it (a block this build
-	// does not implement, translated in from a Java server) must not be used.
-	if(bid > 0 && Tile::tiles[bid] && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
+	if(CushionManager::handleUse(player, level, x, y, z, face, faceX, faceY, faceZ, sel)) return 1;
+	if(bid > 0 && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
 	if(!ItemInstance::isItem(sel)) {
 		return 0;
 	}

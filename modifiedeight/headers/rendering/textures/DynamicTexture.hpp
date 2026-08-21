@@ -13,4 +13,5 @@ UNK	int32_t field_18;
 	virtual ~DynamicTexture();
 	virtual void tick(void) = 0;
 	virtual void bindTexture(struct Textures*);
+	virtual bool_t isEnabled();
 };

@@ -16,5 +16,4 @@ void StructureRecipes::addRecipes(Recipes* a1) {
 	a1->addShapedRecipe(ItemInstance(Tile::netherBrick, 1), "NN", "NN", definition<Item*>('N', Item::netherbrick));
 	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 1), "NN", "NN", definition<Item*>('N', Item::netherQuartz));
 	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 1, 1), "#", "#", definition<ItemInstance>('#', ItemInstance(Tile::stoneSlabHalf, 1, 6)));
-	a1->addShapedRecipe(ItemInstance(Tile::quartzBlock, 2, 2), "#", "#", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 0)));
 }

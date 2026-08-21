@@ -69,6 +69,7 @@ struct Level : LevelSource{
 	int32_t prevTimeSent;
 	std::set<_TickPtr*> tickPtrSetImpl;
 	std::vector<Entity*> field_B94; //TODO check type
+	int32_t gameTickCounter = 0;
 
 	Level(struct LevelStorage*, const std::string&, const LevelSettings&, bool_t, int32_t, struct Dimension*);
 	void _init(const std::string&, const LevelSettings&, int32_t, struct Dimension*);

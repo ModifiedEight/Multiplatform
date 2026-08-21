@@ -19,6 +19,8 @@
 #include <rendering/EntityTileRenderer.hpp>
 #include <tile/entity/ChestTileEntity.hpp>
 #include <tile/entity/MixedSlabTileEntity.hpp>
+#include <util/CushionManager.hpp>
+#include <tile/BlockColorRegistry.hpp>
 
 void TileRenderer::_randomizeFaceDirection(Tile* a2, int32_t a3, float a4, float a5, float a6) {
 	int32_t* v6; // r2
@@ -1644,7 +1646,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 	if(this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 		v15 = 1;
 		v25 = tile->getBrightness(this->levelSource, x, y - 1, z);
-		Tesselator::instance.color((float)(v25 * 0.5) * v14, (float)(v25 * 0.5) * v13, (float)(v25 * 0.5) * v12);
+		float f0_r = v14, f0_g = v13, f0_b = v12;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 0)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 0);
+			f0_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f0_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f0_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color((float)(v25 * 0.5) * f0_r, (float)(v25 * 0.5) * f0_g, (float)(v25 * 0.5) * f0_b);
 		v26 = tile->getTexture(this->levelSource, x, y, z, 0);
 		this->renderFaceDown(tile, (float)x, (float)y, (float)z, *v26);
 	} else {
@@ -1659,7 +1668,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 			v27 = v16;
 		}
 		v15 = 1;
-		Tesselator::instance.color(r * v27, g * v27, b * v27);
+		float f1_r = r, f1_g = g, f1_b = b;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 1)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 1);
+			f1_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f1_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f1_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color(f1_r * v27, f1_g * v27, f1_b * v27);
 		v17 = tile->getTexture(this->levelSource, x, y, z, 1);
 		this->renderFaceUp(tile, (float)x, (float)y, (float)z, *v17);
 	} else {
@@ -1674,7 +1690,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 			v18 = v16;
 		}
 		v15 = 1;
-		Tesselator::instance.color(v14 * (float)(v18 * 0.8), v13 * (float)(v18 * 0.8), v12 * (float)(v18 * 0.8));
+		float f2_r = v14, f2_g = v13, f2_b = v12;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 2)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 2);
+			f2_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f2_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f2_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color(f2_r * (float)(v18 * 0.8), f2_g * (float)(v18 * 0.8), f2_b * (float)(v18 * 0.8));
 		v19 = tile->getTexture(this->levelSource, x, y, z, 2);
 		this->renderNorth(tile, (float)x, (float)y, (float)z, *v19);
 	}
@@ -1687,7 +1710,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 			v20 = v16;
 		}
 		v15 = 1;
-		Tesselator::instance.color(v14 * (float)(v20 * 0.8), v13 * (float)(v20 * 0.8), v12 * (float)(v20 * 0.8));
+		float f3_r = v14, f3_g = v13, f3_b = v12;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 3)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 3);
+			f3_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f3_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f3_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color(f3_r * (float)(v20 * 0.8), f3_g * (float)(v20 * 0.8), f3_b * (float)(v20 * 0.8));
 		v29 = *tile->getTexture(this->levelSource, x, y, z, 3);
 		this->renderSouth(tile, (float)x, (float)y, (float)z, v29);
 	}
@@ -1700,7 +1730,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 			v21 = v16;
 		}
 		v15 = 1;
-		Tesselator::instance.color(v14 * (float)(v21 * 0.6), v13 * (float)(v21 * 0.6), v12 * (float)(v21 * 0.6));
+		float f4_r = v14, f4_g = v13, f4_b = v12;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 4)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 4);
+			f4_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f4_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f4_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color(f4_r * (float)(v21 * 0.6), f4_g * (float)(v21 * 0.6), f4_b * (float)(v21 * 0.6));
 		v22 = tile->getTexture(this->levelSource, x, y, z, 4);
 		this->renderWest(tile, (float)x, (float)y, (float)z, *v22);
 	}
@@ -1714,7 +1751,14 @@ bool_t TileRenderer::tesselateBlockInWorld(Tile* tile, int32_t x, int32_t y, int
 			}
 		}
 		v15 = 1;
-		Tesselator::instance.color(v14 * (float)(v23 * 0.6), v13 * (float)(v23 * 0.6), v12 * (float)(v23 * 0.6));
+		float f5_r = v14, f5_g = v13, f5_b = v12;
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 5)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 5);
+			f5_r = (float)((fc >> 16) & 0xFF) / 255.0f;
+			f5_g = (float)((fc >> 8) & 0xFF) / 255.0f;
+			f5_b = (float)(fc & 0xFF) / 255.0f;
+		}
+		Tesselator::instance.color(f5_r * (float)(v23 * 0.6), f5_g * (float)(v23 * 0.6), f5_b * (float)(v23 * 0.6));
 		v24 = tile->getTexture(this->levelSource, x, y, z, 5);
 		this->renderEast(tile, (float)x, (float)y, (float)z, *v24);
 	}
@@ -1986,6 +2030,24 @@ LABEL_17:
 	this->field_40 = this->field_40 * v19;
 	this->field_50 = this->field_50 * v19;
 	v28 = tile->getTexture(levelSource, x, y, z, 0);
+	if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 0)) {
+		uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 0);
+		float fr = (float)((fc >> 16) & 0xFF) / 255.0f * 0.5f;
+		float fg = (float)((fc >> 8) & 0xFF) / 255.0f * 0.5f;
+		float fb = (float)(fc & 0xFF) / 255.0f * 0.5f;
+		this->field_24 = fr * v18;
+		this->field_34 = fg * v18;
+		this->field_44 = fb * v18;
+		this->field_28 = fr * v21;
+		this->field_38 = fg * v21;
+		this->field_48 = fb * v21;
+		this->field_2C = fr * v20;
+		this->field_3C = fg * v20;
+		this->field_4C = fb * v20;
+		this->field_30 = fr * v19;
+		this->field_40 = fg * v19;
+		this->field_50 = fb * v19;
+	}
 	this->renderFaceDown(tile, (float)x, (float)y, (float)z, *v28);
 LABEL_21:
 	if(this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
@@ -2052,6 +2114,24 @@ LABEL_39:
 		this->field_40 = g * v39;
 		this->field_50 = b * v39;
 		v40 = tile->getTexture(v34, x, y, z, 1);
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 1)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 1);
+			float fr = (float)((fc >> 16) & 0xFF) / 255.0f;
+			float fg = (float)((fc >> 8) & 0xFF) / 255.0f;
+			float fb = (float)(fc & 0xFF) / 255.0f;
+			this->field_24 = fr * v36;
+			this->field_34 = fg * v36;
+			this->field_44 = fb * v36;
+			this->field_28 = fr * v38;
+			this->field_38 = fg * v38;
+			this->field_48 = fb * v38;
+			this->field_2C = fr * (float)(v37 * 0.25);
+			this->field_3C = fg * (float)(v37 * 0.25);
+			this->field_4C = fb * (float)(v37 * 0.25);
+			this->field_30 = fr * v39;
+			this->field_40 = fg * v39;
+			this->field_50 = fb * v39;
+		}
 		this->renderFaceUp(tile, (float)x, (float)y, (float)z, *v40);
 	}
 	if(this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
@@ -2145,6 +2225,24 @@ LABEL_58:
 		this->field_40 = this->field_40 * v50;
 		this->field_50 = this->field_50 * v50;
 		v56 = tile->getTexture(v52, x, y, z, 2);
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 2)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 2);
+			float fr = (float)((fc >> 16) & 0xFF) / 255.0f * 0.8f;
+			float fg = (float)((fc >> 8) & 0xFF) / 255.0f * 0.8f;
+			float fb = (float)(fc & 0xFF) / 255.0f * 0.8f;
+			this->field_24 = fr * v47;
+			this->field_34 = fg * v47;
+			this->field_44 = fb * v47;
+			this->field_28 = fr * v48;
+			this->field_38 = fg * v48;
+			this->field_48 = fb * v48;
+			this->field_2C = fr * v49;
+			this->field_3C = fg * v49;
+			this->field_4C = fb * v49;
+			this->field_30 = fr * v50;
+			this->field_40 = fg * v50;
+			this->field_50 = fb * v50;
+		}
 		this->renderNorth(tile, (float)x, (float)y, (float)z, *v56);
 	}
 	if(this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
@@ -2238,6 +2336,24 @@ LABEL_80:
 		this->field_40 = this->field_40 * v64;
 		this->field_50 = this->field_50 * v64;
 		v133 = *tile->getTexture(v68, x, y, z, 3);
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 3)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 3);
+			float fr = (float)((fc >> 16) & 0xFF) / 255.0f * 0.8f;
+			float fg = (float)((fc >> 8) & 0xFF) / 255.0f * 0.8f;
+			float fb = (float)(fc & 0xFF) / 255.0f * 0.8f;
+			this->field_24 = fr * v63;
+			this->field_34 = fg * v63;
+			this->field_44 = fb * v63;
+			this->field_28 = fr * v66;
+			this->field_38 = fg * v66;
+			this->field_48 = fb * v66;
+			this->field_2C = fr * v65;
+			this->field_3C = fg * v65;
+			this->field_4C = fb * v65;
+			this->field_30 = fr * v64;
+			this->field_40 = fg * v64;
+			this->field_50 = fb * v64;
+		}
 		this->renderSouth(tile, (float)x, (float)y, (float)z, v133);
 	}
 	if(this->disableCulling || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
@@ -2321,6 +2437,24 @@ LABEL_100:
 					this->field_40 = this->field_40 * v78;
 					this->field_50 = this->field_50 * v78;
 					v87 = tile->getTexture(v83, x, y, z, 4);
+					if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 4)) {
+						uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 4);
+						float fr = (float)((fc >> 16) & 0xFF) / 255.0f * 0.6f;
+						float fg = (float)((fc >> 8) & 0xFF) / 255.0f * 0.6f;
+						float fb = (float)(fc & 0xFF) / 255.0f * 0.6f;
+						this->field_24 = fr * v79;
+						this->field_34 = fg * v79;
+						this->field_44 = fb * v79;
+						this->field_28 = fr * v80;
+						this->field_38 = fg * v80;
+						this->field_48 = fb * v80;
+						this->field_2C = fr * v81;
+						this->field_3C = fg * v81;
+						this->field_4C = fb * v81;
+						this->field_30 = fr * v78;
+						this->field_40 = fg * v78;
+						this->field_50 = fb * v78;
+					}
 					this->renderWest(tile, (float)x, (float)y, (float)z, *v87);
 					goto LABEL_104;
 				}
@@ -2433,6 +2567,24 @@ LABEL_122:
 		this->field_40 = this->field_40 * v94;
 		this->field_50 = this->field_50 * v94;
 		v102 = tile->getTexture(v98, x, y, z, 5);
+		if (BlockColorRegistry::hasBlockFaceColor(x, y, z, 5)) {
+			uint32_t fc = BlockColorRegistry::getBlockFaceColor(x, y, z, 5);
+			float fr = (float)((fc >> 16) & 0xFF) / 255.0f * 0.6f;
+			float fg = (float)((fc >> 8) & 0xFF) / 255.0f * 0.6f;
+			float fb = (float)(fc & 0xFF) / 255.0f * 0.6f;
+			this->field_24 = fr * v93;
+			this->field_34 = fg * v93;
+			this->field_44 = fb * v93;
+			this->field_28 = fr * v96;
+			this->field_38 = fg * v96;
+			this->field_48 = fb * v96;
+			this->field_2C = fr * v95;
+			this->field_3C = fg * v95;
+			this->field_4C = fb * v95;
+			this->field_30 = fr * v94;
+			this->field_40 = fg * v94;
+			this->field_50 = fb * v94;
+		}
 		this->renderEast(tile, (float)x, (float)y, (float)z, *v102);
 	}
 	result = v12;
@@ -3180,8 +3332,13 @@ bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t 
 	v9 = a2->getRenderShape();
 	a2->updateShape(this->levelSource, a3, a4, a5);
 	switch(v9) {
-		case 0:
-			return this->tesselateBlockInWorld(a2, a3, a4, a5);
+		case 0: {
+			bool_t res = this->tesselateBlockInWorld(a2, a3, a4, a5);
+			if(a2 != Tile::cloth && res && CushionManager::hasCushion(this->levelSource, a3, a4, a5)) {
+				CushionManager::renderCushion(this, a2, a3, a4, a5);
+			}
+			return res;
+		}
 		case 25:
 			return this->tesselateLeverInWorld(a2, a3, a4, a5);
 		case 40:
@@ -3206,8 +3363,13 @@ bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t 
 			return this->tesselateDoorInWorld(a2, a3, a4, a5);
 		case 9:
 			return this->tesselateRailInWorld((BaseRailTile*)a2, a3, a4, a5);
-		case 10:
-			return this->tesselateStairsInWorld((StairTile*)a2, a3, a4, a5);
+		case 10: {
+			bool_t res = this->tesselateStairsInWorld((StairTile*)a2, a3, a4, a5);
+			if(res && CushionManager::hasCushion(this->levelSource, a3, a4, a5)) {
+				CushionManager::renderCushion(this, a2, a3, a4, a5);
+			}
+			return res;
+		}
 		case 11:
 			return this->tesselateFenceInWorld((FenceTile*)a2, a3, a4, a5);
 		case 21:
@@ -3256,10 +3418,12 @@ bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int3
 		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + eps, u1, v0);
 		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + eps, u1, v1);
 
-		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + eps, u1, v1);
-		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + eps, u1, v0);
-		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + eps, u0, v0);
-		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + eps, u0, v1);
+		if (!this->levelSource->isSolidBlockingTile(x, y, z - 1)) {
+			Tesselator::instance.vertexUV((float)x, (float)y, (float)z + eps, u1, v1);
+			Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + eps, u1, v0);
+			Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + eps, u0, v0);
+			Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + eps, u0, v1);
+		}
 	}
 	if (meta & 2) {
 		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z + 1.0f, u0, v1);
@@ -3267,10 +3431,12 @@ bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int3
 		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z, u1, v0);
 		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z, u1, v1);
 
-		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z, u1, v1);
-		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z, u1, v0);
-		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z + 1.0f, u0, v0);
-		Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z + 1.0f, u0, v1);
+		if (!this->levelSource->isSolidBlockingTile(x + 1, y, z)) {
+			Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z, u1, v1);
+			Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z, u1, v0);
+			Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y + 1.0f, (float)z + 1.0f, u0, v0);
+			Tesselator::instance.vertexUV((float)x + 1.0f - eps, (float)y, (float)z + 1.0f, u0, v1);
+		}
 	}
 	if (meta & 4) {
 		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + 1.0f - eps, u0, v1);
@@ -3278,10 +3444,12 @@ bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int3
 		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f - eps, u1, v0);
 		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + 1.0f - eps, u1, v1);
 
-		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + 1.0f - eps, u1, v1);
-		Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f - eps, u1, v0);
-		Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + 1.0f - eps, u0, v0);
-		Tesselator::instance.vertexUV((float)x, (float)y, (float)z + 1.0f - eps, u0, v1);
+		if (!this->levelSource->isSolidBlockingTile(x, y, z + 1)) {
+			Tesselator::instance.vertexUV((float)x + 1.0f, (float)y, (float)z + 1.0f - eps, u1, v1);
+			Tesselator::instance.vertexUV((float)x + 1.0f, (float)y + 1.0f, (float)z + 1.0f - eps, u1, v0);
+			Tesselator::instance.vertexUV((float)x, (float)y + 1.0f, (float)z + 1.0f - eps, u0, v0);
+			Tesselator::instance.vertexUV((float)x, (float)y, (float)z + 1.0f - eps, u0, v1);
+		}
 	}
 	if (meta & 8) {
 		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z, u0, v1);
@@ -3289,10 +3457,12 @@ bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int3
 		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z + 1.0f, u1, v0);
 		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z + 1.0f, u1, v1);
 
-		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z + 1.0f, u1, v1);
-		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z + 1.0f, u1, v0);
-		Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z, u0, v0);
-		Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z, u0, v1);
+		if (!this->levelSource->isSolidBlockingTile(x - 1, y, z)) {
+			Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z + 1.0f, u1, v1);
+			Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z + 1.0f, u1, v0);
+			Tesselator::instance.vertexUV((float)x + eps, (float)y + 1.0f, (float)z, u0, v0);
+			Tesselator::instance.vertexUV((float)x + eps, (float)y, (float)z, u0, v1);
+		}
 	}
 
 	return 1;

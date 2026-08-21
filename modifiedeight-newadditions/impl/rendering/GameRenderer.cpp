@@ -290,6 +290,11 @@ LABEL_17:
 		float pPitch = viewEntityMaybe->prevPitch + (float)((float)(viewEntityMaybe->pitch - viewEntityMaybe->prevPitch) * a2);
 		float pYaw = (float)(viewEntityMaybe->prevYaw + (float)((float)(viewEntityMaybe->yaw - viewEntityMaybe->prevYaw) * a2)) + 180.0;
 
+		if (this->minecraft->options.thirdPerson == 2) {
+			pYaw += 180.0f;
+			pPitch = -pPitch;
+		}
+
 		if (this->minecraft->options.panoramaAngle > 0) {
 			if (this->minecraft->options.panoramaAngle == 1) {
 				pPitch = 0.0f;
@@ -764,13 +769,15 @@ void GameRenderer::renderLevel(float a2) {
 	if(this->field_4C == 1.0) {
 		if(viewEntityMaybe->isPlayer()) {
 			if(!this->minecraft->currentScreen && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
+				if(!this->minecraft->options.thirdPerson) {
 #ifndef PCTWEAKS
-				if(this->minecraft->useTouchscreen()) {
+					if(this->minecraft->useTouchscreen()) {
 #endif
-					levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+						levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 #ifndef PCTWEAKS
+					}
+#endif
 				}
-#endif
 				levelRenderer->renderHit((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 			}
 		}
@@ -993,8 +1000,8 @@ void GameRenderer::setupFog(int32_t a2) {
 #else
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 #endif
-	glFogf(GL_FOG_START, this->field_8 * 0.7);
-	glFogf(GL_FOG_END, this->field_8);
+	glFogf(GL_FOG_START, this->field_8 * 0.35f);
+	glFogf(GL_FOG_END, this->field_8 * 0.90f);
 	this->field_150 = 0;
 	if(a2 < 0) {
 		glFogf(GL_FOG_START, 0.0);

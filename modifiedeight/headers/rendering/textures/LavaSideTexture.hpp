@@ -10,4 +10,5 @@ struct LavaSideTexture: DynamicTexture
 
 	virtual ~LavaSideTexture();
 	virtual void tick();
+	virtual bool_t isEnabled();
 };

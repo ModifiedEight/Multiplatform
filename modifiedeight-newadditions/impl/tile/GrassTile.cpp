@@ -182,40 +182,37 @@ int32_t GrassTile::getResource(int32_t, Random* a3) {
 	return Tile::dirt->getResource(0, a3);
 }
 int32_t GrassTile::getColor(int32_t) {
-	return 0x8EB956;
+	return 0x71A74D;
 }
 int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	if (level) {
-		if (BlockColorRegistry::hasBlockColor(x, y, z)) {
-			return BlockColorRegistry::getBlockColor(x, y, z) & 0xFFFFFF;
-		}
 		Biome* b = level->getBiome(x, z);
 		if (b == Biome::swampland) {
-			return 0x6A7039;
+			return 0x606634;
 		}
 		if (b == Biome::plains) {
-			return 0x8EB956;
+			return 0x71A74D;
 		}
 		if (b == Biome::forest || b == Biome::seasonalForest) {
-			return 0x599E39;
+			return 0x529134;
 		}
 		if (b == Biome::birchForest) {
-			return 0x6AA644;
+			return 0x5F963D;
 		}
 		if (b == Biome::jungle || b == Biome::rainForest) {
-			return 0x489E28;
+			return 0x408E22;
 		}
 		if (b == Biome::taiga) {
-			return 0x487A4C;
+			return 0x427045;
 		}
 		if (b == Biome::tundra || b == Biome::icePeaks) {
-			return 0x608E5A;
+			return 0x558050;
 		}
 		if (b == Biome::savanna) {
-			return 0x8FA842;
+			return 0x80963A;
 		}
 		if (b == Biome::desert || b == Biome::iceDesert) {
-			return 0x949C4A;
+			return 0x868E42;
 		}
 	}
 	return this->getColor(0);

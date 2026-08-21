@@ -11,6 +11,7 @@
 #include <rendering/Tesselator.hpp>
 #include <rendering/Textures.hpp>
 #include <rendering/entity/HumanoidMobRenderer.hpp>
+#include <rendering/entity/PlayerRenderer.hpp>
 #include <rendering/states/DisableState.hpp>
 #include <rendering/states/EnableState.hpp>
 #include <tile/Tile.hpp>
@@ -196,6 +197,7 @@ void ItemInHandRenderer::render(float a2) {
 		glRotatef(45.0, 0.0, 1.0, 0.0);
 		glRotatef(v33 * 70.0, 0.0, 1.0, 0.0);
 		glRotatef(-(float)(v31 * 20.0), 0.0, 0.0, 1.0);
+		PlayerRenderer::updateSkin(this->minecraft->player);
 		this->minecraft->texturesPtr->loadAndBindTexture(!this->minecraft->player->skin.empty() ? this->minecraft->player->skin : "mob/char.png");
 		glTranslatef(-1.0, 3.6, 3.5);
 		glRotatef(120.0, 0.0, 0.0, 1.0);

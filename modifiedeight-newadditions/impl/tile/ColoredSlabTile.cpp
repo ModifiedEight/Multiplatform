@@ -10,7 +10,10 @@ static bool isAnyHalfSlabTile(int32_t id) {
 	        (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
 	        (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
 	        (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
-	        (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID));
+	        (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) ||
+	        (Tile::dirtSlabHalf && id == Tile::dirtSlabHalf->blockID) ||
+	        (Tile::grassSlabHalf && id == Tile::grassSlabHalf->blockID) ||
+	        (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID));
 }
 
 ColoredSlabTile::Item::Item(int32_t id, Tile* tile, int32_t slabHalfId, int32_t slabFullId)

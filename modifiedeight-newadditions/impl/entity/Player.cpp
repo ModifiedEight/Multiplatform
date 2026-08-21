@@ -515,22 +515,26 @@ void Player::tick() {
 		}
 	}
 	Mob::tick();
-	if (this->entityHeight < 1.7f) {
+	if (!this->isSleeping() && this->entityHeight < 1.7f) {
 		this->setSize(0.6f, 1.8f);
 		this->ridingHeight = 1.62f;
 	}
 	if (!this->isSleeping() && this->level) {
 		bool inWater = this->isInWater() || this->isUnderLiquid(Material::water);
 		if (!inWater) {
-			int px = Mth::floor(this->posX);
-			int py = Mth::floor(this->posY);
-			int pz = Mth::floor(this->posZ);
-			if (LevelHeight::inRange(py)) {
-				int t = this->level->getTile(px, py, pz);
-				if (t == Tile::water->blockID || t == Tile::calmWater->blockID) {
-					inWater = true;
-				}
-			}
+        int px = (int)floor(this->posX);
+        int pz = (int)floor(this->posZ);
+        for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
+            int py = (int)floor(this->posY + yo);
+            if (py >= 0 && py < 128) {
+                int t = this->level->getTile(px, py, pz);
+                Material mat = this->level->getMaterial(px, py, pz);
+                if ((mat && mat == Material::water) || t == Tile::water->blockID || t == Tile::calmWater->blockID || (t == Tile::seagrass && t == Tile::seagrass->blockID)) {
+                    inWater = true;
+                    break;
+                }
+            }
+        }
 		}
 		if (inWater) {
 			this->stepHeight = 1.0f;

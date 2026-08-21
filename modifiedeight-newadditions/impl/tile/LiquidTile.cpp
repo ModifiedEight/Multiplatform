@@ -26,9 +26,9 @@ void LiquidTile::_trySpreadFire(Level* level, int32_t x, int32_t y, int32_t z, R
 		static Vec3 vecs[6] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 		v12 = 10;
 		while(1) {
-			v7 = x + (random->genrand_int32() & 3) - 2;
-			v8 = y + (random->genrand_int32() & 3) - 2;
-			v9 = z + (random->genrand_int32() & 3) - 2;
+			v7 = x + (random->genrand_int32() % 3) - 1;
+			v8 = y + (random->genrand_int32() % 3) - 1;
+			v9 = z + (random->genrand_int32() % 3) - 1;
 			v10 = Tile::tiles[level->getTile(v7, v8, v9)];
 			if(v10) {
 				if(v10->material->isFlammable()) {

@@ -11,4 +11,5 @@ struct FireTexture: DynamicTexture
 
 	virtual ~FireTexture();
 	virtual void tick();
+	virtual bool_t isEnabled();
 };

@@ -67,27 +67,21 @@ void OptionsScreen::generateOptionScreens(void) {
 	this->optionPanes.emplace_back(new OptionsPane());
 	this->optionPanes.emplace_back(new OptionsPane());
 
-	this->optionPanes[0]->createOptionsGroup("options.group.game")->addOptionItem(&Options::Option::NAME, this->minecraft)->addOptionItem(&Options::Option::DIFFICULTY, this->minecraft)->addOptionItem(&Options::Option::THIRD_PERSON, this->minecraft)->addOptionItem(&Options::Option::SERVER_VISIBLE, this->minecraft);
+	this->optionPanes[0]->createOptionsGroup("options.group.game")->addOptionItem(&Options::Option::NAME, this->minecraft)->addOptionItem(&Options::Option::DIFFICULTY, this->minecraft)->addOptionItem(&Options::Option::THIRD_PERSON, this->minecraft)->addOptionItem(&Options::Option::SERVER_VISIBLE, this->minecraft)->addOptionItem(&Options::Option::SHOW_COORDINATES, this->minecraft)->addOptionItem(&Options::Option::DEBUG_SCREEN, this->minecraft)->addOptionItem(&Options::Option::HUD_CAMERA_BUTTON, this->minecraft);
 	this->optionPanes[0]->createOptionsGroup("options.group.realms")->addLoginItem(this->minecraft);
-	this->optionPanes[1]->createOptionsGroup("options.group.input")->addOptionItem(&Options::Option::SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::INVERT_MOUSE, this->minecraft)->addOptionItem(&Options::Option::LEFT_HANDED, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCHSCREEN, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCH_JOYPAD, this->minecraft)->addOptionItem(&Options::Option::PIXELS_PER_MILLIMETER, this->minecraft);
+	this->optionPanes[1]->createOptionsGroup("options.group.input")->addOptionItem(&Options::Option::SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::INVERT_MOUSE, this->minecraft)->addOptionItem(&Options::Option::LEFT_HANDED, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCHSCREEN, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCH_JOYPAD, this->minecraft)->addOptionItem(&Options::Option::PIXELS_PER_MILLIMETER, this->minecraft)->addOptionItem(&Options::Option::SPRINT, this->minecraft)->addOptionItem(&Options::Option::AUTO_JUMP, this->minecraft);
 	if(this->minecraft->platform()->supportsVibration()) {
 		this->optionPanes[1]->createOptionsGroup("options.group.feedback")->addOptionItem(&Options::Option::DESTROY_VIBRATION, this->minecraft);
 	}
-	this->optionPanes[2]->createOptionsGroup("options.group.graphics")->addOptionItem(&Options::Option::RENDER_DISTANCE, this->minecraft)->addOptionItem(&Options::Option::FOV, this->minecraft)->addOptionItem(&Options::Option::FOG_ENABLED, this->minecraft)->addOptionItem(&Options::Option::GRAPHICS, this->minecraft)->addOptionItem(&Options::Option::FANCY_SKIES, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_TEXTURES, this->minecraft);
+	this->optionPanes[2]->createOptionsGroup("options.group.graphics")->addOptionItem(&Options::Option::RENDER_DISTANCE, this->minecraft)->addOptionItem(&Options::Option::FOV, this->minecraft)->addOptionItem(&Options::Option::FOG_ENABLED, this->minecraft)->addOptionItem(&Options::Option::GRAPHICS, this->minecraft)->addOptionItem(&Options::Option::FANCY_SKIES, this->minecraft)->addOptionItem(&Options::Option::CLASSIC_TEXTURES, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_TEXTURES, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_WATER, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_LAVA, this->minecraft)->addOptionItem(&Options::Option::ANIMATE_FIRE, this->minecraft);
 	this->optionPanes[2]->createOptionsGroup("options.group.graphics.experimental")->addOptionItem(&Options::Option::HIDE_GUI, this->minecraft);
 	this->optionPanes[3]->createOptionsGroup("options.group.audio")->addOptionItem(&Options::Option::SOUND, this->minecraft)->addOptionItem(&Options::Option::MUSIC, this->minecraft);
 	
 	auto grp = this->optionPanes[4]->createOptionsGroup("options.newadditions");
-	grp->addOptionItem(&Options::Option::SPRINT, this->minecraft);
-	grp->addOptionItem(&Options::Option::AUTO_JUMP, this->minecraft);
-	grp->addOptionItem(&Options::Option::HUD_CAMERA_BUTTON, this->minecraft);
-	grp->addOptionItem(&Options::Option::SHOW_COORDINATES, this->minecraft);
-	grp->addOptionItem(&Options::Option::CLASSIC_TEXTURES, this->minecraft);
 #if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
 	grp->addOptionItem(&Options::Option::MARKETPLACE, this->minecraft);
 #endif
 	grp->addOptionItem(&Options::Option::SHOW_FPS, this->minecraft);
-	grp->addOptionItem(&Options::Option::DEBUG_SCREEN, this->minecraft);
 	grp->addOptionItem(&Options::Option::DISCORD_RPC, this->minecraft);
 
 	if (this->minecraft->options.newAdditions == 1) {

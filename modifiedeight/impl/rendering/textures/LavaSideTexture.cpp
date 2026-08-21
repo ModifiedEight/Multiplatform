@@ -1,5 +1,10 @@
 #include <rendering/textures/LavaSideTexture.hpp>
 #include <math/Mth.hpp>
+#include <Options.hpp>
+
+bool_t LavaSideTexture::isEnabled() {
+	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateLava) : 1;
+}
 
 LavaSideTexture::LavaSideTexture(const TextureUVCoordinateSet& a2)
 	: DynamicTexture(a2, 2) {

@@ -51,12 +51,17 @@ struct Options{
 		static Options::Option DEBUG_SCREEN;
 		static Options::Option DISCORD_RPC;
 		static Options::Option PANORAMA_ANGLE;
+		static Options::Option ANIMATE_WATER;
+		static Options::Option ANIMATE_LAVA;
+		static Options::Option ANIMATE_FIRE;
+		static Options::Option BRIGHTNESS;
 	};
 
 	static Options* instance;
 
 	float musicVolume;
 	float soundVolume;
+	float brightness;
 	float sensitity;
 	bool_t invertMouse;
 	char_t field_D;
@@ -109,6 +114,9 @@ struct Options{
 	bool_t useTouchscreen;
 	bool_t fancySkies;
 	bool_t animateTextures;
+	bool_t animateWater;
+	bool_t animateLava;
+	bool_t animateFire;
 	bool_t newAdditions;
 	bool_t classicBackground;
 	bool_t classicGUI;

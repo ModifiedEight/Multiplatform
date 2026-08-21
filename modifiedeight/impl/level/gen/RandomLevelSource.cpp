@@ -535,7 +535,9 @@ struct LevelChunk* RandomLevelSource::getChunk(int32_t chunkX, int32_t chunkZ) {
 	Biome** v16 = this->level->getBiomeSource()->getBiomeBlock(16 * chunkX, 16 * chunkZ, 16, 16);
 	this->prepareHeights(chunkX, chunkZ, chunkData, 0, this->level->getBiomeSource()->rainfallNoises);
 	this->buildSurfaces(chunkX, chunkZ, chunkData, v16);
-	this->caveGenerator.apply(this, this->level, chunkX, chunkZ, chunkData, 0);
+	if (this->level && this->level->getLevelData() && this->level->getLevelData()->generateCaves) {
+		this->caveGenerator.apply(this, this->level, chunkX, chunkZ, chunkData, 0);
+	}
 	chunk->recalcHeightmap();
 	return chunk;
 }

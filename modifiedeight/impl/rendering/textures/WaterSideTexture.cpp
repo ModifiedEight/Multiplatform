@@ -1,6 +1,11 @@
 #include <rendering/textures/WaterSideTexture.hpp>
 #include <math/Mth.hpp>
 #include <tile/Tile.hpp>
+#include <Options.hpp>
+
+bool_t WaterSideTexture::isEnabled() {
+	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateWater) : 1;
+}
 
 WaterSideTexture::WaterSideTexture()
 	: DynamicTexture(*Tile::water->getTexture(3), 2) {

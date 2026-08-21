@@ -619,7 +619,7 @@ struct LevelChunk *NewRandomLevelSource::getChunk(int32_t chunkX,
     this->prepareHeights(chunkX, chunkZ, chunkData, 0,
                          this->level->getBiomeSource()->rainfallNoises);
     this->buildSurfaces(chunkX, chunkZ, chunkData, v16);
-    if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 3) {
+    if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 3 && this->level->getLevelData()->generateCaves) {
       this->caveGenerator.apply(this, this->level, chunkX, chunkZ, chunkData, 0);
     }
   }

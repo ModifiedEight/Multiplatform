@@ -89,7 +89,7 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 		case 4:
 			return Item::seeds_wheat ? ItemInstance(Item::seeds_wheat) : ItemInstance();
 		case 5:
-			return Tile::rose ? ItemInstance(Tile::rose) : ItemInstance();
+			return Tile::stainedGlass ? ItemInstance(Tile::stainedGlass, 1, 4) : (Tile::rose ? ItemInstance(Tile::rose) : ItemInstance());
 		case 6:
 			return Tile::coloredPlanks ? ItemInstance(Tile::coloredPlanks, 1, 6) : ItemInstance();
 		default:
@@ -180,6 +180,9 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 1);
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 5);
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 6);
+	if (Tile::rockSlabHalf) CreativeInventoryScreen::populateItem(Tile::rockSlabHalf, 1, 0);
+	if (Tile::dirtSlabHalf) CreativeInventoryScreen::populateItem(Tile::dirtSlabHalf, 1, 0);
+	if (Tile::grassSlabHalf) CreativeInventoryScreen::populateItem(Tile::grassSlabHalf, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::quartzBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::quartzBlock, 1, 2);
 	CreativeInventoryScreen::populateItem(Tile::quartzBlock, 1, 1);
@@ -243,6 +246,14 @@ void CreativeInventoryScreen::populateItems() {
 	}
 	CreativeInventoryScreen::populateItem(Tile::tnt, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::lever, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlateStone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_cobblestone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlatePlanks, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_spruce, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_birch, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_jungle, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_gold, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_iron, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::redstoneLampOff, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::flower, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::rose, 1, 0);

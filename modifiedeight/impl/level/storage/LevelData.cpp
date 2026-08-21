@@ -60,13 +60,20 @@ LevelData::LevelData(const struct LevelSettings& settings, const std::string& a3
 		this->generatorVersion = a4 & ~(a4 >> 31);
 	}
 	this->gameType = settings.gameType;
-	this->spawnMobs = 1;
-	if(settings.gameType == 0) {
-		v10 = -1;
+	this->generateCaves = settings.generateCaves;
+	this->spawnMonsters = settings.spawnMonsters;
+	this->spawnAnimals = settings.spawnAnimals;
+	this->spawnMobs = settings.spawnMonsters || settings.spawnAnimals;
+	if(settings.timeFreeze) {
+		this->stopTime = (settings.gameType == 0) ? 0 : 5000;
 	} else {
-		v10 = 5000;
+		if(settings.gameType == 0) {
+			v10 = -1;
+		} else {
+			v10 = 5000;
+		}
+		this->stopTime = v10;
 	}
-	this->stopTime = v10;
 }
 LevelData::LevelData(void) {
 	this->sizeOnDisk = 0; //TODO doesnt seem to exist in mcpe
@@ -88,6 +95,9 @@ LevelData::LevelData(void) {
 	this->dimensionID = 0;
 	this->storageVersion = 0;
 	this->generatorVersion = 0;
+	this->generateCaves = 1;
+	this->spawnMonsters = 1;
+	this->spawnAnimals = 1;
 	this->spawnMobs = 1;
 	this->gameType = 1;
 	this->stopTime = 5000;
@@ -162,22 +172,34 @@ void LevelData::getTagData(const CompoundTag* a2) {
 		this->levelName = a2->getString("LevelName");
 		this->storageVersion = a2->getInt("StorageVersion");
 		this->generatorVersion = a2->getInt("generatorVersion");
-		if(this->gameType == 1) {
-			if(a2->contains("dayCycleStopTime")) {
-				this->stopTime = a2->getLong("dayCycleStopTime");
-			}
+		if(a2->contains("dayCycleStopTime")) {
+			this->stopTime = a2->getLong("dayCycleStopTime");
+		} else {
 			if(this->gameType == 1) {
 				this->stopTime = 5000;
 			} else {
 				this->stopTime = -1;
 			}
-		} else {
-			this->stopTime = -1;
 		}
 		if(a2->contains("spawnMobs", 1)) {
 			this->spawnMobs = a2->getByte("spawnMobs") != 0;
 		} else {
 			this->spawnMobs = 1;
+		}
+		if(a2->contains("generateCaves", 1)) {
+			this->generateCaves = a2->getByte("generateCaves") != 0;
+		} else {
+			this->generateCaves = 1;
+		}
+		if(a2->contains("spawnMonsters", 1)) {
+			this->spawnMonsters = a2->getByte("spawnMonsters") != 0;
+		} else {
+			this->spawnMonsters = 1;
+		}
+		if(a2->contains("spawnAnimals", 1)) {
+			this->spawnAnimals = a2->getByte("spawnAnimals") != 0;
+		} else {
+			this->spawnAnimals = 1;
 		}
 FINALS:
 		if(a2->contains("Player", 10)) {
@@ -209,6 +231,9 @@ LevelData& LevelData::operator=(const LevelData& a2) {
 		this->time = a2.time;
 		this->dimensionID = a2.dimensionID;
 		this->spawnMobs = a2.spawnMobs;
+		this->generateCaves = a2.generateCaves;
+		this->spawnMonsters = a2.spawnMonsters;
+		this->spawnAnimals = a2.spawnAnimals;
 		this->playerData = a2.playerData;
 		this->field_2C = a2.field_2C;
 		this->field_30 = a2.field_30;
@@ -297,6 +322,9 @@ void LevelData::setTagData(struct CompoundTag* a2, struct CompoundTag* a3) {
 	a2->putInt("Platform", 2);
 	a2->putInt("dayCycleStopTime", this->stopTime);
 	a2->putBoolean("spawnMobs", this->spawnMobs);
+	a2->putBoolean("generateCaves", this->generateCaves);
+	a2->putBoolean("spawnMonsters", this->spawnMonsters);
+	a2->putBoolean("spawnAnimals", this->spawnAnimals);
 	if(a3) {
 		a2->put("Player", a3);
 	}
