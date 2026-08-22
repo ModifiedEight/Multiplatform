@@ -1,4 +1,5 @@
 #include <network/packet/ChunkDataPacket.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/chunk/LevelChunk.hpp>
 #include <network/PacketIds.h>
 #include <network/NetEventCallback.hpp>
@@ -22,7 +23,7 @@ void ChunkDataPacket::write(RakNet::BitStream* stream) {
 		if(um) {
 			for(int32_t i = 0; i != 8; ++i) {
 				if((((int32_t)um >> i) & 1) != 0) {
-					int32_t index = (((v4 & 0xF) << 11) | (v4 >> 4 << 7)) + 16 * i;
+					int32_t index = LevelHeight::index(v4 & 0xF, 16 * i, v4 >> 4);
 					this->stream.Write((char*)&this->chunk->tiles[index], 0x10u);
 					this->stream.Write((char*)&this->chunk->tileMeta.data[index >> 1], 0x8u);
 				}

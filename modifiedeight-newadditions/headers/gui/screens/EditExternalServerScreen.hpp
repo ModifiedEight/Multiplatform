@@ -21,9 +21,13 @@ struct EditExternalServerScreen: Screen
 	std::shared_ptr<Label> field_9C;
 	std::shared_ptr<NinePatchLayer> field_A4;
 	ExternalServer server;
+	// "Is this a Java server? (1.8.x)" - see AddExternalServerScreen.
+	std::shared_ptr<Button> javaToggleButton;
+	bool_t isJavaServer;
 
 	EditExternalServerScreen(const ExternalServer&);
 	void closeScreen();
+	void refreshJavaToggle();
 
 	virtual ~EditExternalServerScreen();
 	virtual void render(int32_t, int32_t, float);

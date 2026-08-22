@@ -1,3 +1,4 @@
+#include <level/LevelHeight.hpp>
 #include <entity/Player.hpp>
 #include <entity/ItemEntity.hpp>
 #include <inventory/BaseContainerMenu.hpp>
@@ -521,11 +522,11 @@ void Player::tick() {
 	if (!this->isSleeping() && this->level) {
 		bool inWater = this->isInWater() || this->isUnderLiquid(Material::water);
 		if (!inWater) {
-			int px = (int)floorf(this->posX);
-			int pz = (int)floorf(this->posZ);
+			int px = Mth::floor(this->posX);
+			int pz = Mth::floor(this->posZ);
 			for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
-				int py = (int)floorf(this->posY + yo);
-				if (py >= 0 && py < 128) {
+				int py = Mth::floor(this->posY + yo);
+				if (LevelHeight::inRange(py)) {
 					int t = this->level->getTile(px, py, pz);
 					Material* mat = this->level->getMaterial(px, py, pz);
 					if ((mat && mat == Material::water) || t == Tile::water->blockID || t == Tile::calmWater->blockID || (Tile::seagrass && t == Tile::seagrass->blockID)) {

@@ -1,5 +1,16 @@
-#include <I18n.hpp>
+#include <tile/Tile.hpp>
 #include <cstdio>
+#include <I18n.hpp>
+#include <level/LevelHeight.hpp>
+#include <tile/BlockColorRegistry.hpp>
+#include <tile/LeverTile.hpp>
+#include <tile/RedstoneLampTile.hpp>
+#include <tile/MixedSlabTile.hpp>
+#include <tile/DoublePlantTile.hpp>
+#include <tile/WaterLilyTile.hpp>
+#include <tile/SeagrassTile.hpp>
+#include <tile/SpongeTile.hpp>
+#include <item/DoublePlantTileItem.hpp>
 #include <entity/ItemEntity.hpp>
 #include <entity/Player.hpp>
 #include <item/ClothTileItem.hpp>
@@ -1871,98 +1882,98 @@ int32_t Tile::transformToValidBlockId(int32_t oldid, int32_t x, int32_t y,
 }
 Tile::~Tile() {}
 
-int32_t Tile::getTileType() { return 0; }
-bool_t Tile::onFertilized(Level *, int32_t, int32_t, int32_t) { return 0; }
-bool_t Tile::isCubeShaped() { return 1; }
-int32_t Tile::getRenderShape() { return 0; }
-Tile *Tile::setShape(float a2, float a3, float a4, float a5, float a6,
-                     float a7) {
-  this->minZ = a4;
-  this->minX = a2;
-  this->minY = a3;
-  this->maxX = a5;
-  this->maxY = a6;
-  this->maxZ = a7;
-  return this;
+int32_t Tile::getTileType() {
+	return 0;
 }
-void Tile::updateShape(LevelSource *, int32_t, int32_t, int32_t) {}
-void Tile::updateDefaultShape(void) {}
-void Tile::addLights(Level *, int32_t, int32_t, int32_t) {}
-float Tile::getBrightness(LevelSource *level, int32_t x, int32_t y, int32_t z) {
-  return level->getBrightness(x, y, z);
+bool_t Tile::onFertilized(Level*, int32_t, int32_t, int32_t) {
+	return 0;
 }
-bool_t Tile::shouldRenderFace(LevelSource *level, int32_t x, int32_t y,
-                              int32_t z, int32_t face) {
-  if (y < 0 || y > 127)
-    return 1;
-  if (face == 0) {
-    if (this->minY > 0)
-      return 1;
-  } else if (face == 1) {
-    if (this->maxY < 1)
-      return 1;
-  } else if (face == 2) {
-    if (this->minZ > 0)
-      return 1;
-  } else if (face == 3) {
-    if (this->maxZ < 1)
-      return 1;
-  } else if (face == 4) {
-    if (this->minX > 0)
-      return 1;
-  } else if (face == 5) {
-    if (this->maxX < 1)
-      return 1;
-  }
-  Tile *tile = Tile::tiles[level->getTile(x, y, z)];
-  if (tile) {
-    if (face != 1 || tile->blockID != Tile::topSnow->blockID) {
-      return !tile->isSolidRender();
-    }
-    return 0;
-  }
-  return 1;
+bool_t Tile::isCubeShaped() {
+	return 1;
 }
-TextureUVCoordinateSet *Tile::getTexture(int32_t) { return &this->textureUV; }
-TextureUVCoordinateSet *Tile::getTexture(int32_t a2, int32_t a3) {
-  return this->getTexture(a2);
+int32_t Tile::getRenderShape() {
+	return 0;
 }
-TextureUVCoordinateSet *Tile::getTexture(LevelSource *level, int32_t x,
-                                         int32_t y, int32_t z, int32_t a6) {
-  int32_t meta = level->getData(x, y, z);
-  return this->getTexture(a6, meta);
+Tile* Tile::setShape(float a2, float a3, float a4, float a5, float a6, float a7) {
+	this->minZ = a4;
+	this->minX = a2;
+	this->minY = a3;
+	this->maxX = a5;
+	this->maxY = a6;
+	this->maxZ = a7;
+	return this;
 }
-TextureUVCoordinateSet *Tile::getCarriedTexture(int32_t a2, int32_t a3) {
-  return this->getTexture(a2, a3);
+void Tile::updateShape(LevelSource*, int32_t, int32_t, int32_t) {
 }
-AABB *Tile::getAABB(Level *level, int32_t x, int32_t y, int32_t z) {
-  this->aabb.minX = x + this->minX;
-  this->aabb.minY = y + this->minY;
-  this->aabb.minZ = z + this->minZ;
-  this->aabb.maxX = x + this->maxX;
-  this->aabb.maxY = y + this->maxY;
-  this->aabb.maxZ = z + this->maxZ;
-  return &this->aabb;
+void Tile::updateDefaultShape(void) {
 }
-void Tile::addAABBs(Level *level, int32_t x, int32_t y, int32_t z,
-                    const AABB *entBB, std::vector<AABB> &vec) {
-  AABB *bb = this->getAABB(level, x, y, z);
-  if (bb) {
-    if (bb->maxX > entBB->minX && bb->minX < entBB->maxX &&
-        bb->maxY > entBB->minY && bb->minY < entBB->maxY &&
-        bb->maxZ > entBB->minZ && bb->minZ < entBB->maxZ) {
-      vec.emplace_back(*bb);
-    }
-  }
+void Tile::addLights(Level*, int32_t, int32_t, int32_t) {
 }
-AABB Tile::getTileAABB(Level *level, int32_t x, int32_t y, int32_t z) {
-  AABB ret;
-  ret.minX = x + this->minX;
-  ret.minY = y + this->minY;
-  ret.minZ = z + this->minZ;
-  ret.maxX = x + this->maxX;
-  ret.maxY = y + this->maxY;
-  ret.maxZ = z + this->maxZ;
+float Tile::getBrightness(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	return level->getBrightness(x, y, z);
+}
+bool_t Tile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t face) {
+	if(!LevelHeight::inRange(y)) return 0;
+	if(face == 0) {
+		if(this->minY > 0) return 1;
+	} else if(face == 1) {
+		if(this->maxY < 1) return 1;
+	} else if(face == 2) {
+		if(this->minZ > 0) return 1;
+	} else if(face == 3) {
+		if(this->maxZ < 1) return 1;
+	} else if(face == 4) {
+		if(this->minX > 0) return 1;
+	} else if(face == 5) {
+		if(this->maxX < 1) return 1;
+	}
+	Tile* tile = Tile::tiles[level->getTile(x, y, z)];
+	if(tile) {
+		if(face != 1 || tile->blockID != Tile::topSnow->blockID) {
+			return !tile->isSolidRender();
+		}
+		return 0;
+	}
+	return 1;
+}
+TextureUVCoordinateSet* Tile::getTexture(int32_t) {
+	return &this->textureUV;
+}
+TextureUVCoordinateSet* Tile::getTexture(int32_t a2, int32_t a3) {
+	return this->getTexture(a2);
+}
+TextureUVCoordinateSet* Tile::getTexture(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
+	int32_t meta = level->getData(x, y, z);
+	return this->getTexture(a6, meta);
+}
+TextureUVCoordinateSet* Tile::getCarriedTexture(int32_t a2, int32_t a3) {
+	return this->getTexture(a2, a3);
+}
+AABB* Tile::getAABB(Level* level, int32_t x, int32_t y, int32_t z) {
+	this->aabb.minX = x + this->minX;
+	this->aabb.minY = y + this->minY;
+	this->aabb.minZ = z + this->minZ;
+	this->aabb.maxX = x + this->maxX;
+	this->aabb.maxY = y + this->maxY;
+	this->aabb.maxZ = z + this->maxZ;
+	return &this->aabb;
+}
+void Tile::addAABBs(Level* level, int32_t x, int32_t y, int32_t z, const AABB* entBB, std::vector<AABB>& vec) {
+	AABB* bb = this->getAABB(level, x, y, z);
+	if(bb) {
+		if(bb->maxX > entBB->minX && bb->minX < entBB->maxX && bb->maxY > entBB->minY && bb->minY < entBB->maxY && bb->maxZ > entBB->minZ && bb->minZ < entBB->maxZ) {
+			vec.emplace_back(*bb);
+		}
+	}
+}
+AABB Tile::getTileAABB(Level* level, int32_t x, int32_t y, int32_t z) {
+	AABB ret;
+	ret.minX = x + this->minX;
+	ret.minY = y + this->minY;
+	ret.minZ = z + this->minZ;
+	ret.maxX = x + this->maxX;
+	ret.maxY = y + this->maxY;
+	ret.maxZ = z + this->maxZ;
 
   return ret;
 }

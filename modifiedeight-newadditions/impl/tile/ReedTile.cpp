@@ -1,3 +1,4 @@
+#include <level/LevelHeight.hpp>
 #include <tile/ReedTile.hpp>
 #include <item/Item.hpp>
 #include <level/Level.hpp>
@@ -24,7 +25,7 @@ bool_t ReedTile::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {
 	while(v5 > 0 && level->getTile(x, v5, z) == this->blockID) {
 		--v5;
 	}
-	while(v6 <= 127 && level->getTile(x, v6, z) == this->blockID) {
+	while(v6 <= LevelHeight::maxY() && level->getTile(x, v6, z) == this->blockID) {
 		++v6;
 	}
 	v11 = v5 - (v6 - 1) + 3;

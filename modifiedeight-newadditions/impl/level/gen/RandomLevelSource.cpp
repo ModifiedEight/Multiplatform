@@ -1,5 +1,6 @@
 #include <level/gen/RandomLevelSource.hpp>
 #include <level/BiomeSource.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/Level.hpp>
 #include <level/MobSpawner.hpp>
 #include <level/chunk/LevelChunk.hpp>
@@ -530,14 +531,22 @@ bool_t RandomLevelSource::hasChunk(int32_t x, int32_t z) {
 }
 struct LevelChunk* RandomLevelSource::getChunk(int32_t chunkX, int32_t chunkZ) {
 	this->random.setSeed(132899541 * chunkZ + 341872712 * chunkX);
-	uint8_t* chunkData = new uint8_t[0x8000u];
+	/*
+	 * LevelChunk indexes whatever buffer it is handed with LevelHeight::index, so
+	 * the size has to come from the same place - a fixed 0x8000 here would be a
+	 * 32K heap overflow the moment the two disagreed.  The terrain below is
+	 * written with the 128 tall layout on purpose: this generator has no taller
+	 * shape to produce, and a Java session replaces every column it is given
+	 * anyway.  Allocating for the real height just means it cannot be overrun.
+	 */
+	uint8_t* chunkData = new uint8_t[LevelHeight::tiles];
+	memset(chunkData, 0, LevelHeight::tiles);
 	LevelChunk* chunk = new LevelChunk(this->level, chunkData, chunkX, chunkZ);
 
 	if (this->level->getLevelData()->getGeneratorVersion() == 2) {
-		memset(chunkData, 0, 0x8000);
 		for (int32_t bx = 0; bx < 16; ++bx) {
 			for (int32_t bz = 0; bz < 16; ++bz) {
-				int32_t baseIdx = (bx << 11) | (bz << 7);
+				int32_t baseIdx = LevelHeight::index(bx, 0, bz);
 				chunkData[baseIdx + 0] = Tile::unbreakable->blockID;
 				chunkData[baseIdx + 1] = Tile::dirt->blockID;
 				chunkData[baseIdx + 2] = Tile::dirt->blockID;

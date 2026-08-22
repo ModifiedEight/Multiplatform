@@ -8,6 +8,7 @@
 #include <gui/buttons/Touch_TButton.hpp>
 #include <network/RakNetInstance.hpp>
 #include <network/packet/MessagePacket.hpp>
+#include <java/JavaBridge.hpp>
 #include <rendering/Font.hpp>
 #include <util/Util.hpp>
 #include <sstream>
@@ -423,13 +424,16 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
-		if (this->field_54[0] == '/') {
-			if (!this->minecraft->isOnlineClient()) {
-				executeCommand(this->minecraft, this->field_54);
-			} else {
-				MessagePacket v7(this->field_54, this->minecraft->player->username);
-				this->minecraft->rakNetInstance->send(v7);
-			}
+		/*
+		 * A Java Edition session takes the line verbatim, slash commands
+		 * included: on a Java server those belong to the server, not to the
+		 * local handler below.  sendChat returns 0 when no session is up, so
+		 * MCPE servers and single player keep the original behaviour.
+		 */
+		if(JavaBridge::sendChat(this->field_54)) {
+			// The server echoes our own message back, so nothing to add here.
+		} else if (this->field_54[0] == '/') {
+			executeCommand(this->minecraft, this->field_54);
 		} else {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);

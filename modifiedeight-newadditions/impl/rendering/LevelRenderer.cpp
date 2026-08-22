@@ -1,4 +1,5 @@
 #include <rendering/LevelRenderer.hpp>
+#include <level/LevelHeight.hpp>
 #include <unigl.h>
 #include <Minecraft.hpp>
 #include <algorithm>
@@ -1385,14 +1386,15 @@ void LevelRenderer::allChanged() {
 			v7 = (int)(float)((float)v7 * 0.8);
 		}
 	}
-	this->renderYsize = 8;
+	// One render chunk per 16 blocks of world height.
+	this->renderYsize = LevelHeight::height >> 4;
 	x = 0;
 	v9 = 0;
 	v10 = 0;
 	v11 = v7 / 16 + 1;
 	this->renderXsize = v11;
 	this->renderZSize = v11;
-	v12 = v11 * 8 * v11;
+	v12 = v11 * this->renderYsize * v11;
 	this->chunksToRenderSize = v12;
 	v13 = new RenderChunk*[v12];
 	renderXsize = this->renderXsize;

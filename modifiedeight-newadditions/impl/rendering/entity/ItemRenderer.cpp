@@ -516,8 +516,17 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 		}
 		if(tileClass) {
 			this->bindTexture("terrain-atlas.tga");
-		} else {
+		} else if(e->itemInstance.itemClass) {
 			this->bindTexture(e->itemInstance.itemClass->itemTexture);
+		} else {
+			/*
+			 * ItemInstance calls id 0 valid - that is how an empty slot is
+			 * spelled - so a stack whose id no server-side translation could
+			 * represent arrives here with a count, no tile and no item, and
+			 * itemClass->itemTexture is a null dereference on the first frame it
+			 * is on screen.  Draw it against the atlas rather than going down.
+			 */
+			this->bindTexture("terrain-atlas.tga");
 		}
 		glEnable(0xBC0u);
 		glScalef(0.5, 0.5, 0.5);

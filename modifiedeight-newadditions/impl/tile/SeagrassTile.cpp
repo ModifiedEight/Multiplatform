@@ -1,4 +1,5 @@
 #include <tile/SeagrassTile.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/Level.hpp>
 #include <level/LevelSource.hpp>
 #include <tile/material/Material.hpp>
@@ -41,7 +42,7 @@ TextureUVCoordinateSet* SeagrassTile::getCarriedTexture(int32_t a2, int32_t a3) 
 }
 
 bool_t SeagrassTile::canSurvive(Level* level, int32_t x, int32_t y, int32_t z) {
-	if (!level || y <= 0 || y >= 127) return 0;
+	if (!level || y <= 0 || y >= LevelHeight::maxY()) return 0;
 	int32_t belowTile = level->getTile(x, y - 1, z);
 	if (belowTile == this->blockID) {
 		return 1;
@@ -57,7 +58,7 @@ bool_t SeagrassTile::canSurvive(Level* level, int32_t x, int32_t y, int32_t z) {
 }
 
 bool_t SeagrassTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	if (!level || y <= 0 || y >= 127) return 0;
+	if (!level || y <= 0 || y >= LevelHeight::maxY()) return 0;
 	int32_t currentTile = level->getTile(x, y, z);
 	Material* curMat = level->getMaterial(x, y, z);
 	if (currentTile != Tile::water->blockID && currentTile != Tile::calmWater->blockID && (!curMat || curMat != Material::water)) {

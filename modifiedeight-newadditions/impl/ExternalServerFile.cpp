@@ -8,12 +8,15 @@ ExternalServerFile::ExternalServerFile(const std::string& a2) {
 	this->fileName = a2 + "/external_servers.txt";
 }
 void ExternalServerFile::addServer(const std::string& a2, const std::string& a3, int32_t a4) {
+	this->addServer(a2, a3, a4, 0);
+}
+void ExternalServerFile::addServer(const std::string& a2, const std::string& a3, int32_t a4, bool_t a5) {
 	int32_t i;
 	for(i = 1; i <= 59999 && this->field_0.find(i) != this->field_0.end(); ++i) {
 	}
 
 	{
-		ExternalServer v10(i, a2, a3, a4);
+		ExternalServer v10(i, a2, a3, a4, a5);
 		ExternalServer v12(v10);
 		this->field_0[i] = v12;
 		//~v12, ~v10
@@ -22,10 +25,16 @@ void ExternalServerFile::addServer(const std::string& a2, const std::string& a3,
 }
 void ExternalServerFile::editServer(int32_t a2, const std::string& a3, const std::string& a4, int32_t a5) {
 	auto v8 = this->field_0.find(a2);
+	bool_t java = v8 != this->field_0.end() ? v8->second.isJava : 0;
+	this->editServer(a2, a3, a4, a5, java);
+}
+void ExternalServerFile::editServer(int32_t a2, const std::string& a3, const std::string& a4, int32_t a5, bool_t a6) {
+	auto v8 = this->field_0.find(a2);
 	if(v8 != this->field_0.end()) {
 		v8->second.field_4 = a3;
 		v8->second.field_8 = a4;
 		v8->second.field_C = a5;
+		v8->second.isJava = a6;
 	}
 	this->save();
 }
@@ -52,13 +61,16 @@ void ExternalServerFile::load() {
 					v11.emplace_back(v13);
 				}
 
-				if(v11.size() == 4) {
+				// Four fields is the original layout; a fifth holds the Java
+				// flag. Both are accepted so older server lists keep working.
+				if(v11.size() == 4 || v11.size() == 5) {
 					int v6 = strtol(v11[0].c_str(), 0, 0);
 					std::string v8 = v11[1];
 					std::string v9 = v11[2];
 					int v7 = strtol(v11[3].c_str(), 0, 0);
+					bool_t java = v11.size() == 5 && strtol(v11[4].c_str(), 0, 0) != 0;
 					if(v7 && v6){
-						this->field_0.insert({v6, ExternalServer(v6, v8, v9, v7)}); //TODO check
+						this->field_0.insert({v6, ExternalServer(v6, v8, v9, v7, java)}); //TODO check
 					}
 				}
 			}
@@ -80,7 +92,7 @@ void ExternalServerFile::save() {
 	if(v2) {
 		for(auto& it: this->field_0) {
 			ExternalServer v5(it.second);
-			fprintf(v2, "%d:%s:%s:%d\n", v5.field_0, v5.field_4.c_str(), v5.field_8.c_str(), v5.field_C);
+			fprintf(v2, "%d:%s:%s:%d:%d\n", v5.field_0, v5.field_4.c_str(), v5.field_8.c_str(), v5.field_C, v5.isJava ? 1 : 0);
 		}
 		fclose(v2);
 	}
