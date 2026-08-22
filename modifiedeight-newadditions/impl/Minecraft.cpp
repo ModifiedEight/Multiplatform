@@ -395,7 +395,7 @@ void Minecraft::handleMouseDown(int32_t a2, bool_t a3) {
 		}
 	} else if(!this->player->isSleeping() && (a2 != 1 || this->field_D08 <= 0)) {
 		if(this->player->isDestroying) {
-			if(this->selectedObject.hitType || !a3 || a2 != 1 || this->selectedObject.field_24 || (v9 = Tile::tiles[this->level->getTile(this->selectedObject.field_4, this->selectedObject.field_8, this->selectedObject.field_C)]) != 0 && v9->isLiquidTile()) {
+			if(this->selectedObject.hitType || !a3 || a2 != 1 || this->selectedObject.field_24 || ((v9 = Tile::tiles[this->level->getTile(this->selectedObject.field_4, this->selectedObject.field_8, this->selectedObject.field_C)]) != 0 && v9->isLiquidTile())) {
 				this->player->stopDestroying();
 				this->gameMode->stopDestroyBlock();
 			} else {
