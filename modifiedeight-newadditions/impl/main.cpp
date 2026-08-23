@@ -13,11 +13,7 @@
 #include <unigl.h>
 
 AppPlatform_sdl appPlatform;
-#ifdef __WIN32__
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd){
-#else
-int main(){
-#endif
+int main(int argc, char** argv){
 	struct timeval start;
 	gettimeofday(&start, 0);
 	startedAtSec = start.tv_sec;
