@@ -8,6 +8,7 @@
 #include <gui/buttons/Touch_TButton.hpp>
 #include <network/RakNetInstance.hpp>
 #include <network/packet/MessagePacket.hpp>
+#include <Achievements.hpp>
 #include <rendering/Font.hpp>
 #include <util/Util.hpp>
 
@@ -53,10 +54,13 @@ bool_t ChatScreen::guiMessagesUpdated() {
 }
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
-		MessagePacket v7(this->field_54, this->minecraft->player->username);
-		this->minecraft->rakNetInstance->send(v7);
-		if(!this->minecraft->isOnlineClient()) {
-			this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
+		if (this->field_54[0] == '/' && Achievements::executeCommand(this->minecraft, this->field_54)) {
+		} else {
+			MessagePacket v7(this->field_54, this->minecraft->player->username);
+			this->minecraft->rakNetInstance->send(v7);
+			if(!this->minecraft->isOnlineClient()) {
+				this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
+			}
 		}
 		this->field_78.emplace_back(this->field_54);
 		this->field_84 = this->field_78.size();

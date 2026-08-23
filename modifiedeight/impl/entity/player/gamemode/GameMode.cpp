@@ -14,6 +14,7 @@
 #include <tile/material/Material.hpp>
 #include <network/packet/RemoveBlockPacket.hpp>
 #include <inventory/Inventory.hpp>
+#include <Achievements.hpp>
 
 GameMode::GameMode(Minecraft* a2) {
 	this->minecraft = a2;
@@ -54,6 +55,7 @@ bool_t GameMode::destroyBlock(int32_t x, int32_t y, int32_t z, int32_t side) {
 	if(!v11) {
 		return 0;
 	}
+	Achievements::onDestroyBlock(this->minecraft, tile->blockID, this->minecraft->player && this->minecraft->player->getCarriedItem() ? this->minecraft->player->getCarriedItem()->getId() : -1, true);
 	this->minecraft->soundEngine->play(tile->soundType->field_8, (float)x + 0.5, (float)y + 0.5, (float)z + 0.5, (float)(tile->soundType->field_0 + 1.0) * 0.5, tile->soundType->field_4 * 0.8);
 	tile->destroy(level, x, y, z, meta);
 	minecraft = this->minecraft;

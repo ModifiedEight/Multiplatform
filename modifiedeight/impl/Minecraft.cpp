@@ -59,6 +59,7 @@
 #include <network/mco/RestRequestJob.hpp>
 #include <util/Util.hpp>
 #include <network/mco/MCOParser.hpp>
+#include <Achievements.hpp>
 
 char_t* Minecraft::progressMessages[] = {"Locating server", "Building terrain", "Preparing", "Saving chunks", "Waiting for Minecraft Realms"};
 
@@ -312,6 +313,7 @@ void Minecraft::handleBuildAction(struct BuildActionIntention* a2) {
 				InteractPacket v23(entityId, v7, 2);
 				this->rakNetInstance->send(v23);
 				this->gameMode->attack(this->player, this->selectedObject.entity);
+				Achievements::onAttack(this, this->selectedObject.entity);
 				goto LABEL_27;
 			}
 			if((a2->field_0 & 0x10) == 0 || this->field_D0C) {
@@ -339,6 +341,7 @@ LABEL_27:
 						gameMode = this->gameMode;
 						this->field_D0C = 8;
 						if(gameMode->useItem((Player*)this->player, this->level, sel)) {
+							Achievements::onUseItem(this, sel->getId());
 							this->gameRenderer->itemInHandRenderer->itemUsed();
 						}
 						if(sel->count <= 0) {
@@ -357,6 +360,7 @@ LABEL_27:
 		if(!a2->isRemove()) {
 			v14 = this->player->inventory->getSelected();
 			if(this->gameMode->useItemOn((Player*)this->player, this->level, v14, v9, v10, v11, v12, this->selectedObject.hitVec)) {
+				Achievements::onUseItem(this, v14 ? v14->getId() : -1);
 				v15 = 0;
 				this->player->swing();
 			} else {
@@ -464,6 +468,8 @@ void Minecraft::init(void) {
 			}
 		);
 	}
+	this->field_D00 = this->dataPathMaybe + "/games" + "/com.mojang" + "/minecraftpe";
+	Achievements::load(this->field_D00 + "/achievements.dat");
 }
 bool_t Minecraft::isCreativeMode(void) {
 	return this->isCreative;
@@ -918,6 +924,7 @@ bool_t Minecraft::supportNonTouchscreen(void) {
 	return this->supportsNonTouchScreen;
 }
 void Minecraft::teardown(void) {
+	Achievements::save();
 	if(this->serverSideNetworkHandler) {
 		delete this->serverSideNetworkHandler;
 	}

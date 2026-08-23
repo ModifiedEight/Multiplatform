@@ -22,6 +22,7 @@
 #include <util/IntRectangle.hpp>
 #include <util/OffsetPosTranslator.hpp>
 #include <utils.h>
+#include <Achievements.hpp>
 
 float Gui::InvGuiScale = 0.333333;
 float Gui::GuiScale;
@@ -440,6 +441,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
                          (float)(v21 * 0.5) - (float)(v20 * 0.5), v23, v24);
       }
       this->renderChatMessages(v15, v16, 0xAu, this->field_A94, font);
+      Achievements::render(this->minecraftInst);
       if (!this->minecraftInst->currentScreen) {
         this->renderOnSelectItemNameText(v15, font, v16 - 19);
 

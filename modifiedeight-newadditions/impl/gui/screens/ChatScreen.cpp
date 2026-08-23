@@ -20,6 +20,7 @@
 #include <level/biome/Biome.hpp>
 #include <level/BiomeSource.hpp>
 #include <tile/Tile.hpp>
+#include <Achievements.hpp>
 
 ChatScreen::ChatScreen()
 	: Screen() {
@@ -429,13 +430,8 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
-		/*
-		 * A Java Edition session takes the line verbatim, slash commands
-		 * included: on a Java server those belong to the server, not to the
-		 * local handler below.  sendChat returns 0 when no session is up, so
-		 * MCPE servers and single player keep the original behaviour.
-		 */
-		if(JavaBridge::sendChat(this->field_54)) {
+		if (this->field_54[0] == '/' && Achievements::executeCommand(this->minecraft, this->field_54)) {
+		} else if(JavaBridge::sendChat(this->field_54)) {
 		} else if (this->minecraft->isOnlineClient()) {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);
