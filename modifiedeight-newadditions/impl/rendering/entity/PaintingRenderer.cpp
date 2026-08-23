@@ -84,6 +84,7 @@ MeshBuffer PaintingRenderer::_buildPainting(int32_t a2, int32_t a3, int32_t a4, 
 	return Tesselator::instance.end();
 }
 MeshBuffer* PaintingRenderer::_getMesh(const Motive* a2) {
+	if(!a2) a2 = Motive::DefaultImage;
 	auto&& p = this->motives.find(a2);
 	if(p != this->motives.end()) {
 		return &p->second;
@@ -99,6 +100,7 @@ void PaintingRenderer::render(Entity* e_, float x, float y, float z, float angle
 	MeshBuffer* mesh; // r6
 
 	mesh = this->_getMesh(e->motive);
+	if(!mesh) return;
 	e->setupLighting(this->isFancy(), a7);
 	glPushMatrix();
 	glTranslatef(x, y, z);

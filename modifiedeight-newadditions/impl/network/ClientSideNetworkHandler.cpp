@@ -1,4 +1,5 @@
 #include <network/ClientSideNetworkHandler.hpp>
+#include <level/LevelHeight.hpp>
 #include <Minecraft.hpp>
 #include <entity/Arrow.hpp>
 #include <entity/EntityFactory.hpp>
@@ -241,6 +242,8 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& a2, struct Start
 		levelSource->loadFromCache(&v14, LevelStorageSource::TempLevelId);
 	}
 
+	// An MCPE server speaks 128 tall chunks, so the level has to be one.
+	LevelHeight::set(MCPE_HEIGHT);
 	v8 = new MultiPlayerLevel(levelSource->selectLevel(LevelStorageSource::TempLevelId, 1), "temp", LevelSettings{pk->seed, pk->gamemode != 0}, 1, pk->genver, 0);
 	player = new LocalPlayer(this->minecraft, v8, this->minecraft->user, v8->dimensionPtr->id, pk->gamemode == 1);
 
@@ -487,7 +490,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct ChunkDat
 								}
 
 								for(int i = 0; i < 8; ++i) { //XXX inlined into 2int assign?
-									chunk->tileMeta.data[((ymc + (((index & 0xF) << 11) | (index >> 4 << 7))) >> 1) + i] = metas[i];
+									chunk->tileMeta.data[(LevelHeight::index(index & 0xF, ymc, index >> 4) >> 1) + i] = metas[i];
 								}
 							}
 							int v18 = minY;

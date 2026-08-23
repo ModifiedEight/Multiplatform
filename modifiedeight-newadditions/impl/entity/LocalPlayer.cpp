@@ -1,3 +1,5 @@
+#include <java/JavaBridge.hpp>
+#include <level/LevelHeight.hpp>
 #include <Minecraft.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <entity/player/User.hpp>
@@ -287,7 +289,14 @@ void LocalPlayer::tick() {
         }
       }
       if (this->useItemDuration == 0) {
-        if (this->level->isClientMaybe) {
+        /*
+         * On MCPE the client waits for the server to echo entity event 9 back
+         * before the food is actually eaten.  A Java server has no such packet:
+         * it runs its own item-in-use countdown and reports the outcome as
+         * Update Health plus a Set Slot, so the local half has to finish itself
+         * or the player chews forever and nothing happens.
+         */
+        if (this->level->isClientMaybe && !JavaBridge::isActive()) {
           EntityEventPacket v23(this->entityId, 9);
           this->level->rakNetInstance->send(v23);
         } else {
@@ -299,7 +308,17 @@ void LocalPlayer::tick() {
     }
   }
   if (this->minecraft->isOnline()) {
-    if (this->isRiding() || fabsf(this->posX - this->field_BC8) > 0.1 ||
+    /*
+     * A Java server is told where we are every single tick, whether anything
+     * moved or not, because that is what its own client does and what its
+     * movement checks are written against.  These thresholds - a tenth of a
+     * block, a whole degree - are MCPE's way of keeping a phone's radio quiet
+     * and are far too coarse to stand between us and a Java server, so the Java
+     * layer does its own bookkeeping and this gate steps out of the way.
+     */
+    if (JavaBridge::isActive()) {
+      JavaBridge::playerTick();
+    } else if (this->isRiding() || fabsf(this->posX - this->field_BC8) > 0.1 ||
         fabsf(this->posY - this->field_BCC) > 0.01 ||
         fabsf(this->posZ - this->field_BD0) > 0.1 ||
         fabsf(this->field_BD4 - this->pitch) > 1.0 ||
@@ -387,6 +406,20 @@ void LocalPlayer::causeFallDamage(float a2) {
   int32_t v4; // r6
 
   v4 = (int32_t)ceil((float)(a2 - 3.0));
+  /*
+   * A Java server works out fall damage itself and sends the result back as
+   * Update Health, so all this has to do there is make the noise.  Hurting the
+   * player locally as well counts the same fall twice, and on a long drop - the
+   * two hundred block one a verification lobby likes to make you take - that is
+   * the difference between landing and a death screen the server never agreed
+   * to.
+   */
+  if (JavaBridge::isActive()) {
+    if (v4 > 0) {
+      this->level->playSound(this, v4 <= 4 ? "damage.fallsmall" : "damage.fallbig", 0.75, 1.0);
+    }
+    return;
+  }
   if (v4 > 0 && this->level->isClientMaybe) {
     SetHealthPacket v5(v4 - 64);
     this->minecraft->rakNetInstance->send(v5);
@@ -598,7 +631,7 @@ void LocalPlayer::travel(float a2, float a3) {
     int pz = (int)floorf(this->posZ);
     for (float yo = -0.5f; yo <= 1.4f; yo += 0.35f) {
       int py = (int)floorf(this->posY + yo);
-      if (py >= 0 && py < 128) {
+      if (LevelHeight::inRange(py)) {
         int tile = this->level->getTile(px, py, pz);
         Material *mat = this->level->getMaterial(px, py, pz);
         if (tile == Tile::water->blockID || tile == Tile::calmWater->blockID ||

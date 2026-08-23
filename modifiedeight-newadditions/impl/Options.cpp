@@ -694,7 +694,10 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 		int percent = (int)(this->brightness * 100.0f);
 		if(percent <= 0) return a4 + ": Moody";
 		if(percent >= 100) return a4 + ": Bright";
-		return a4 + ": +" + std::to_string(percent) + "%";
+		// std::to_string is missing from the NDK's gnu-libstdc++, so format it by hand.
+		char_t v9[16];
+		sprintf(v9, "%d", percent);
+		return a4 + ": +" + v9 + "%";
 	}
 	return a4;
 }

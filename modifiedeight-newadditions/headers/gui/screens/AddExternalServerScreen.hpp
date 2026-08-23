@@ -18,8 +18,15 @@ struct AddExternalServerScreen: Screen
 	std::shared_ptr<TextBox> field_94;
 	std::shared_ptr<Label> field_9C;
 	std::shared_ptr<NinePatchLayer> field_A4;
+	// "Is this a Java server? (1.8.x)" - flips the entry between an MCPE 0.8.1
+	// server and a Minecraft Java Edition 1.8.x one.
+	std::shared_ptr<Button> javaToggleButton;
+	bool_t isJavaServer;
+
+	AddExternalServerScreen();
 
 	void closeScreen();
+	void refreshJavaToggle();
 
 	virtual ~AddExternalServerScreen();
 	virtual void render(int32_t, int32_t, float);

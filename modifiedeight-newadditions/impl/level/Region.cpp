@@ -1,4 +1,5 @@
 #include <level/Region.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/Level.hpp>
 #include <level/chunk/LevelChunk.hpp>
 #include <level/dimension/Dimension.hpp>
@@ -69,7 +70,7 @@ int32_t Region::getRawBrightness(int32_t x, int32_t y, int32_t z, bool_t complex
 		}
 	} else if(y < 0) {
 		return 0;
-	} else if(y <= 127) {
+	} else if(y <= LevelHeight::maxY()) {
 		v14 = this->chunks[(x >> 4) - this->minCX][(z >> 4) - this->minCZ];
 		return v14->getRawBrightness(x & 0xF, y, z & 0xF, this->level->skyDarken);
 	} else {
@@ -88,7 +89,7 @@ Region::~Region() {
 
 int32_t Region::getTile(int32_t x, int32_t y, int32_t z) {
 	if(y < 0) return 0;
-	if(y > 127) return 0;
+	if(y > LevelHeight::maxY()) return 0;
 	int32_t v4 = (x >> 4) - this->minCX;
 	if(v4 < 0) return 0;
 	if(v4 >= this->sizeX) return 0;
@@ -105,7 +106,7 @@ float Region::getBrightness(int32_t x, int32_t y, int32_t z) {
 	return this->level->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
 }
 int32_t Region::getData(int32_t x, int32_t y, int32_t z) {
-	if(y < 0 || y > 127) return 0;
+	if(!LevelHeight::inRange(y)) return 0;
 	LevelChunk* r = this->chunks[(x >> 4) - this->minCX][(z >> 4) - this->minCZ];
 	return r->getData(x & 0xf, y, z & 0xf); //no epik nullptr check
 }

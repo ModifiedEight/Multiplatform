@@ -1,4 +1,5 @@
 #include <level/gen/PerformanceTestChunkSource.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/chunk/LevelChunk.hpp>
 #include <string.h>
 
@@ -22,20 +23,22 @@ LevelChunk* PerformanceTestChunkSource::create(int32_t x, int32_t z) {
 	LevelChunk* v14; // r4
 
 	v6 = 0;
-	v7 = new uint8_t[0x8000u];
-	memset(v7, 0, 0x8000u);
+	// Sized from LevelHeight for the same reason as the real generators: the
+	// LevelChunk this is handed to indexes it with LevelHeight::index.
+	v7 = new uint8_t[LevelHeight::tiles];
+	memset(v7, 0, LevelHeight::tiles);
 	do {
 		if(v6 > 59) {
 			for(i = 0; i != 16; i += 2) {
 				for(j = 0; j != 16; j += 2) {
-					v11 = v6 | (i << 11) | (j << 7);
+					v11 = LevelHeight::index(i, v6, j);
 					v7[v11] = 3;
 				}
 			}
 		} else {
 			for(k = (v6 + 1) & 1; k <= 15; k += 2) {
 				for(m = v6 & 1; m <= 15; m += 2) {
-					v10 = v6 | (k << 11) | (m << 7);
+					v10 = LevelHeight::index(k, v6, m);
 					v7[v10] = 3;
 				}
 			}

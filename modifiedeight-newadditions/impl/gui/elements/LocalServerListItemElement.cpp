@@ -18,6 +18,9 @@
 #include <gui/screens/PlayScreen.hpp>
 #include <gui/screens/ProgressScreen.hpp>
 #include <gui/screens/RenameMPLevelScreen.hpp>
+#include <java/JavaBridge.hpp>
+#include <java/JavaPing.hpp>
+#include <java/JavaSession.hpp>
 #include <gui/screens/Touch_DeleteWorldScreen.hpp>
 #include <input/Mouse.hpp>
 #include <level/LevelSettings.hpp>
@@ -362,8 +365,31 @@ void LocalServerListItemElement::render(Minecraft *a2, int32_t a3, int32_t a4) {
                            (float)this->posY + 16.0, -4473925);
 
       bool isOnline = false;
+      bool isOffline = false;
       std::string playersStr = "0/20";
-      if (a2->rakNetInstance && a2->rakNetInstance->getServerList()) {
+      std::string wrongVersion = "";
+      if (server->isJava) {
+        /*
+         * A Java server is not on RakNet's ping list and never will be, so ask
+         * it directly. JavaPing answers out of its cache and re-pings on a
+         * background thread, so this costs the render loop nothing - without it
+         * a Java entry sat on "Loading..." for ever even though joining worked.
+         */
+        JavaPingResult ping = JavaPing::get(server->field_8, server->field_C);
+        if (ping.state == JavaPingResult::ONLINE) {
+          isOnline = true;
+          char countBuf[32];
+          sprintf(countBuf, "%d/%d", (int)ping.online, (int)ping.max);
+          playersStr = countBuf;
+          // m8 speaks 1.8.x and nothing else, so say so here rather than let the
+          // player find out from a failed join.
+          if (ping.protocol != JavaSession::PROTOCOL && !ping.version.empty()) {
+            wrongVersion = ping.version;
+          }
+        } else if (ping.state == JavaPingResult::OFFLINE) {
+          isOffline = true;
+        }
+      } else if (a2->rakNetInstance && a2->rakNetInstance->getServerList()) {
         auto *sList = a2->rakNetInstance->getServerList();
         for (auto &s : *sList) {
           char addrBuf[128];
@@ -386,10 +412,23 @@ void LocalServerListItemElement::render(Minecraft *a2, int32_t a3, int32_t a4) {
       for (int d = 0; d < dotCount; ++d)
         loadingDots += ".";
 
-      std::string statusStr = isOnline ? "Online" : ("Loading" + loadingDots);
+      std::string statusStr = "Loading" + loadingDots;
+      if (!wrongVersion.empty()) {
+        statusStr = wrongVersion;
+      } else if (isOnline) {
+        statusStr = "Online";
+      } else if (isOffline) {
+        statusStr = "Offline";
+      }
       if (!isOnline)
         playersStr = "";
-      int32_t statusColor = isOnline ? 0xFF55FF55 : 0xFFFFFF55;
+      int32_t statusColor = 0xFFFFFF55;
+      if (!wrongVersion.empty())
+        statusColor = 0xFFFFAA00;
+      else if (isOnline)
+        statusColor = 0xFF55FF55;
+      else if (isOffline)
+        statusColor = 0xFFFF5555;
       int32_t playersColor = isOnline ? 0xFFBBBBBB : 0xFF777777;
 
       if (this->isEditing) {
@@ -485,6 +524,18 @@ void LocalServerListItemElement::mouseReleased(Minecraft *a2, int32_t a3,
   if (this->field_3C || this->server) {
     if (this->server) {
       if (a2->platform()->isNetworkEnabled(1)) {
+        // A Java Edition entry never touches RakNet - the Java session dials
+        // the server itself and builds the level once it is through login.
+        if (this->server->isJava) {
+          if (!JavaBridge::begin(a2, this->server->field_4, this->server->field_8,
+                                 this->server->field_C)) {
+            a2->setScreen(new DisconnectionScreen(
+                "Could not start the Java Edition connection"));
+            return;
+          }
+          a2->setScreen(new ProgressScreen());
+          return;
+        }
         PingedCompatibleServer v43;
         v43.field_4.FromStringExplicitPort(this->server->field_8.c_str(),
                                            this->server->field_C, 0);

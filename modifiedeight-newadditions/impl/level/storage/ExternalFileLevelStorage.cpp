@@ -5,6 +5,7 @@
 #include <cpputils.hpp>
 #include <level/Level.hpp>
 #include <level/ChunkCache.hpp>
+#include <level/LevelHeight.hpp>
 #include <level/chunk/LevelChunk.hpp>
 #include <level/storage/RegionFile.hpp>
 #include <level/storage/chunk/UnsavedLevelChunk.hpp>
@@ -348,7 +349,19 @@ LevelChunk* ExternalFileLevelStorage::load(Level* a2, int32_t a3, int32_t a4) {
 		RakNet::BitStream* v22 = 0;
 		if(regionFile->readChunk(a3, a4, &v22)) {
 			v22->ResetReadPointer();
-			char* v12 = new char[0x8000];
+			/*
+			 * The region file format *is* the 128 tall column buffer, byte for
+			 * byte, so every Read length here is fixed and may never follow
+			 * LevelHeight - that is what keeps existing saves readable.  The
+			 * allocation is the one exception: LevelChunk indexes this buffer
+			 * with LevelHeight::index, so it has to be at least that big or the
+			 * chunk would run off the end of it.  The two are equal at 128,
+			 * which is the only height a world on disk ever has; the tail is
+			 * zeroed so a taller chunk reads air above the saved 128 rather
+			 * than uninitialised memory.
+			 */
+			char* v12 = new char[LevelHeight::tiles];
+			memset(v12, 0, LevelHeight::tiles);
 			v22->Read(v12, 0x8000);
 			LevelChunk* v10 = new LevelChunk(a2, (uint8_t*)v12, a3, a4);
 			v22->Read((char*)v10->tileMeta.data, 0x4000);
