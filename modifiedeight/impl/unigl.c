@@ -42,7 +42,8 @@ void (*glGenBuffers)(GLsizei n, GLuint *buffers);
 void (*glBindBuffer)(GLenum target, GLuint buffer);
 void (*glBufferData)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#include <windows.h>
 #include <wingdi.h>
 #define GLFUNCADDR wglGetProcAddress
 #else

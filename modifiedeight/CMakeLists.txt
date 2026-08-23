@@ -24,9 +24,9 @@ else()
 endif()
 
 add_compile_options(
-    -fpermissive
-    -Wno-out-of-line-declaration
-    -Wno-write-strings
+    $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-out-of-line-declaration>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-write-strings>
     -Werror=infinite-recursion
     -Werror=return-type
     -DDIFFERENTTWEAKS

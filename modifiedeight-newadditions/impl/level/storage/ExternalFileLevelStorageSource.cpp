@@ -48,7 +48,7 @@ std::string ExternalFileLevelStorageSource::getName() {
 	return "External File Level Storage";
 }
 void ExternalFileLevelStorageSource::getLevelList(std::vector<LevelSummary>& a2) {
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 	WIN32_FIND_DATA data;
 	HANDLE hFind = FindFirstFile((this->field_4+"\\*.*").c_str(), &data);
 	if(hFind == INVALID_HANDLE_VALUE){

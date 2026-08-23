@@ -1,5 +1,5 @@
 #pragma once
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <_types.h>
 #include <dsound.h>
 #include <sound/SoundSystem.hpp>

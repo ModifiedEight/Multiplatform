@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #define FUNC_ERRNO _errno2
 #define FUNC_MKDIR mkdir2
 #else

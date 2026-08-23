@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <util/OffsetPosTranslator.hpp>
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
