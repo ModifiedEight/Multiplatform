@@ -37,7 +37,7 @@ jobs:
           cmake .. -DDYNAMICSOUNDS=ON \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          make -j$(nproc)
+          make -j8
           ccache -s || true
 
       - name: upload stuff
@@ -95,7 +95,7 @@ jobs:
             -DSDL_INCLUDE_DIR="$PWD/../prebuilt/win64/include/" \
             -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32/
 
-          make -j$(nproc)
+          make -j8
 
           ccache -s || true
 

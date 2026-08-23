@@ -9,8 +9,16 @@
 #include <sstream>
 #include <iostream>
 #include <sys/stat.h>
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#include <winsock2.h>
+#include <windows.h>
+#include <direct.h>
+#define platform_mkdir(p) _mkdir(p)
+#else
 #include <dirent.h>
 #include <unistd.h>
+#define platform_mkdir(p) mkdir(p, 0777)
+#endif
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -115,7 +123,20 @@ void TexturesScreen::refreshSavedTextures() {
     af.close();
   }
 
-  mkdir("texture_packs", 0777);
+  platform_mkdir("texture_packs");
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+  WIN32_FIND_DATAA fd;
+  HANDLE hFind = FindFirstFileA("texture_packs\\*.zip", &fd);
+  if (hFind != INVALID_HANDLE_VALUE) {
+    do {
+      std::string name = fd.cFileName;
+      std::string fullPath = "texture_packs/" + name;
+      std::string title = name.substr(0, name.length() - 4);
+      this->savedTextures.push_back({fullPath, title});
+    } while (FindNextFileA(hFind, &fd));
+    FindClose(hFind);
+  }
+#else
   DIR *dir = opendir("texture_packs");
   if (dir) {
     struct dirent *ent;
@@ -129,6 +150,8 @@ void TexturesScreen::refreshSavedTextures() {
     }
     closedir(dir);
   }
+#endif
+
 
   std::sort(this->savedTextures.begin(), this->savedTextures.end(),
             [](const SavedTexture &a, const SavedTexture &b) { return a.title < b.title; });
@@ -157,7 +180,7 @@ void TexturesScreen::importTexturePack() {
   size_t lastSlash = picked.find_last_of("/\\");
   std::string fname = (lastSlash == std::string::npos) ? picked : picked.substr(lastSlash + 1);
 
-  mkdir("texture_packs", 0777);
+  platform_mkdir("texture_packs");
   std::string dest = "texture_packs/" + fname;
   char cmd[2048];
   snprintf(cmd, sizeof(cmd), "cp \"%s\" \"%s\"", picked.c_str(), dest.c_str());
@@ -176,7 +199,7 @@ void TexturesScreen::applySavedTexture(const std::string &path, const std::strin
 
   auto isAlive = this->alive;
   std::thread([this, isAlive, path, title]() {
-    mkdir("texture_packs", 0777);
+    platform_mkdir("texture_packs");
     char cmd[4096];
     snprintf(cmd, sizeof(cmd),
              "rm -rf /tmp/mcpe_tex_tmp && mkdir -p /tmp/mcpe_tex_tmp && "
