@@ -343,7 +343,8 @@ LABEL_27:
 					if(!this->player->isUsingItem()) {
 						gameMode = this->gameMode;
 						this->field_D0C = 8;
-						if(gameMode->useItem((Player*)this->player, this->level, sel)) {
+						bool_t used = gameMode->useItem((Player*)this->player, this->level, sel);
+						if(used) {
 							Achievements::onUseItem(this, sel->getId());
 							this->gameRenderer->itemInHandRenderer->itemUsed();
 						}
@@ -362,8 +363,10 @@ LABEL_27:
 		v13 = Tile::tiles[this->level->getTile(v9, v10, v11)];
 		if(!a2->isRemove()) {
 			v14 = this->player->inventory->getSelected();
-			if(this->gameMode->useItemOn((Player*)this->player, this->level, v14, v9, v10, v11, v12, this->selectedObject.hitVec)) {
+			bool_t usedOn = this->gameMode->useItemOn((Player*)this->player, this->level, v14, v9, v10, v11, v12, this->selectedObject.hitVec);
+			if(usedOn) {
 				Achievements::onUseItem(this, v14 ? v14->getId() : -1);
+				Achievements::onUseBlock(this, this->level->getTile(v9, v10, v11));
 				v15 = 0;
 				this->player->swing();
 			} else {
@@ -1032,6 +1035,7 @@ void Minecraft::tick(int32_t a2, int32_t a3) {
 
 	this->tickInput();
 	this->gui.tick();
+	Achievements::tick();
 
 	if(!this->field_CF4) {
 		if(!this->levelGenerated) {

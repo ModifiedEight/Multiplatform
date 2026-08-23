@@ -14,5 +14,6 @@ bool executeCommand(Minecraft* minecraft, const std::string& line);
 void onAttack(Minecraft* minecraft, Entity* victim);
 void onDestroyBlock(Minecraft* minecraft, int blockId, int carriedItemId, bool destroyed);
 void onUseItem(Minecraft* minecraft, int itemId);
+void onUseBlock(Minecraft* minecraft, int blockId);
 void render(Minecraft* minecraft);
 }

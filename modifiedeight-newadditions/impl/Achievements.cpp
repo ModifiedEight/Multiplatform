@@ -25,8 +25,6 @@ struct Popup {
 int progress[achievementCount];
 std::string progressPath;
 Popup popup = {0, 0};
-std::string loadedTexture;
-uint32_t loadedTextureId = 0;
 
 void saveToDisk() {
   if (progressPath.empty()) return;
@@ -53,16 +51,12 @@ void announce(Minecraft* minecraft, int id) {
   saveToDisk();
 }
 
-bool hasEntityType(Entity* entity, int type) {
-  return entity && entity->getEntityTypeId() == type;
-}
-
 bool isMonsterType(int type) {
   return type == 32 || type == 33 || type == 34 || type == 35 || type == 36;
 }
 
 bool matchesUpgrade(int itemId) {
-  return itemId == 274 || itemId == 257 || itemId == 285 || itemId == 278;
+  return itemId == 17 || itemId == 1 || itemId == 19 || itemId == 22;
 }
 
 struct Achievement {
@@ -135,7 +129,7 @@ bool executeCommand(Minecraft* minecraft, const std::string& line) {
 }
 
 void onAttack(Minecraft* minecraft, Entity* victim) {
-  if (!minecraft || !victim) return;
+  if (!minecraft || !minecraft->player || !victim) return;
   const int type = victim->getEntityTypeId();
   if (progress[0] == 1 && isMonsterType(type)) {
     progress[0] = 2;
@@ -145,7 +139,7 @@ void onAttack(Minecraft* minecraft, Entity* victim) {
     progress[1] = 2;
     announce(minecraft, 2);
   }
-  ItemInstance* carried = minecraft->player ? minecraft->player->getCarriedItem() : nullptr;
+  ItemInstance* carried = minecraft->player->getCarriedItem();
   if (progress[2] == 1 && type == 34 && carried && carried->getId() == 261) {
     progress[2] = 2;
     announce(minecraft, 3);
@@ -153,7 +147,7 @@ void onAttack(Minecraft* minecraft, Entity* victim) {
 }
 
 void onDestroyBlock(Minecraft* minecraft, int blockId, int carriedItemId, bool destroyed) {
-  if (!minecraft || !destroyed) return;
+  if (!minecraft || !minecraft->player || !destroyed) return;
   if (progress[3] == 1 && blockId == 17) {
     progress[3] = 2;
     announce(minecraft, 4);
@@ -164,20 +158,30 @@ void onDestroyBlock(Minecraft* minecraft, int blockId, int carriedItemId, bool d
   }
 }
 
+void onUseBlock(Minecraft* minecraft, int blockId) {
+  if (!minecraft || !minecraft->player) return;
+  if (blockId == 58 && progress[5] == 1) {
+    progress[5] = 2;
+    announce(minecraft, 6);
+  }
+  if (blockId == 61 && progress[6] == 1) {
+    progress[6] = 2;
+    announce(minecraft, 7);
+  }
+}
+
 void onUseItem(Minecraft* minecraft, int itemId) {
-  if (!minecraft) return;
-  for (int i = 5; i < achievementCount; ++i) {
+  if (!minecraft || !minecraft->player || itemId < 0) return;
+  for (int i = 7; i < achievementCount; ++i) {
     if (progress[i] != 1) continue;
     bool match = false;
-    if (i == 5) match = itemId == 58;
-    if (i == 6) match = itemId == 61;
-    if (i == 7) match = itemId == 270;
-    if (i == 8) match = itemId == 265;
-    if (i == 9) match = itemId == 290;
-    if (i == 10) match = itemId == 297;
-    if (i == 11) match = itemId == 354;
+    if (i == 7) match = itemId == 14;
+    if (i == 8) match = itemId == 9;
+    if (i == 9) match = itemId == 36;
+    if (i == 10) match = itemId == 41;
+    if (i == 11) match = itemId == 98;
     if (i == 12) match = matchesUpgrade(itemId);
-    if (i == 13) match = itemId == 268;
+    if (i == 13) match = itemId == 12;
     if (i == 14) match = itemId == 47;
     if (match) {
       progress[i] = 2;
@@ -193,13 +197,11 @@ void render(Minecraft* minecraft) {
   const float guiWidth = (float)minecraft->field_1C * Gui::InvGuiScale;
   const float x = (guiWidth - width) * 0.5f;
   const float alpha = popup.ticks < 40 ? popup.ticks / 40.0f : 1.0f;
-  const std::string texture = "achievements/ac" + std::to_string(popup.id) + ".png";
-  if (texture != loadedTexture) {
-    loadedTextureId = minecraft->texturesPtr->loadAndBindTexture(texture);
-    loadedTexture = texture;
-  } else {
-    minecraft->texturesPtr->bind(loadedTextureId);
-  }
+  std::ostringstream textureStream;
+  textureStream << "images/achievements/ac" << popup.id << ".png";
+  const std::string texture = textureStream.str();
+  const uint32_t textureId = minecraft->texturesPtr->loadAndBindTexture(texture);
+  if (!textureId) return;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_DEPTH_TEST);

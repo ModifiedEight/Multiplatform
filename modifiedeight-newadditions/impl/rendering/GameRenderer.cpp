@@ -1,5 +1,6 @@
 #include <rendering/GameRenderer.hpp>
 #include <Minecraft.hpp>
+#include <Achievements.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <entity/player/gamemode/GameMode.hpp>
 #include <gui/Screen.hpp>
@@ -572,6 +573,7 @@ LABEL_30:
 			v27 = 1;
 			this->setupGuiScreen(0);
 			this->minecraft->gui.render(pt, this->minecraft->currentScreen != 0, mx, my);
+			Achievements::render(this->minecraft);
 			goto LABEL_30;
 		}
 		v27 = 0;
