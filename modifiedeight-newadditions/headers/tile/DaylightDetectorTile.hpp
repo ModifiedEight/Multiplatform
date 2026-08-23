@@ -59,14 +59,14 @@ public:
 
 		if (!inverted) {
 			if (daylightFactor > 0.0f) {
-				power = (int)std::round(daylightFactor * 15.0f);
+				power = (int)roundf(daylightFactor * 15.0f);
 				if (power > 15) power = 15;
 				if (power < 0) power = 0;
 			}
 		} else {
 			float nightFactor = -daylightFactor;
 			if (nightFactor > 0.0f) {
-				power = (int)std::round(nightFactor * 15.0f);
+				power = (int)roundf(nightFactor * 15.0f);
 				if (power > 15) power = 15;
 				if (power < 0) power = 0;
 			}

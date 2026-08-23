@@ -146,8 +146,10 @@ else()
         RakNetStatic
         jsoncpp_lib
         utf8proc
-        dl
     )
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(modifiedeight-newadditions dl)
+    endif()
 
     set_target_properties(modifiedeight-newadditions PROPERTIES
         ENABLE_EXPORTS ON
