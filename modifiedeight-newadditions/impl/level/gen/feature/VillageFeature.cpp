@@ -440,7 +440,7 @@ void VillageFeature::placeSmallHouse(Level* level, Random* random, int32_t x, in
 	this->placeRotated(level, x, y, z, 2, 3, 3, sizeX, sizeZ, Tile::torch->blockID, 4, rotation);
 
 	if (variant == 1 || ((random->genrand_int32() % 2) == 0)) {
-		this->placeRotated(level, x, y, z, 2, 1, 3, sizeX, sizeZ, Tile::stonecutterBench ? Tile::stonecutterBench->blockID : Tile::workBench->blockID, 0, rotation);
+		this->placeRotated(level, x, y, z, 2, 1, 3, sizeX, sizeZ, Tile::stonecutterBench ? Tile::stonecutterBench->blockID : Tile::workBench->blockID, 2, rotation);
 	}
 
 	if ((random->genrand_int32() % 4) == 0) {

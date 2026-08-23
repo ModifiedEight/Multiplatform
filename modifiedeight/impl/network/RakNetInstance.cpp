@@ -207,6 +207,13 @@ void RakNetInstance::runEvents(NetEventCallback* a2) {
 		}
 		this->rakPeerInstance->DeallocatePacket(v8);
 	}
+	if(!this->_isServer && this->loggedIn && a2 && this->rakPeerInstance && this->rakPeerInstance->IsActive()) {
+		RakNet::ConnectionState state = this->rakPeerInstance->GetConnectionState(this->field_8);
+		if(state == RakNet::IS_DISCONNECTED || state == RakNet::IS_NOT_CONNECTED || state == RakNet::IS_SILENTLY_DISCONNECTING) {
+			this->loggedIn = 0;
+			a2->onDisconnect(this->field_8);
+		}
+	}
 	if(this->isPingingHostsMaybe) {
 		if(RakNet::GetTimeMS() - this->field_2C > 1000) {
 			for(auto&& v10 = this->serverList.begin(); v10 != this->serverList.end();) {

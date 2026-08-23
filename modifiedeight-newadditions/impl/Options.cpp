@@ -10,6 +10,7 @@
 #include <sstream>
 #include <util/Util.hpp>
 #include <rendering/LevelRenderer.hpp>
+#include <sound/MusicEngine.hpp>
 
 Options* Options::instance = nullptr;
 
@@ -56,6 +57,7 @@ Options::Option Options::Option::ANIMATE_WATER{0, "options.animatewater", 41};
 Options::Option Options::Option::ANIMATE_LAVA{0, "options.animatelava", 42};
 Options::Option Options::Option::ANIMATE_FIRE{0, "options.animatefire", 43};
 Options::Option Options::Option::BRIGHTNESS{1, "options.gamma", 44};
+Options::Option Options::Option::LOD_CHUNKS{0, "options.lodchunks", 45};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -147,6 +149,8 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->debugScreen);
 						} else if(v13[i] == "options.discordrpc") {
 							this->readBool(v13[i + 1], this->discordIntegration);
+						} else if(v13[i] == "options.lodchunks") {
+							this->readBool(v13[i + 1], this->lodChunks);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -167,6 +171,8 @@ void Options::update() {
 								this->readBool(v13[i + 1], this->hideGUI);
 							} else if(v13[i] == OptionStrings::AUDIO_Sound) {
 								this->readFloat(v13[i + 1], this->soundVolume);
+							} else if(v13[i] == "audio_music" || v13[i] == "options.music") {
+								this->readFloat(v13[i + 1], this->musicVolume);
 							} else if(!(v13[i] == OptionStrings::Game_DifficultyLevel)) {
 								if(v13[i] == OptionStrings::Last_Game_Version_Major) {
 									this->readInt(v13[i + 1], this->major);
@@ -245,13 +251,13 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->graphics ^= 1u;
 	} else if(a2 == &Options::Option::FANCY_SKIES) {
 		this->fancySkies ^= 1u;
-	} else if(a2 == &Options::Option::ANIMATE_TEXTURES) {
+	} else if(a2 == &Options::Option::ANIMATE_TEXTURES || (a2 && a2->name == "options.animatetextures")) {
 		this->animateTextures ^= 1u;
-	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+	} else if(a2 == &Options::Option::ANIMATE_WATER || (a2 && (a2->field_8 == 41 || a2->name == "options.animatewater"))) {
 		this->animateWater ^= 1u;
-	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+	} else if(a2 == &Options::Option::ANIMATE_LAVA || (a2 && (a2->field_8 == 42 || a2->name == "options.animatelava"))) {
 		this->animateLava ^= 1u;
-	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+	} else if(a2 == &Options::Option::ANIMATE_FIRE || (a2 && (a2->field_8 == 43 || a2->name == "options.animatefire"))) {
 		this->animateFire ^= 1u;
 	} else if(a2 == &Options::Option::CLASSIC_BACKGROUND) {
 		this->classicBackground ^= 1u;
@@ -279,6 +285,11 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->debugScreen ^= 1u;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		this->discordIntegration ^= 1u;
+	} else if(a2 == &Options::Option::LOD_CHUNKS) {
+		this->lodChunks ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) {
+			this->minecraft->levelRenderer->allChanged();
+		}
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
@@ -326,6 +337,9 @@ void Options::set(const Options::Option* a2, int32_t a3) {
 void Options::set(const Options::Option* a2, float a3) {
 	if(a2 == &Options::Option::MUSIC) {
 		this->musicVolume = a3;
+		if (MusicEngine::instance) {
+			MusicEngine::instance->setVolume(a3);
+		}
 	} else if(a2 == &Options::Option::SOUND) {
 		this->soundVolume = a3;
 	} else if(a2 == &Options::Option::FOV) {
@@ -383,9 +397,11 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.discordrpc", this->discordIntegration);
 	this->addOptionToSaveOutput(v4, "options.chatcolor", this->chatColor);
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
+	this->addOptionToSaveOutput(v4, "options.lodchunks", this->lodChunks);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
+	this->addOptionToSaveOutput(v4, "audio_music", this->musicVolume);
 	this->addOptionToSaveOutput(v4, OptionStrings::Last_Game_Version_Major, this->major);
 	this->addOptionToSaveOutput(v4, OptionStrings::Last_Game_Version_Minor, this->minor);
 	this->addOptionToSaveOutput(v4, OptionStrings::Last_Game_Version_Patch, this->patch);
@@ -472,6 +488,10 @@ void Options::initDefaultValues(void) {
 	this->showFps = 0;
 	this->debugScreen = 0;
 	this->discordIntegration = 1;
+	this->animateTextures = 1;
+	this->animateWater = 1;
+	this->animateLava = 1;
+	this->animateFire = 1;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->panoramaAngle = 0;
@@ -543,6 +563,7 @@ void Options::initDefaultValues(void) {
 	this->keyCrafting.keyCode = 109;
 	this->keyMenuCancel.keyCode = 4;
 	this->keyMenuNext.keyCode = 20;
+	this->lodChunks = 0;
 	this->setAdditionalHiddenOptions({});
 }
 bool_t Options::hideOption(const Options::Option* a2) {
@@ -770,11 +791,15 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->debugScreen;
 	} else if(a2 == &Options::Option::DISCORD_RPC) {
 		return this->discordIntegration;
-	} else if(a2 == &Options::Option::ANIMATE_WATER) {
+	} else if(a2 == &Options::Option::LOD_CHUNKS) {
+		return this->lodChunks;
+	} else if(a2 == &Options::Option::ANIMATE_TEXTURES || (a2 && a2->name == "options.animatetextures")) {
+		return this->animateTextures;
+	} else if(a2 == &Options::Option::ANIMATE_WATER || (a2 && (a2->field_8 == 41 || a2->name == "options.animatewater"))) {
 		return this->animateWater;
-	} else if(a2 == &Options::Option::ANIMATE_LAVA) {
+	} else if(a2 == &Options::Option::ANIMATE_LAVA || (a2 && (a2->field_8 == 42 || a2->name == "options.animatelava"))) {
 		return this->animateLava;
-	} else if(a2 == &Options::Option::ANIMATE_FIRE) {
+	} else if(a2 == &Options::Option::ANIMATE_FIRE || (a2 && (a2->field_8 == 43 || a2->name == "options.animatefire"))) {
 		return this->animateFire;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {

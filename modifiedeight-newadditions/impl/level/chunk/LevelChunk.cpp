@@ -53,9 +53,16 @@ void LevelChunk::addTileEntity(struct TileEntity* a2) {
 	int32_t posX = a2->posX;
 	int32_t posZ = a2->posZ;
 	int32_t czw = this->chunkZworld;
+	a2->level = this->level;
 	this->setTileEntity(posX - this->chunkXworld, a2->posY, posZ - czw, a2);
 	if(this->loaded) {
-		this->level->tileEntities.emplace_back(a2);
+		bool found = false;
+		for (auto ex : this->level->tileEntities) {
+			if (ex == a2) { found = true; break; }
+		}
+		if (!found) {
+			this->level->tileEntities.emplace_back(a2);
+		}
 	}
 }
 void LevelChunk::clearUpdateMap() {
@@ -396,9 +403,33 @@ void LevelChunk::skyBrightnessChanged() {
 }
 void LevelChunk::load() {
 	this->loaded = 1;
+	for (auto& pair : this->tileEntities) {
+		TileEntity* te = pair.second;
+		if (te && !te->isRemoved()) {
+			te->level = this->level;
+			bool found = false;
+			for (auto ex : this->level->tileEntities) {
+				if (ex == te) { found = true; break; }
+			}
+			if (!found) {
+				this->level->tileEntities.emplace_back(te);
+			}
+		}
+	}
 }
 void LevelChunk::unload() {
 	this->loaded = 0;
+	for (auto& pair : this->tileEntities) {
+		TileEntity* te = pair.second;
+		if (te) {
+			for (auto it = this->level->tileEntities.begin(); it != this->level->tileEntities.end(); ++it) {
+				if (*it == te) {
+					this->level->tileEntities.erase(it);
+					break;
+				}
+			}
+		}
+	}
 }
 bool_t LevelChunk::shouldSave(bool_t a2) {
 	return !this->field_24A && this->unsaved;

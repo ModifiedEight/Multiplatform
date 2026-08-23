@@ -255,7 +255,7 @@ char_t *gSplashes[] = {"Scientific!",
                        "Exclusive!",
                        "The bee's knees!",
                        "Down with O.P.P.!",
-                       "Closed source!",
+                       "Open source!",
                        "Classy!",
                        "Wow!",
                        "Not on steam!",
@@ -486,7 +486,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->playButton);
   this->field_2C.emplace_back(&this->playOnRealmsButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
-  this->field_138 = "\x0fMojang AB, ModifiedEight 0.8.1 by eqozqq";
+  this->field_138 = "\x0fMojang AB, ModifiedEight 1.6.3 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;

@@ -279,6 +279,23 @@ void Arrow::tick() {
 		this->motionX = 0.0;
 		tileID = level->getTile(this->xTile, this->yTile, this->zTile);
 		tileData = this->level->getData(this->xTile, this->yTile, this->zTile);
+		int px = (int)floorf(this->posX);
+		int py = (int)floorf(this->posY);
+		int pz = (int)floorf(this->posZ);
+		int coords[5][3] = {
+			{this->xTile, this->yTile, this->zTile},
+			{this->xTile, this->yTile + 1, this->zTile},
+			{px, py, pz},
+			{px, py - 1, pz},
+			{px, py + 1, pz}
+		};
+		for (int ci = 0; ci < 5; ++ci) {
+			int tid = this->level->getTile(coords[ci][0], coords[ci][1], coords[ci][2]);
+			Tile* t = Tile::tiles[tid];
+			if (t) {
+				t->entityInside(this->level, coords[ci][0], coords[ci][1], coords[ci][2], this);
+			}
+		}
 		if(tileID == this->inTile && tileData == this->inData) {
 			ticksInGroundCounter = this->ticksInGround + 1;
 			this->ticksInGround = ticksInGroundCounter;
@@ -473,6 +490,23 @@ void Arrow::tick() {
 				this->inGround = 1;
 				this->shake = 7;
 				this->critical = 0;
+				int px = (int)floorf(this->posX);
+				int py = (int)floorf(this->posY);
+				int pz = (int)floorf(this->posZ);
+				int coords[5][3] = {
+					{this->xTile, this->yTile, this->zTile},
+					{this->xTile, this->yTile + 1, this->zTile},
+					{px, py, pz},
+					{px, py - 1, pz},
+					{px, py + 1, pz}
+				};
+				for (int ci = 0; ci < 5; ++ci) {
+					int tid = this->level->getTile(coords[ci][0], coords[ci][1], coords[ci][2]);
+					Tile* t = Tile::tiles[tid];
+					if (t) {
+						t->entityInside(this->level, coords[ci][0], coords[ci][1], coords[ci][2], this);
+					}
+				}
 			}
 		}
 		if(this->critical) {

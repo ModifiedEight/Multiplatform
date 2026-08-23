@@ -352,6 +352,10 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Discord Integration";
     return 1;
   }
+  if (a1 == "options.lodchunks") {
+    a2 = "LOD Chunks";
+    return 1;
+  }
   if (a1 == "options.classicbackground") {
     a2 = "Classic Background";
     return 1;
@@ -569,8 +573,18 @@ std::string I18n::get(const std::string &a2) {
     return "Debug Screen";
   if (a2 == "options.discordrpc")
     return "Discord Integration";
+  if (a2 == "options.lodchunks")
+    return "LOD Chunks";
   if (a2 == "tile.grassPath.name")
     return "Grass Path";
+  if (a2 == "tile.flowerRose.name")
+    return "Rose";
+  if (a2 == "tile.flowerPot.name" || a2 == "item.flowerPot.name")
+    return "Flower Pot";
+  if (a2 == "tile.daylightDetector.name" || a2 == "item.daylightDetector.name")
+    return "Daylight Sensor";
+  if (a2 == "tile.daylightDetectorInverted.name" || a2 == "item.daylightDetectorInverted.name")
+    return "Moonlight Sensor";
   if (a2 == "tile.flowerPaeonia.name")
     return "Peony";
   if (a2 == "tile.flowerDaisy.name")
@@ -595,6 +609,26 @@ std::string I18n::get(const std::string &a2) {
     return "Vines";
   if (a2 == "tile.seagrass.name" || a2 == "item.seagrass.name")
     return "Seagrass";
+  if (a2 == "tile.dirtSlab.name" || a2 == "item.dirtSlab.name")
+    return "Dirt Slab";
+  if (a2 == "tile.grassSlab.name" || a2 == "item.grassSlab.name")
+    return "Grass Slab";
+  if (a2 == "tile.buttonStone.name" || a2 == "item.buttonStone.name")
+    return "Stone Button";
+  if (a2 == "tile.buttonWood.name" || a2 == "item.buttonWood.name")
+    return "Oak Button";
+  if (a2 == "tile.buttonSpruce.name" || a2 == "item.buttonSpruce.name")
+    return "Spruce Button";
+  if (a2 == "tile.buttonBirch.name" || a2 == "item.buttonBirch.name")
+    return "Birch Button";
+  if (a2 == "tile.buttonJungle.name" || a2 == "item.buttonJungle.name")
+    return "Jungle Button";
+  if (a2 == "tile.buttonCobblestone.name" || a2 == "item.buttonCobblestone.name")
+    return "Cobblestone Button";
+  if (a2 == "tile.buttonGold.name" || a2 == "item.buttonGold.name")
+    return "Gold Button";
+  if (a2 == "tile.buttonIron.name" || a2 == "item.buttonIron.name")
+    return "Iron Button";
 
   std::string out;
   if (translateCustomDesc(a2, out))

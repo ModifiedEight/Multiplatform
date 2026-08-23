@@ -158,23 +158,60 @@ bool_t CustomSlabTile::Item::useOn(ItemInstance* a2, Player* a3, Level* a4, int3
 	}
 
 	if (face >= 2) {
-		int32_t targetX = x;
-		int32_t targetY = y;
-		int32_t targetZ = z;
-		if (face == 2) targetZ--;
-		if (face == 3) targetZ++;
-		if (face == 4) targetX--;
-		if (face == 5) targetX++;
+		bool isMiddle = false;
+		if (face == 2 || face == 3) {
+			if (a9 >= 0.25f && a9 <= 0.75f) isMiddle = true;
+		} else {
+			if (a11 >= 0.25f && a11 <= 0.75f) isMiddle = true;
+		}
 
-		int32_t existingTile = a4->getTile(targetX, targetY, targetZ);
-		if (existingTile == 0 || Tile::tiles[existingTile]->replaceable) {
-			if (a4->mayPlace(this->slabHalfId, targetX, targetY, targetZ, 0, face)) {
-				int32_t slabData = 0;
-				if (a10 > 0.5f) slabData = 8;
-				if (a4->setTileAndData(targetX, targetY, targetZ, this->slabHalfId, slabData, 3)) {
-					Tile* halfTile = Tile::tiles[this->slabHalfId];
-					if (halfTile && halfTile->soundType) {
-						a4->playSound((float)targetX + 0.5f, (float)targetY + 0.5f, (float)targetZ + 0.5f, halfTile->soundType->field_C, (float)(halfTile->soundType->field_0 + 1.0f) * 0.5f, halfTile->soundType->field_4 * 0.8f);
+		if (!isMiddle) {
+			int32_t targetX = x;
+			int32_t targetY = y;
+			int32_t targetZ = z;
+			if (face == 2) --targetZ;
+			else if (face == 3) ++targetZ;
+			else if (face == 4) --targetX;
+			else if (face == 5) ++targetX;
+
+			if (a4->mayPlace(Tile::mixedSlab->blockID, targetX, targetY, targetZ, 0, face)) {
+				int32_t mode = 0;
+				int32_t bTileId = 0, bAux = 0;
+				int32_t tTileId = 0, tAux = 0;
+
+				if (face == 2 || face == 3) {
+					mode = 2;
+					if (a9 < 0.5f) {
+						bTileId = this->slabHalfId;
+						bAux = a2->getAuxValue() & 7;
+					} else {
+						tTileId = this->slabHalfId;
+						tAux = a2->getAuxValue() & 7;
+					}
+				} else {
+					mode = 1;
+					if (a11 < 0.5f) {
+						bTileId = this->slabHalfId;
+						bAux = a2->getAuxValue() & 7;
+					} else {
+						tTileId = this->slabHalfId;
+						tAux = a2->getAuxValue() & 7;
+					}
+				}
+
+				if (a4->setTileAndData(targetX, targetY, targetZ, Tile::mixedSlab->blockID, 0, 3)) {
+					MixedSlabTileEntity* te = (MixedSlabTileEntity*)a4->getTileEntity(targetX, targetY, targetZ);
+					if (te) {
+						te->mode = mode;
+						te->bottomTileId = bTileId;
+						te->bottomAux = bAux;
+						te->topTileId = tTileId;
+						te->topAux = tAux;
+					}
+					a4->sendTileUpdated(targetX, targetY, targetZ);
+					Tile* fullTile = Tile::tiles[this->slabFullId];
+					if (fullTile && fullTile->soundType) {
+						a4->playSound((float)targetX + 0.5f, (float)targetY + 0.5f, (float)targetZ + 0.5f, fullTile->soundType->field_C, (float)(fullTile->soundType->field_0 + 1.0f) * 0.5f, fullTile->soundType->field_4 * 0.8f);
 					}
 					if (!a3->abilities.instabuild) --a2->count;
 					return 1;

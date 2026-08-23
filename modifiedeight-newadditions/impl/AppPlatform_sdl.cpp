@@ -70,8 +70,14 @@ static void performPickBlock(Minecraft *mc) {
     } else if (tile == Tile::sign || tile == Tile::wallSign) {
       pickId = Item::sign ? Item::sign->itemID : 323;
       pickData = 0;
-    } else if (tile == Tile::door_wood) {
+    } else if (Tile::door_wood && tile == Tile::door_wood) {
       pickId = Item::door_wood ? Item::door_wood->itemID : 324;
+      pickData = 0;
+    } else if (Tile::door_spruce && tile == Tile::door_spruce) {
+      pickId = Item::door_spruce ? Item::door_spruce->itemID : 460;
+      pickData = 0;
+    } else if (Tile::door_birch && tile == Tile::door_birch) {
+      pickId = Item::door_birch ? Item::door_birch->itemID : 461;
       pickData = 0;
     } else if (Tile::door_iron && tile == Tile::door_iron) {
       pickId = Item::door_iron ? Item::door_iron->itemID : 330;
@@ -214,7 +220,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.3.1pre1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.3.1", 0);
 
   {
     int w, h, ch;
@@ -548,7 +554,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.3.1pre1",
+              details, "icon", "ModifiedEight New Additions 1.6.3.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

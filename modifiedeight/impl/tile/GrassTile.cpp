@@ -170,6 +170,28 @@ int32_t GrassTile::getResource(int32_t, Random* a3) {
 int32_t GrassTile::getColor(int32_t) {
 	return 0x87CD49;
 }
-int32_t GrassTile::getColor(LevelSource*, int32_t, int32_t, int32_t) {
+int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level) {
+		int totalR = 0, totalG = 0, totalB = 0;
+		for (int sx = -1; sx <= 1; ++sx) {
+			for (int sz = -1; sz <= 1; ++sz) {
+				Biome* b = level->getBiome(x + sx, z + sz);
+				int c = 0x71A74D;
+				if (b == Biome::swampland) c = 0x4C5325;
+				else if (b == Biome::plains) c = 0x8EB971;
+				else if (b == Biome::forest) c = 0x79C05A;
+				else if (b == Biome::seasonalForest) c = 0x68B244;
+				else if (b == Biome::rainForest) c = 0x59C93C;
+				else if (b == Biome::taiga) c = 0x86B783;
+				else if (b == Biome::tundra || b == Biome::icePeaks) c = 0x80B497;
+				else if (b == Biome::savanna) c = 0xBFB755;
+				else if (b == Biome::desert || b == Biome::iceDesert) c = 0xBFA243;
+				totalR += (c >> 16) & 0xFF;
+				totalG += (c >> 8) & 0xFF;
+				totalB += c & 0xFF;
+			}
+		}
+		return ((totalR / 9) << 16) | ((totalG / 9) << 8) | (totalB / 9);
+	}
 	return this->getColor(0);
 }

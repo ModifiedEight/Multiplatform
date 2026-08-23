@@ -34,7 +34,17 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 	int32_t tileId = level->getTile(x, y, z);
 	int32_t data = level->getData(x, y, z);
 
-	if (item && item->getAuxValue() == 15) {
+	bool isPlant = (Tile::tiles[tileId] && (tileId == 2 || tileId == 59 || (Tile::carrots && tileId == Tile::carrots->blockID) || (Tile::potatoes && tileId == Tile::potatoes->blockID) || (Tile::beetroot && tileId == Tile::beetroot->blockID) || tileId == 6 || (Tile::vine && tileId == Tile::vine->blockID) || (Tile::waterLily && tileId == Tile::waterLily->blockID) || (Tile::tallgrass && tileId == Tile::tallgrass->blockID) || (Tile::sapling && tileId == Tile::sapling->blockID)));
+	bool sneak = (player && player->isSneaking());
+
+	if (item && item->getAuxValue() == 15 && (!sneak || isPlant)) {
+		Tile* result = Tile::tiles[tileId];
+		if (result && result->onFertilized(level, x, y, z)) {
+			if (player && !player->abilities.instabuild) {
+				--item->count;
+			}
+			return 1;
+		}
 		if (Tile::vine && tileId == Tile::vine->blockID) {
 			if (level->isEmptyTile(x, y - 1, z)) {
 				level->setTileAndData(x, y - 1, z, Tile::vine->blockID, data, 3);
@@ -73,14 +83,6 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 				return 1;
 			}
 		}
-		Tile* result = Tile::tiles[tileId];
-		if (result && result->onFertilized(level, x, y, z)) {
-			if (player && !player->abilities.instabuild) {
-				--item->count;
-			}
-			return 1;
-		}
-		return 0;
 	}
 
 	if (tileId > 0 && tileId < 256) {
@@ -105,39 +107,21 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 		};
 
 		uint32_t colorHex = DYE_COLORS[colorIdx];
+		BlockColorRegistry::setBlockFaceColor(x, y, z, face, colorHex);
 
-		if (Tile::mixedSlab && tileId == Tile::mixedSlab->blockID) {
-			MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
-			if (te) {
-				bool hitTop = false;
-				if (te->mode == 1) {
-					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
-					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
-					else if (face == 2) hitTop = false;
-					else if (face == 3) hitTop = true;
-					else hitTop = (fz >= 0.5f);
-				} else if (te->mode == 2) {
-					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
-					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
-					else if (face == 4) hitTop = false;
-					else if (face == 5) hitTop = true;
-					else hitTop = (fx >= 0.5f);
-				} else {
-					if (te->bottomTileId != 0 && te->topTileId == 0) hitTop = false;
-					else if (te->topTileId != 0 && te->bottomTileId == 0) hitTop = true;
-					else if (face == 0) hitTop = false;
-					else if (face == 1) hitTop = true;
-					else hitTop = (fy >= 0.5f);
-				}
-
-				if (hitTop) {
-					te->topColor = colorHex;
-				} else {
-					te->bottomColor = colorHex;
-				}
-			}
-		} else {
-			BlockColorRegistry::setBlockFaceColor(x, y, z, face, colorHex);
+		if (tileId == Tile::cloth->blockID || (Tile::woolCarpet && tileId == Tile::woolCarpet->blockID)) {
+			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
+			level->setData(x, y, z, targetMeta, 3);
+		} else if ((Tile::coloredPlanks && tileId == Tile::coloredPlanks->blockID) ||
+		           (Tile::coloredBricks && tileId == Tile::coloredBricks->blockID)) {
+			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
+			level->setData(x, y, z, targetMeta, 3);
+		} else if (Tile::stainedGlass && tileId == Tile::stainedGlass->blockID) {
+			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
+			level->setData(x, y, z, targetMeta, 3);
+		} else if (Tile::stainedGlassPane && tileId == Tile::stainedGlassPane->blockID) {
+			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
+			level->setData(x, y, z, targetMeta, 3);
 		}
 
 		Tile* tile = Tile::tiles[tileId];

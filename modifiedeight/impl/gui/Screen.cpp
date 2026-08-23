@@ -163,111 +163,78 @@ float dword_D6E05C20 = 0; //TODO check what value it has
 
 void Screen::renderMenuBackground(float a2){
 	dword_D6E05C20 += this->minecraft->field_D34*30;
-	if (this->minecraft->options.classicBackground) {
-		for(int32_t i = 0; i < 6; ++i){
-			this->minecraft->texturesPtr->loadTexture(panorama_images[i], 1, 1);
-		}
-		{
-			DisableState be2(0xBE2);
-			DisableState b44(0xB44);
-			DisableState b71(0xB71);
-			glMatrixMode(0x1701);
-			glPushMatrix();
-			int32_t v8 = 0;
-			glLoadIdentity();
-			gluPerspective(120.0, 1.0, 0.05, 10.0);
-			glMatrixMode(0x1700u);
-			glPushMatrix();
-			glLoadIdentity();
-			glColor4f(1.0, 1.0, 1.0, 1.0);
-			glRotatef(180.0, 1.0, 0.0, 0.0);
-			glRotatef(Mth::sin((float)(a2+dword_D6E05C20) / 400) + 20, 1, 0, 0);
-			glRotatef(-(float)((float)(a2+dword_D6E05C20) * 0.1), 0.0, 1.0, 0.0);
-			do{
-				float v9, v10, v11;
-				glPushMatrix();
-				switch(v8){
-					case 1:
-						v9 = 90;
-						v10 = 0;
-						v11 = 1;
-						break;
-					case 2:
-						v9 = 180;
-						v10 = 0;
-						v11 = 1;
-						break;
-					case 3:
-						v9 = -90;
-						v10 = 0;
-						v11 = 1;
-						break;
-					case 4:
-						v9 = 90;
-						v11 = 0;
-						v10 = 1;
-						break;
-					case 5:
-						v9 = -90;
-						v11 = 0;
-						v10 = 1;
-						break;
-					default:
-						goto DONT_ROTATE;
-				}
-
-				glRotatef(v9, v10, v11, 0.0);
-				DONT_ROTATE:
-				char_t* texture = panorama_images[v8++];
-				this->minecraft->texturesPtr->loadAndBindTexture(texture);
-				Tesselator::instance.begin(4);
-				Tesselator::instance.vertexUV(-1, -1, 1, 0, 0);
-				Tesselator::instance.vertexUV(1, -1, 1, 1, 0);
-				Tesselator::instance.vertexUV(1, 1, 1, 1, 1);
-				Tesselator::instance.vertexUV(-1, 1, 1, 0, 1);
-				Tesselator::instance.draw(1);
-				glPopMatrix();
-			}while(v8 != 6);
-			glMatrixMode(0x1701u);
-			glPopMatrix();
-			glMatrixMode(0x1700u);
-			glPopMatrix();
-		}
-		Color4 v21(1, 1, 1, 0.35);
-		Color4 v22(0, 0, 0, 0.35);
-		this->fillGradient(0, 0, this->width, this->height, v21.toARGB(), v22.toARGB());
-	} else {
-		int32_t colorA, colorB;
-		this->minecraft->options.getNeonColors(colorA, colorB);
-		uint8_t rA = (colorA >> 16) & 0xFF;
-		uint8_t gA = (colorA >> 8) & 0xFF;
-		uint8_t bA = colorA & 0xFF;
-		uint8_t rB = (colorB >> 16) & 0xFF;
-		uint8_t gB = (colorB >> 8) & 0xFF;
-		uint8_t bB = colorB & 0xFF;
-		int32_t cellSize = 24;
-		this->fill(0, 0, this->width, this->height, 0xFF0D0214);
-		for (int32_t x = 0; x < this->width; x += cellSize) {
-			this->fill(x, 0, x + 1, this->height, 0xFF220033);
-		}
-		for (int32_t y = 0; y < this->height; y += cellSize) {
-			this->fill(0, y, this->width, y + 1, 0xFF220033);
-		}
-		for (int32_t x = 0; x < this->width; x += cellSize) {
-			for (int32_t y = 0; y < this->height; y += cellSize) {
-				float phase = (float)x * 0.015f - (float)y * 0.03f + dword_D6E05C20 * 0.08f;
-				float val = sinf(phase) * cosf(phase * 0.5f);
-				if (val > 0.0f) {
-					float intensity = val;
-					uint8_t r = (uint8_t)(rA * (1.0f - intensity) + rB * intensity);
-					uint8_t g = (uint8_t)(gA * (1.0f - intensity) + gB * intensity);
-					uint8_t b = (uint8_t)(bA * (1.0f - intensity) + bB * intensity);
-					uint32_t color = (0xFF << 24) | (r << 16) | (g << 8) | b;
-					this->fill(x + 2, y + 2, x + cellSize - 1, y + cellSize - 1, color);
-				}
-			}
-		}
+	for(int32_t i = 0; i < 6; ++i){
+		this->minecraft->texturesPtr->loadTexture(panorama_images[i], 1, 1);
 	}
+	{
+		DisableState be2(0xBE2);
+		DisableState b44(0xB44);
+		DisableState b71(0xB71);
+		glMatrixMode(0x1701);
+		glPushMatrix();
+		int32_t v8 = 0;
+		glLoadIdentity();
+		gluPerspective(120.0, 1.0, 0.05, 10.0);
+		glMatrixMode(0x1700u);
+		glPushMatrix();
+		glLoadIdentity();
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glRotatef(180.0, 1.0, 0.0, 0.0);
+		glRotatef(Mth::sin((float)(a2+dword_D6E05C20) / 400) + 20, 1, 0, 0);
+		glRotatef(-(float)((float)(a2+dword_D6E05C20) * 0.1), 0.0, 1.0, 0.0);
+		do{
+			float v9, v10, v11;
+			glPushMatrix();
+			switch(v8){
+				case 1:
+					v9 = 90;
+					v10 = 0;
+					v11 = 1;
+					break;
+				case 2:
+					v9 = 180;
+					v10 = 0;
+					v11 = 1;
+					break;
+				case 3:
+					v9 = -90;
+					v10 = 0;
+					v11 = 1;
+					break;
+				case 4:
+					v9 = 90;
+					v11 = 0;
+					v10 = 1;
+					break;
+				case 5:
+					v9 = -90;
+					v11 = 0;
+					v10 = 1;
+					break;
+				default:
+					goto DONT_ROTATE;
+			}
+
+			glRotatef(v9, v10, v11, 0.0);
+			DONT_ROTATE:
+			char_t* texture = panorama_images[v8++];
+			this->minecraft->texturesPtr->loadAndBindTexture(texture);
+			Tesselator::instance.begin(4);
+			Tesselator::instance.vertexUV(-1, -1, 1, 0, 0);
+			Tesselator::instance.vertexUV(1, -1, 1, 1, 0);
+			Tesselator::instance.vertexUV(1, 1, 1, 1, 1);
+			Tesselator::instance.vertexUV(-1, 1, 1, 0, 1);
+			Tesselator::instance.draw(1);
+			glPopMatrix();
+		}while(v8 != 6);
+		glMatrixMode(0x1701u);
+		glPopMatrix();
+		glMatrixMode(0x1700u);
+		glPopMatrix();
+	}
+	Color4 v21(1, 1, 1, 0.35);
+	Color4 v22(0, 0, 0, 0.35);
+	this->fillGradient(0, 0, this->width, this->height, v21.toARGB(), v22.toARGB());
 }
 
 bool_t Screen::renderGameBehind(){

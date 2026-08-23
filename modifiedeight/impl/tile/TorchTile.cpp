@@ -3,16 +3,15 @@
 #include <math/HitResult.hpp>
 
 bool_t TorchTile::isConnection(Level* level, int32_t x, int32_t y, int32_t z) {
-	int32_t v8; // r0
-
-	if(level->isSolidBlockingTile(x, y, z)) {
+	if(level->isSolidBlockingTile(x, y, z) || level->isTopSolidBlocking(x, y, z)) {
 		return 1;
 	}
-	v8 = level->getTile(x, y, z);
-	for (int i = 0; i < 16; i++) {
-		if (Tile::coloredFences[i] && v8 == Tile::coloredFences[i]->blockID) {
-			return 1;
-		}
+	int32_t v8 = level->getTile(x, y, z);
+	int32_t vMeta = level->getData(x, y, z);
+	if (v8 == Tile::stoneSlabHalf->blockID || v8 == Tile::woodSlabHalf->blockID ||
+	    (Tile::coloredSlabHalf1 && v8 == Tile::coloredSlabHalf1->blockID) ||
+	    (Tile::coloredSlabHalf2 && v8 == Tile::coloredSlabHalf2->blockID)) {
+		return (vMeta & 8) == 0;
 	}
 	return v8 == Tile::fence->blockID || v8 == Tile::glass->blockID || v8 == Tile::cobbleWall->blockID;
 }

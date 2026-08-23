@@ -63,9 +63,6 @@ void CreativeInventoryScreen::drawIcon(int a2, std::shared_ptr<ImageButton> a3, 
 	}
 	float v13 = (float)(v10 - v8) / 25.0;
 	float v11 = (float)((float)a3->posY + (float)(v10 * 0.5)) - 8.0;
-	if(a2 == 5) {
-		v11 -= 3.0f;
-	}
 	float v12 = 0.7;
 	if(!a4) {
 		v12 = 1.0;
@@ -89,7 +86,7 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 		case 4:
 			return Item::seeds_wheat ? ItemInstance(Item::seeds_wheat) : ItemInstance();
 		case 5:
-			return Tile::stainedGlass ? ItemInstance(Tile::stainedGlass, 1, 4) : (Tile::rose ? ItemInstance(Tile::rose) : ItemInstance());
+			return Item::bed ? ItemInstance(Item::bed, 1, 0) : ItemInstance();
 		case 6:
 			return Tile::coloredPlanks ? ItemInstance(Tile::coloredPlanks, 1, 6) : ItemInstance();
 		default:
@@ -99,9 +96,33 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 void CreativeInventoryScreen::populateFilteredItems() {
 	for(auto&& it: CreativeInventoryScreen::items) {
 		int32_t f54 = 1;
-		if(it.tileClass) {
+		int32_t id = it.getId();
+		if((it.tileClass && (it.tileClass == Tile::lever ||
+		    it.tileClass == Tile::daylightDetector ||
+		    it.tileClass == Tile::daylightDetectorInverted ||
+		    it.tileClass == Tile::pressurePlateStone ||
+		    it.tileClass == Tile::pressurePlate_cobblestone ||
+		    it.tileClass == Tile::pressurePlatePlanks ||
+		    it.tileClass == Tile::pressurePlate_spruce ||
+		    it.tileClass == Tile::pressurePlate_birch ||
+		    it.tileClass == Tile::pressurePlate_jungle ||
+		    it.tileClass == Tile::pressurePlate_gold ||
+		    it.tileClass == Tile::pressurePlate_iron ||
+		    it.tileClass == Tile::button_stone ||
+		    it.tileClass == Tile::button_wood ||
+		    it.tileClass == Tile::button_spruce ||
+		    it.tileClass == Tile::button_birch ||
+		    it.tileClass == Tile::button_jungle ||
+		    it.tileClass == Tile::button_cobblestone ||
+		    it.tileClass == Tile::button_gold ||
+		    it.tileClass == Tile::button_iron)) ||
+		    id == 69 || id == 70 || id == 72 || id == 77 || id == 143 || id == 144 || id == 145 || id == 146 || id == 147 || id == 148 || id == 149 || id == 150 || id == 151 || id == 152 || id == 153 || id == 154 || id == 163 || id == 164 || id == 178) {
+			f54 = 3;
+		} else if((it.itemClass && it.itemClass == Item::flowerPot) || id == 390) {
+			f54 = 3;
+		} else if(it.tileClass && it.tileClass->field_54 > 0) {
 			f54 = it.tileClass->field_54;
-		} else if(it.itemClass) {
+		} else if(it.itemClass && it.itemClass->field_34 > 0) {
 			f54 = it.itemClass->field_34;
 		}
 		if (f54 >= 1 && f54 <= 6) {
@@ -127,6 +148,7 @@ void CreativeInventoryScreen::populateItem(Tile* a1, int32_t a2, int32_t a3) {
 	}
 }
 void CreativeInventoryScreen::populateItems() {
+	CreativeInventoryScreen::items.clear();
 	CreativeInventoryScreen::populateItem(Tile::rail, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::goldenRail, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stoneBrick, 1, 0);
@@ -245,18 +267,10 @@ void CreativeInventoryScreen::populateItems() {
 		CreativeInventoryScreen::populateItem(Item::bed, 1, 14);
 	}
 	CreativeInventoryScreen::populateItem(Tile::tnt, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::lever, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlateStone, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_cobblestone, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlatePlanks, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_spruce, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_birch, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_jungle, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_gold, 1, 0);
-	CreativeInventoryScreen::populateItem(Tile::pressurePlate_iron, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::redstoneLampOff, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::flower, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::rose, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::flowerRose, 1, 0);
 	if (Options::instance && Options::instance->newAdditions) {
 		CreativeInventoryScreen::populateItem(Tile::flowerPaeonia, 1, 0);
 		CreativeInventoryScreen::populateItem(Tile::flowerDaisy, 1, 0);
@@ -352,6 +366,25 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Item::boots_diamond, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::bow, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::flintAndSteel, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::lever, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::daylightDetector, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::flowerPot, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlateStone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_cobblestone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlatePlanks, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_spruce, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_birch, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_jungle, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_gold, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::pressurePlate_iron, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_stone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_cobblestone, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_wood, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_spruce, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_birch, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_jungle, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_gold, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::button_iron, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::shears, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::clock, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::compass, 1, 0);
@@ -424,11 +457,12 @@ void CreativeInventoryScreen::render(int32_t a2, int32_t a3, float a4) {
 void CreativeInventoryScreen::init()
 {
 	CreativeInventoryScreen::items.clear();
+	for (int i = 0; i < 6; i++) {
+		this->field_78[i].reset();
+		CreativeInventoryScreen::filteredItems[i].clear();
+	}
 	if (Item::bed) {
 		Item::bed->setCategory((Options::instance && Options::instance->newAdditions) ? 5 : 2, 1);
-	}
-	for (int i = 0; i < 6; i++) {
-		CreativeInventoryScreen::filteredItems[i].clear();
 	}
 	CreativeInventoryScreen::populateItems();
 	if (this->minecraft->options.newAdditions) {

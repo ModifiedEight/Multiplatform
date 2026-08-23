@@ -484,11 +484,41 @@ bool_t BaseRailTile::isCubeShaped() {
 int32_t BaseRailTile::getRenderShape() {
 	return 9;
 }
+static bool isSolidOrSlab(Level* a2, int32_t a3, int32_t a4, int32_t a5) {
+	if (a2->isTopSolidBlocking(a3, a4, a5)) return true;
+	int32_t belowId = a2->getTile(a3, a4, a5);
+	int32_t belowMeta = a2->getData(a3, a4, a5);
+	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
+	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
+	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
+	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
+	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
+	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
+	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
+	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
+		return (belowMeta & 8) == 0;
+	}
+	return false;
+}
+
 void BaseRailTile::updateShape(LevelSource* a2, int32_t a3, int32_t a4, int32_t a5) {
+	float offset = 0.0f;
+	int32_t belowId = a2->getTile(a3, a4 - 1, a5);
+	int32_t belowMeta = a2->getData(a3, a4 - 1, a5);
+	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
+	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
+	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
+	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
+	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
+	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
+	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
+	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
+		if ((belowMeta & 8) == 0) offset = -0.5f;
+	}
 	float v6;
 	if((uint32_t)(a2->getData(a3, a4, a5) - 2) > 3) v6 = 0.125;
 	else v6 = 0.625;
-	this->setShape(0, 0, 0, 1, v6, 1);
+	this->setShape(0, offset, 0, 1, v6 + offset, 1);
 }
 AABB* BaseRailTile::getAABB(Level*, int32_t, int32_t, int32_t) {
 	return 0;
@@ -497,14 +527,14 @@ bool_t BaseRailTile::isSolidRender() {
 	return 0;
 }
 bool_t BaseRailTile::mayPlace(Level* a2, int32_t a3, int32_t a4, int32_t a5) {
-	return a2->isTopSolidBlocking(a3, a4 - 1, a5);
+	return isSolidOrSlab(a2, a3, a4 - 1, a5);
 }
 void BaseRailTile::neighborChanged(Level* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9) {
 	if(a2->isClientMaybe) return;
 	int32_t v15 = a2->getData(a3, a4, a5);
 	int32_t v14 = v15;
 	if(this->useDataBit) v15 &= 7;
-	bool_t v16 = !a2->isTopSolidBlocking(a3, a4 - 1, a5);
+	bool_t v16 = !isSolidOrSlab(a2, a3, a4 - 1, a5);
 	int32_t v18, v19, v20;
 	switch(v15) {
 		case 2:

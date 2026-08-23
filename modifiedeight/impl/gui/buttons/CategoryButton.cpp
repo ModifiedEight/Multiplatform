@@ -14,24 +14,6 @@ CategoryButton::CategoryButton(std::string ss, int32_t id, NinePatchLayer* f74, 
 CategoryButton::~CategoryButton() {
 }
 void CategoryButton::renderBg(struct Minecraft* mc, int32_t a3, int32_t a4) {
-	if (!mc->options.classicGUI) {
-		int32_t colorA, colorB;
-		mc->options.getNeonColors(colorA, colorB);
-		int32_t borderCol = colorA;
-		if (this->active && this->pressed && (a3 >= this->posX) && (a4 >= this->posY) && a3 < this->posX + this->width && a4 < this->posY + this->height || *this->field_70 == this) {
-			borderCol = colorB;
-		} else if (!this->active) {
-			borderCol = 0xFF555555;
-		}
-		int32_t glowCol = (borderCol & 0x00FFFFFF) | 0x33000000;
-		this->fill(this->posX - 1, this->posY - 1, this->posX + this->width + 1, this->posY + this->height + 1, glowCol);
-		this->fillGradient(this->posX + 1, this->posY + 1, this->posX + this->width - 1, this->posY + this->height - 1, 0xDD0D0214, 0xDD1E042D);
-		this->fill(this->posX, this->posY, this->posX + this->width, this->posY + 1, borderCol);
-		this->fill(this->posX, this->posY + this->height - 1, this->posX + this->width, this->posY + this->height, borderCol);
-		this->fill(this->posX, this->posY, this->posX + 1, this->posY + this->height, borderCol);
-		this->fill(this->posX + this->width - 1, this->posY, this->posX + this->width, this->posY + this->height, borderCol);
-		return;
-	}
 	int32_t v4, v5;
 	int32_t posX, posY;
 	NinePatchLayer* v8;

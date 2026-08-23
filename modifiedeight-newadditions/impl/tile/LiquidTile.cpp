@@ -345,11 +345,15 @@ void LiquidTile::handleEntityInside(Level* level, int32_t x, int32_t y, int32_t 
 	a7.z = a7.z + (float)(zz * 0.5);
 }
 int32_t LiquidTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z){
-	if (this->material == Material::water && level) {
-		Biome* b = level->getBiome(x, z);
-		if (b == Biome::swampland) {
-			return 0x6EB834;
+	if (this->material == Material::water) {
+		if (level) {
+			Biome* b = level->getBiome(x, z);
+			if (b == Biome::swampland) return 0x617B5D;
+			if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks) return 0x3D57D6;
+			if (b == Biome::desert || b == Biome::savanna) return 0x32A5FF;
+			if (b == Biome::jungle || b == Biome::rainForest) return 0x1B89DF;
 		}
+		return 0x3F76E4;
 	}
 	return 0xFFFFFF;
 }

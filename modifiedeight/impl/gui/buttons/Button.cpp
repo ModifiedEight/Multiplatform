@@ -76,24 +76,6 @@ int32_t Button::getYImage(bool_t a2){
 	return 0; //this->active
 }
 void Button::renderBg(struct Minecraft* mc, int32_t x, int32_t y){
-	if (!mc->options.classicGUI) {
-		int32_t colorA, colorB;
-		mc->options.getNeonColors(colorA, colorB);
-		int32_t borderCol = colorA;
-		if (this->active && this->pressed && x >= this->posX && y >= this->posY && x < (this->posX+this->width) && y < (this->posY+this->height)) {
-			borderCol = colorB;
-		} else if (!this->active) {
-			borderCol = 0xFF555555;
-		}
-		int32_t glowCol = (borderCol & 0x00FFFFFF) | 0x33000000;
-		this->fill(this->posX - 1, this->posY - 1, this->posX + this->width + 1, this->posY + this->height + 1, glowCol);
-		this->fillGradient(this->posX + 1, this->posY + 1, this->posX + this->width - 1, this->posY + this->height - 1, 0xDD0D0214, 0xDD1E042D);
-		this->fill(this->posX, this->posY, this->posX + this->width, this->posY + 1, borderCol);
-		this->fill(this->posX, this->posY + this->height - 1, this->posX + this->width, this->posY + this->height, borderCol);
-		this->fill(this->posX, this->posY, this->posX + 1, this->posY + this->height, borderCol);
-		this->fill(this->posX + this->width - 1, this->posY, this->posX + this->width, this->posY + this->height, borderCol);
-		return;
-	}
 	bool_t v10;
 	int32_t v11;
 	mc->texturesPtr->loadAndBindTexture("gui/gui.png");

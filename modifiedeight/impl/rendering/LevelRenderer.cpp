@@ -883,7 +883,10 @@ void LevelRenderer::renderHitOutline(Player* a2, const HitResult& a3, int32_t a4
 void LevelRenderer::renderHitSelect(Player* a2, const HitResult& a3, int32_t a4, void* a5, float a6) {
 	if(a4 == 0) {
 		Tile* v8 = 0;
-		EnableState v11(32823);
+		glEnable(0x8037);
+		glPolygonOffset(-2.0f, -2.0f);
+		glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
 		DisableState v12(3553);
 		BlendFunctionState v13(0x306u, 0x300u);
 		glPushMatrix();
@@ -900,6 +903,9 @@ void LevelRenderer::renderHitSelect(Player* a2, const HitResult& a3, int32_t a4,
 		Tesselator::instance.draw(1);
 		Tesselator::instance.offset(0.0, 0.0, 0.0);
 		glPopMatrix();
+		glPolygonOffset(0.0f, 0.0f);
+		glDisable(0x8037);
+		glDepthMask(GL_TRUE);
 	}
 }
 void LevelRenderer::renderNameTags(float a2) {

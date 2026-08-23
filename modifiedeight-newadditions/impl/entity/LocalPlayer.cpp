@@ -645,17 +645,17 @@ void LocalPlayer::travel(float a2, float a3) {
   }
   if (inWater) {
     this->onGround = false;
-    float speed = this->isSprinting ? 0.045f : 0.02f;
+    float speed = this->isSprinting ? 0.055f : 0.035f;
     float pitchRad = this->pitch * 0.0174532925f;
     float lookY = -sinf(pitchRad);
     if (a3 > 0.0f) {
-      this->motionY += lookY * (this->isSprinting ? 0.035f : 0.02f);
+      this->motionY += lookY * (this->isSprinting ? 0.045f : 0.025f);
     }
     this->moveRelative(a2, a3, speed);
     this->move(this->motionX, this->motionY, this->motionZ);
-    this->motionX *= 0.8f;
-    this->motionY = (this->motionY * 0.8f) - 0.02f;
-    this->motionZ *= 0.8f;
+    this->motionX *= 0.85f;
+    this->motionY = (this->motionY * 0.85f) - 0.005f;
+    this->motionZ *= 0.85f;
     if (this->isCollidedHorizontally) {
       this->motionY = 0.35f;
     }

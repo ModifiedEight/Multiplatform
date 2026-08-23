@@ -53,38 +53,24 @@ void ProgressScreen::render(int32_t a2, int32_t a3, float a4) {
 		Tesselator::instance.vertexUV((float)this->width, 0.0, 0.0, (float)this->width * 0.03125, 0.0);
 		Tesselator::instance.vertexUV(0.0, 0.0, 0.0, 0.0, 0.0);
 		Tesselator::instance.draw(1);
-		field_CBC = this->minecraft->field_CBC;
-		if(field_CBC >= 0) {
-			v26 = this->width / 2;
-			v11 = this->height / 2;
-			glDisable(0xDE1u);
-			Tesselator::instance.begin(8);
-			Tesselator::instance.color(8421504);
-			v12 = v11 + 16;
-			v11 += 18;
-			v13 = (float)v12;
-			Tesselator::instance.vertex((float)(v26 - 50), (float)v12, 0.0);
-			Tesselator::instance.vertex((float)(v26 - 50), (float)v11, 0.0);
-			Tesselator::instance.vertex((float)(v26 + 50), (float)v11, 0.0);
-			Tesselator::instance.vertex((float)(v26 + 50), v13, 0.0);
-			Tesselator::instance.color(8454016);
-			Tesselator::instance.vertex((float)(v26 - 50), v13, 0.0);
-			Tesselator::instance.vertex((float)(v26 - 50), (float)v11, 0.0);
-			v14 = field_CBC + v26 - 50;
-			Tesselator::instance.vertex((float)v14, (float)v11, 0.0);
-			Tesselator::instance.vertex((float)v14, v13, 0.0);
-			Tesselator::instance.draw(1);
-			glEnable(0xDE1u);
-		}
-		width = this->width;
+
+
 		font = this->minecraft->font;
-		v17 = font->width("Generating world");
-		font->drawShadow("Generating world", (float)((width - v17) / 2), (float)(this->height / 2 - 20), 0xFFFFFF);
+		glPushMatrix();
+		float titleScale = 1.35f;
+		glScalef(titleScale, titleScale, 1.0f);
+		int32_t tcx = (int32_t)((float)this->width / titleScale);
+		int32_t tcy = (int32_t)((float)this->height / titleScale);
+		std::string titleStr = "Generating world";
+		int32_t titleWidth = font->width(titleStr);
+		font->drawShadow(titleStr, (float)((tcx - titleWidth) / 2), (float)(tcy / 2 - 24), 0xFFFFFF);
+		glPopMatrix();
+
 		v20 = this->minecraft->getProgressMessage();
 		v21 = this->minecraft->font->width(v20);
-		v22 = this->height / 2 + 4;
+		v22 = this->height / 2 + 6;
 		v23 = (this->width - v21) / 2;
-		this->minecraft->font->drawShadow(v20, (float)v23, (float)v22, 0xFFFFFF);
+		this->minecraft->font->drawShadow(v20, (float)v23, (float)v22, 0xCCCCCC);
 		if(!this->minecraft->getProgressStatusId() || this->minecraft->getProgressStatusId() == 4) {
 			v25 = this->minecraft->font;
 			this->drawCenteredString(v25, std::string(1, _SYMS[(int32_t)(getTimeS() * 5.5) % 4]), v23 + v21 + 6, v22, -1);

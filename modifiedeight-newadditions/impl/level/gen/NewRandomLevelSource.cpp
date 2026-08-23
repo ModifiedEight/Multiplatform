@@ -994,13 +994,14 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 				Tile* flowers[] = {
 					Tile::flower,
 					Tile::rose,
+					Tile::flowerRose,
 					Tile::flowerPaeonia,
 					Tile::flowerDaisy,
 					Tile::flowerHoustonia,
 					Tile::flowerOrchid,
 					Tile::flowerAllium
 				};
-				int32_t flowerIdx = a8->genrand_int32() % 7;
+				int32_t flowerIdx = a8->genrand_int32() % 8;
 				Tile* fl = flowers[flowerIdx];
 				if (fl) {
 					int count = 1 + (a8->genrand_int32() % 2);
@@ -1077,18 +1078,15 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 	if (Tile::seagrass) {
 		for (int32_t ox = 0; ox < 16; ++ox) {
 			for (int32_t oz = 0; oz < 16; ++oz) {
-				if ((a8->genrand_int32() % 100) < 85) {
+				if ((a8->genrand_int32() % 100) < 65) {
 					int32_t sx = chunkXStart + ox;
 					int32_t sz = chunkZStart + oz;
-					for (int32_t sy = 126; sy >= 1; --sy) {
+					for (int32_t sy = 62; sy >= 30; --sy) {
 						int32_t cur = this->level->getTile(sx, sy, sz);
 						int32_t below = this->level->getTile(sx, sy - 1, sz);
 						if ((cur == Tile::water->blockID || cur == Tile::calmWater->blockID) &&
-						    (below != 0 && below != Tile::water->blockID && below != Tile::calmWater->blockID && below != Tile::seagrass->blockID)) {
+						    (below == Tile::dirt->blockID || below == Tile::sand->blockID || below == Tile::gravel->blockID || below == Tile::clay->blockID)) {
 							int32_t above = this->level->getTile(sx, sy + 1, sz);
-							if (sy >= 62 && (a8->genrand_int32() % 100) >= 15) {
-								break;
-							}
 							int32_t roll = a8->genrand_int32() % 100;
 							if (roll < 60 || (above != Tile::water->blockID && above != Tile::calmWater->blockID)) {
 								this->level->setTileAndData(sx, sy, sz, Tile::seagrass->blockID, 0, 2);
@@ -1140,16 +1138,17 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 		MobSpawner::postProcessSpawnMobs(this->level, biomeAtChunk, chunkXStart + 8, chunkZStart + 8, 16, 16, a8);
 	}
 
-	if (biomeAtChunk == Biome::tundra || biomeAtChunk == Biome::icePeaks || biomeAtChunk == Biome::taiga) {
-		for (int32_t bx = 0; bx < 16; ++bx) {
-			for (int32_t bz = 0; bz < 16; ++bz) {
-				int32_t wx = chunkXStart + 8 + bx;
-				int32_t wz = chunkZStart + 8 + bz;
+	for (int32_t bx = 0; bx < 16; ++bx) {
+		for (int32_t bz = 0; bz < 16; ++bz) {
+			int32_t wx = chunkXStart + bx;
+			int32_t wz = chunkZStart + bz;
+			Biome* localBiome = this->level->getBiome(wx, wz);
+			if (localBiome == Biome::tundra || localBiome == Biome::icePeaks || localBiome == Biome::taiga || localBiome == Biome::iceDesert) {
 				int32_t topy = this->level->getTopSolidBlock(wx, wz);
 				if (topy > 0 && topy < 128) {
 					int32_t belowTile = this->level->getTile(wx, topy - 1, wz);
 					if (belowTile == Tile::calmWater->blockID || belowTile == Tile::water->blockID) {
-						if (biomeAtChunk == Biome::tundra || biomeAtChunk == Biome::icePeaks) {
+						if (localBiome == Biome::tundra || localBiome == Biome::icePeaks) {
 							this->level->setTile(wx, topy - 1, wz, Tile::ice->blockID, 2);
 						}
 					} else if (this->level->isEmptyTile(wx, topy, wz)) {

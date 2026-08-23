@@ -64,4 +64,6 @@ struct TileRenderer
 	bool_t tesselateVineInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWaterLilyInWorld(Tile*, int32_t, int32_t, int32_t);
 	bool_t tesselateWaterInWorld(Tile*, int32_t, int32_t, int32_t);
+	bool_t tesselateFlowerPotInWorld(Tile*, int32_t, int32_t, int32_t);
+	bool_t tesselateButtonInWorld(Tile*, int32_t, int32_t, int32_t);
 };

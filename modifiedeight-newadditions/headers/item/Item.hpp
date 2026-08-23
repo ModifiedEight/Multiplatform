@@ -133,6 +133,8 @@ struct Item{
 	static Item* beetrootSoup;
 	static Item* lever;
 	static Item* redstoneLamp;
+	static Item* flowerPot;
+	static Item* daylightDetector;
 
 	int32_t maxStackSize;
 	std::string itemTexture;

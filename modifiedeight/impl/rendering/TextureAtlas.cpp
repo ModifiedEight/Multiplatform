@@ -229,12 +229,16 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 			} else if (has_valid_uv) {
 				float v17 = (v32["uv"][2].asFloat() - v32["uv"][0].asFloat()) * 0.002f;
 				float v18 = (v32["uv"][3].asFloat() - v32["uv"][1].asFloat()) * 0.002f;
+				float item_w = (v32["uv"].size() >= 5 && v32["uv"][4].asFloat() > 0.0f) ? v32["uv"][4].asFloat() : (float)atlas_base_w;
+				float item_h = (v32["uv"].size() >= 6 && v32["uv"][5].asFloat() > 0.0f) ? v32["uv"][5].asFloat() : (float)atlas_base_h;
+				float factor_x = item_w / (float)atlas_w;
+				float factor_y = item_h / (float)atlas_h;
 				main_uv.width = atlas_w;
 				main_uv.height = atlas_h;
-				main_uv.minX = (v32["uv"][0].asFloat() + v17) * ((float)atlas_base_w / (float)atlas_w);
-				main_uv.maxX = (v32["uv"][2].asFloat() - v17) * ((float)atlas_base_w / (float)atlas_w);
-				main_uv.minY = (v32["uv"][1].asFloat() + v18) * ((float)atlas_base_h / (float)atlas_h);
-				main_uv.maxY = (v32["uv"][3].asFloat() - v18) * ((float)atlas_base_h / (float)atlas_h);
+				main_uv.minX = (v32["uv"][0].asFloat() + v17) * factor_x;
+				main_uv.maxX = (v32["uv"][2].asFloat() - v17) * factor_x;
+				main_uv.minY = (v32["uv"][1].asFloat() + v18) * factor_y;
+				main_uv.maxY = (v32["uv"][3].asFloat() - v18) * factor_y;
 			}
 
 			if (v32.isMember("additonal_textures") && v32["additonal_textures"].isArray()) {
@@ -279,12 +283,16 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 					} else if (has_valid_add_uv) {
 						float v17 = (v6[i][2].asFloat() - v6[i][0].asFloat()) * 0.002f;
 						float v18 = (v6[i][3].asFloat() - v6[i][1].asFloat()) * 0.002f;
+						float item_w = (v6[i].size() >= 5 && v6[i][4].asFloat() > 0.0f) ? v6[i][4].asFloat() : (float)atlas_base_w;
+						float item_h = (v6[i].size() >= 6 && v6[i][5].asFloat() > 0.0f) ? v6[i][5].asFloat() : (float)atlas_base_h;
+						float factor_x = item_w / (float)atlas_w;
+						float factor_y = item_h / (float)atlas_h;
 						add_uv.width = atlas_w;
 						add_uv.height = atlas_h;
-						add_uv.minX = (v6[i][0].asFloat() + v17) * ((float)atlas_base_w / (float)atlas_w);
-						add_uv.maxX = (v6[i][2].asFloat() - v17) * ((float)atlas_base_w / (float)atlas_w);
-						add_uv.minY = (v6[i][1].asFloat() + v18) * ((float)atlas_base_h / (float)atlas_h);
-						add_uv.maxY = (v6[i][3].asFloat() - v18) * ((float)atlas_base_h / (float)atlas_h);
+						add_uv.minX = (v6[i][0].asFloat() + v17) * factor_x;
+						add_uv.maxX = (v6[i][2].asFloat() - v17) * factor_x;
+						add_uv.minY = (v6[i][1].asFloat() + v18) * factor_y;
+						add_uv.maxY = (v6[i][3].asFloat() - v18) * factor_y;
 					}
 
 					v29.emplace_back(add_uv);

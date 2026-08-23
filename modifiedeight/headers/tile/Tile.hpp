@@ -28,7 +28,6 @@ struct Tile{
 
 	static Tile* rock;
 	static Tile* grass;
-	static Tile* grassPath;
 	static Tile* dirt;
 	static Tile* stoneBrick;
 	static Tile* wood;

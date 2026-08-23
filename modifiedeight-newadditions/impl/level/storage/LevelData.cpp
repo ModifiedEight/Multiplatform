@@ -65,14 +65,9 @@ LevelData::LevelData(const struct LevelSettings& settings, const std::string& a3
 	this->spawnAnimals = settings.spawnAnimals;
 	this->spawnMobs = settings.spawnMonsters || settings.spawnAnimals;
 	if(settings.timeFreeze) {
-		this->stopTime = (settings.gameType == 0) ? 0 : 5000;
+		this->stopTime = 5000;
 	} else {
-		if(settings.gameType == 0) {
-			v10 = -1;
-		} else {
-			v10 = 5000;
-		}
-		this->stopTime = v10;
+		this->stopTime = -1;
 	}
 }
 LevelData::LevelData(void) {
@@ -100,7 +95,7 @@ LevelData::LevelData(void) {
 	this->spawnAnimals = 1;
 	this->spawnMobs = 1;
 	this->gameType = 1;
-	this->stopTime = 5000;
+	this->stopTime = -1;
 }
 struct CompoundTag* LevelData::createTag(const std::vector<struct Player*>& a2) {
 	CompoundTag* v4 = new CompoundTag();
@@ -170,11 +165,7 @@ void LevelData::getTagData(const CompoundTag* a2) {
 		if(a2->contains("dayCycleStopTime")) {
 			this->stopTime = a2->getLong("dayCycleStopTime");
 		} else {
-			if(this->gameType == 1) {
-				this->stopTime = 5000;
-			} else {
-				this->stopTime = -1;
-			}
+			this->stopTime = -1;
 		}
 		if(a2->contains("spawnMobs", 1)) {
 			this->spawnMobs = a2->getByte("spawnMobs") != 0;

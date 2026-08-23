@@ -54,7 +54,7 @@ bool_t LeverTile::mayPlace(Level *level, int32_t x, int32_t y, int32_t z) {
     return 1;
   if (level->isSolidBlockingTile(x, y, z + 1))
     return 1;
-  if (level->isSolidBlockingTile(x, y - 1, z))
+  if (level->isSolidBlockingTile(x, y - 1, z) || level->isTopSolidBlocking(x, y - 1, z))
     return 1;
   if (level->isSolidBlockingTile(x, y + 1, z))
     return 1;
@@ -65,7 +65,7 @@ bool_t LeverTile::mayPlace(Level *level, int32_t x, int32_t y, int32_t z,
                            int32_t side) {
   if (side == 0 && level->isSolidBlockingTile(x, y + 1, z))
     return 1;
-  if (side == 1 && level->isSolidBlockingTile(x, y - 1, z))
+  if (side == 1 && (level->isSolidBlockingTile(x, y - 1, z) || level->isTopSolidBlocking(x, y - 1, z)))
     return 1;
   if (side == 2 && level->isSolidBlockingTile(x, y, z + 1))
     return 1;

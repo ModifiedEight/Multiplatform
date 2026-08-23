@@ -39,9 +39,6 @@ struct Options{
 		static Options::Option FOV;
 		static Options::Option CHAT_COLOR;
 		static Options::Option CHAT_BG_COLOR;
-		static Options::Option CLASSIC_BACKGROUND;
-		static Options::Option CLASSIC_GUI;
-		static Options::Option NEON_COLOR_THEME;
 		static Options::Option HUD_CAMERA_BUTTON;
 		static Options::Option SHOW_COORDINATES;
 		static Options::Option CLASSIC_TEXTURES;
@@ -115,9 +112,6 @@ struct Options{
 	bool_t animateLava;
 	bool_t animateFire;
 	bool_t newAdditions;
-	bool_t classicBackground;
-	bool_t classicGUI;
-	int32_t neonColorTheme;
 	bool_t sprintEnabled;
 	bool_t autoJump;
 	bool_t hudCameraButton;
@@ -142,13 +136,10 @@ struct Options{
 	static std::vector<int32_t> RENDERDISTANCE_LEVELS;
 	static std::vector<int32_t> CHAT_COLOR_LEVELS;
 	static std::vector<int32_t> CHAT_BG_COLOR_LEVELS;
-	static std::vector<int32_t> NEON_COLOR_THEME_LEVELS;
 	static std::vector<int32_t> NEW_ADDITIONS_LEVELS;
 
 	int32_t chatColor;
 	int32_t chatBgColor;
-
-	void getNeonColors(int32_t&, int32_t&);
 
 	//~Options(void); //TODO check is needed by vector destructor
 	void validateVersion(void);

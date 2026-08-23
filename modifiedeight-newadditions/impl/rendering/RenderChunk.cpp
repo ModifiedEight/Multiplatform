@@ -9,6 +9,9 @@
 #include <level/Region.hpp>
 #include <rendering/TileRenderer.hpp>
 #include <tile/Tile.hpp>
+#include <entity/Player.hpp>
+#include <tile/material/Material.hpp>
+#include <Options.hpp>
 
 int32_t RenderChunk::updates = 0;
 
@@ -129,6 +132,14 @@ void RenderChunk::rebuild(void) {
 			v10.reset();
 		}
 
+		float chunkDistSq = 0.0f;
+		if (this->level && !this->level->playersMaybe.empty() && this->level->playersMaybe[0]) {
+			float dx = (float)(this->xPos + 8) - this->level->playersMaybe[0]->posX;
+			float dz = (float)(this->zPos + 8) - this->level->playersMaybe[0]->posZ;
+			chunkDistSq = dx * dx + dz * dz;
+		}
+		bool isDistant = (Options::instance && Options::instance->lodChunks && (chunkDistSq > 64.0f * 64.0f));
+
 		for(layer = 0; layer != 4; ++layer) {
 			if(v29[layer]) {
 				y = v23;
@@ -140,6 +151,8 @@ void RenderChunk::rebuild(void) {
 						for(x = xPos; x < xMax; ++x) {
 							id = v30.getTile(x, y, z);
 							if(id > 0) {
+								idd = Tile::tiles[id];
+								if (!idd) continue;
 								if(!started) {
 									v19 = id;
 									this->tessellator->begin(0xFA);
@@ -147,7 +160,6 @@ void RenderChunk::rebuild(void) {
 									this->tessellator->offset((float)-this->xPos, (float)-this->yPos, (float)-this->zPos);
 									id = v19;
 								}
-								idd = Tile::tiles[id];
 								blockRenderLayer = idd->getRenderLayer();
 								if(blockRenderLayer <= layer) {
 									if(blockRenderLayer == layer) {

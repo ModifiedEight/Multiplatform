@@ -87,9 +87,6 @@ void OptionsScreen::generateOptionScreens(void) {
 	if (this->minecraft->options.newAdditions == 1) {
 		grp->addOptionItem(&Options::Option::CHAT_COLOR, this->minecraft);
 		grp->addOptionItem(&Options::Option::CHAT_BG_COLOR, this->minecraft);
-		grp->addOptionItem(&Options::Option::CLASSIC_BACKGROUND, this->minecraft);
-		grp->addOptionItem(&Options::Option::CLASSIC_GUI, this->minecraft);
-		grp->addOptionItem(&Options::Option::NEON_COLOR_THEME, this->minecraft);
 	}
 }
 void OptionsScreen::selectCategory(int32_t a2) {

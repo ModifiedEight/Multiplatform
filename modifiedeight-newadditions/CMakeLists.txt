@@ -146,9 +146,11 @@ else()
         RakNetStatic
         jsoncpp_lib
         utf8proc
+        dl
     )
 
     set_target_properties(modifiedeight-newadditions PROPERTIES
+        ENABLE_EXPORTS ON
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"

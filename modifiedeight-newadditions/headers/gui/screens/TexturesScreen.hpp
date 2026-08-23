@@ -15,14 +15,13 @@ struct TexturesScreen : Screen {
 
     Touch::TButton* btnBack;
     Touch::TButton* btnImport;
-    Touch::TButton* btnDefault;
 
     struct SavedTexture {
         std::string path;
         std::string title;
     };
     std::vector<SavedTexture> savedTextures;
-    std::vector<Touch::TButton*> managedApplyButtons;
+    std::vector<Touch::TButton*> managedActionButtons;
     std::vector<Touch::TButton*> managedDeleteButtons;
     std::string activeTexturePack;
 
@@ -35,6 +34,7 @@ struct TexturesScreen : Screen {
     std::string statusMsg;
     bool needsRefresh;
     bool shouldClose;
+    std::string pendingDeletePath;
 
     std::shared_ptr<bool> alive;
 
@@ -51,12 +51,11 @@ struct TexturesScreen : Screen {
     virtual void    mouseClicked(int32_t, int32_t, int32_t);
     virtual void    mouseReleased(int32_t, int32_t, int32_t);
 
-    void renderMenuBg32();
     void refreshSavedTextures();
     void importTexturePack();
     void applySavedTexture(const std::string& path, const std::string& title);
     void deleteSavedTexture(const std::string& path);
-    void restoreDefaultTextures();
+    void deactivateTextures();
 
     static std::string pickZipFile();
 };

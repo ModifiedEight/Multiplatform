@@ -80,3 +80,17 @@ int32_t SlabTile::getPlacementDataValue(Level* a2, int32_t a3, int32_t a4, int32
 	}
 	return v11;
 }
+
+bool_t SlabTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) {
+	if (!level || !player) return 0;
+	int32_t aboveId = level->getTile(x, y + 1, z);
+	if (aboveId > 0 && Tile::tiles[aboveId]) {
+		Tile* t = Tile::tiles[aboveId];
+		if (t == Tile::door_wood || t == Tile::door_iron ||
+		    (Tile::door_spruce && t == Tile::door_spruce) ||
+		    (Tile::door_birch && t == Tile::door_birch)) {
+			return t->use(level, x, y + 1, z, player);
+		}
+	}
+	return 0;
+}

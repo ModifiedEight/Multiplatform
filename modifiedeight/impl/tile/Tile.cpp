@@ -11,7 +11,6 @@
 #include <math/Vec3.hpp>
 #include <string.h>
 #include <tile/BedTile.hpp>
-#include <tile/GrassPathTile.hpp>
 #include <tile/BeetrootTile.hpp>
 #include <tile/BookshelfTile.hpp>
 #include <tile/CactusTile.hpp>
@@ -113,7 +112,6 @@ std::string Tile::WOOD_NAMES[] = {"oak", "spruce", "birch", "jungle"};
 
 Tile* Tile::rock;
 Tile* Tile::grass;
-Tile* Tile::grassPath;
 Tile* Tile::dirt;
 Tile* Tile::stoneBrick;
 Tile* Tile::wood;
@@ -261,7 +259,6 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 	memset(Tile::tiles, 0, sizeof(Tile::tiles));
 	Tile::rock = (new StoneTile(1, "stone"))->init()->setDestroyTime(1)->setExplodeable(10.0f)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("stone");
 	Tile::grass = (new GrassTile(2))->init()->setDestroyTime(0.6)->setSoundType(Tile::SOUND_GRASS)->setCategory(1, 1)->setDescriptionId("grass");
-	Tile::grassPath = (new GrassPathTile(250))->init()->setDestroyTime(0.6f)->setSoundType(Tile::SOUND_GRASS)->setCategory(1, 1)->setDescriptionId("grassPath");
 	Tile::dirt = (new DirtTile(3, "dirt", Material::dirt))->init()->setDestroyTime(0.5f)->setSoundType(Tile::SOUND_GRAVEL)->setCategory(1, 1)->setDescriptionId("dirt");
 	Tile::dirt->field_5C = 255;
 	Tile::stoneBrick = (new Tile(4, "cobblestone", Material::stone))->init()->setDestroyTime(2.0)->setExplodeable(10.0)->setSoundType(Tile::SOUND_STONE)->setCategory(1, 1)->setDescriptionId("stonebrick");
@@ -779,13 +776,14 @@ float Tile::getBrightness(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	return level->getBrightness(x, y, z);
 }
 bool_t Tile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t face) {
-	if(y < 0 || y > 127) return 0;
+	if(y < 0) return 0;
+	if(y > 127) return 1;
 	if(face == 0) {
 		if(this->minY > 0) return 1;
 	} else if(face == 1) {
 		if(this->maxY < 1) return 1;
 	} else if(face == 2) {
-		if(this->minX > 0) return 1;
+		if(this->minZ > 0) return 1;
 	} else if(face == 3) {
 		if(this->maxZ < 1) return 1;
 	} else if(face == 4) {

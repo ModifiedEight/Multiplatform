@@ -1,6 +1,7 @@
 #include <item/Item.hpp>
 #include <rendering/TextureAtlas.hpp>
 #include <item/StoneSlabTileItem.hpp>
+#include <tile/ColoredSlabTile.hpp>
 #include <item/WaterLilyTileItem.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <I18n.hpp>
@@ -128,6 +129,8 @@ Item* Item::clock;
 Item* Item::yellowDust;
 Item* Item::lever;
 Item* Item::redstoneLamp;
+Item* Item::flowerPot;
+Item* Item::daylightDetector;
 Item* Item::dye_powder;
 Item* Item::bone;
 Item* Item::sugar;
@@ -300,14 +303,19 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 		if (!Item::items[Tile::coloredBrickSlab2->blockID]) new TileItem(Tile::coloredBrickSlab2->blockID - 256);
 	}
 	if (Tile::coloredBrickSlabHalf1) {
-		if (!Item::items[Tile::coloredBrickSlabHalf1->blockID]) new StoneSlabTileItem(Tile::coloredBrickSlabHalf1->blockID - 256);
+		if (!Item::items[Tile::coloredBrickSlabHalf1->blockID]) new ColoredSlabTile::Item(Tile::coloredBrickSlabHalf1->blockID - 256, Tile::coloredBrickSlabHalf1, Tile::coloredBrickSlabHalf1->blockID, Tile::coloredBrickSlab1->blockID);
 	}
 	if (Tile::coloredBrickSlabHalf2) {
-		if (!Item::items[Tile::coloredBrickSlabHalf2->blockID]) new StoneSlabTileItem(Tile::coloredBrickSlabHalf2->blockID - 256);
+		if (!Item::items[Tile::coloredBrickSlabHalf2->blockID]) new ColoredSlabTile::Item(Tile::coloredBrickSlabHalf2->blockID - 256, Tile::coloredBrickSlabHalf2, Tile::coloredBrickSlabHalf2->blockID, Tile::coloredBrickSlab2->blockID);
 	}
 	if (Tile::waterLily && !Item::items[Tile::waterLily->blockID]) {
 		(new WaterLilyTileItem(Tile::waterLily->blockID - 256))->setIcon("waterlily", 0)->setCategory(2, 8)->setDescriptionId("waterlily");
 	}
+	Item::flowerPot = (new Item(134))
+	                      ->setIcon("flower_pot", 0)
+	                      ->setCategory(3, 8)
+	                      ->setDescriptionId("flowerPot");
+	Item::items[390] = Item::flowerPot;
 
 	int32_t v556 = 0;
 	do {
@@ -422,7 +430,22 @@ bool_t Item::useOn(struct ItemInstance*, struct Level*, int32_t, int32_t, int32_
 }
 #include <tile/entity/MixedSlabTileEntity.hpp>
 
-bool_t Item::useOn(struct ItemInstance*, struct Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float hitX, float hitY, float hitZ) {
+bool_t Item::useOn(struct ItemInstance* itemInstance, struct Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float hitX, float hitY, float hitZ) {
+	if (this == Item::flowerPot || (this && this->itemID == 390)) {
+		if (side != 1) return 0;
+		int below = level->getTile(x, y, z);
+		if (!Tile::solid[below] && (!Tile::mixedSlab || below != Tile::mixedSlab->blockID)) return 0;
+		int px = x, py = y + 1, pz = z;
+		if (level->getTile(px, py, pz) == 0 && Tile::flowerPot) {
+			level->setTileAndData(px, py, pz, Tile::flowerPot->blockID, 0, 3);
+			level->playSound((float)px + 0.5f, (float)py + 0.5f, (float)pz + 0.5f, "step.stone", 1.0f, 0.8f);
+			if (player && !player->abilities.instabuild && itemInstance) {
+				itemInstance->count--;
+			}
+			return 1;
+		}
+		return 0;
+	}
 	if(this == Item::paper) {
 		int32_t tileId = level->getTile(x, y, z);
 		int32_t data = level->getData(x, y, z);

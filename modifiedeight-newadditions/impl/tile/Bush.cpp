@@ -50,5 +50,9 @@ bool_t Bush::canSurvive(Level* level, int32_t x, int32_t y, int32_t z) {
 	return 0;
 }
 bool_t Bush::mayPlaceOn(int32_t a2) {
-	return a2 == Tile::grass->blockID || a2 == Tile::dirt->blockID || a2 == Tile::farmland->blockID;
+	return a2 == Tile::grass->blockID || a2 == Tile::dirt->blockID || a2 == Tile::farmland->blockID ||
+	       (Tile::dirtSlabHalf && a2 == Tile::dirtSlabHalf->blockID) ||
+	       (Tile::dirtSlab && a2 == Tile::dirtSlab->blockID) ||
+	       (Tile::grassSlabHalf && a2 == Tile::grassSlabHalf->blockID) ||
+	       (Tile::grassSlab && a2 == Tile::grassSlab->blockID);
 }

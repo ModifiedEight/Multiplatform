@@ -62,13 +62,14 @@ bool_t GrassTile::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {
 					Tile* flowers[] = {
 						Tile::flower,
 						Tile::rose,
+						Tile::flowerRose,
 						Tile::flowerPaeonia,
 						Tile::flowerDaisy,
 						Tile::flowerHoustonia,
 						Tile::flowerOrchid,
 						Tile::flowerAllium
 					};
-					int32_t flowerIdx = p_random->genrand_int32() % 7;
+					int32_t flowerIdx = p_random->genrand_int32() % 8;
 					Tile* fl = flowers[flowerIdx];
 					if(fl && fl->canSurvive(level, v15, v16, v17)) {
 						level->setTileAndData(v15, v16, v17, fl->blockID, 0, 3);
@@ -186,34 +187,27 @@ int32_t GrassTile::getColor(int32_t) {
 }
 int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	if (level) {
-		Biome* b = level->getBiome(x, z);
-		if (b == Biome::swampland) {
-			return 0x606634;
+		int totalR = 0, totalG = 0, totalB = 0;
+		for (int sx = -1; sx <= 1; ++sx) {
+			for (int sz = -1; sz <= 1; ++sz) {
+				Biome* b = level->getBiome(x + sx, z + sz);
+				int c = 0x71A74D;
+				if (b == Biome::swampland) c = 0x4C5325;
+				else if (b == Biome::plains) c = 0x8EB971;
+				else if (b == Biome::forest) c = 0x79C05A;
+				else if (b == Biome::seasonalForest) c = 0x68B244;
+				else if (b == Biome::birchForest) c = 0x88B35A;
+				else if (b == Biome::jungle || b == Biome::rainForest) c = 0x59C93C;
+				else if (b == Biome::taiga) c = 0x86B783;
+				else if (b == Biome::tundra || b == Biome::icePeaks) c = 0x80B497;
+				else if (b == Biome::savanna) c = 0xBFB755;
+				else if (b == Biome::desert || b == Biome::iceDesert) c = 0xBFA243;
+				totalR += (c >> 16) & 0xFF;
+				totalG += (c >> 8) & 0xFF;
+				totalB += c & 0xFF;
+			}
 		}
-		if (b == Biome::plains) {
-			return 0x71A74D;
-		}
-		if (b == Biome::forest || b == Biome::seasonalForest) {
-			return 0x529134;
-		}
-		if (b == Biome::birchForest) {
-			return 0x5F963D;
-		}
-		if (b == Biome::jungle || b == Biome::rainForest) {
-			return 0x408E22;
-		}
-		if (b == Biome::taiga) {
-			return 0x427045;
-		}
-		if (b == Biome::tundra || b == Biome::icePeaks) {
-			return 0x558050;
-		}
-		if (b == Biome::savanna) {
-			return 0x80963A;
-		}
-		if (b == Biome::desert || b == Biome::iceDesert) {
-			return 0x868E42;
-		}
+		return ((totalR / 9) << 16) | ((totalG / 9) << 8) | (totalB / 9);
 	}
 	return this->getColor(0);
 }

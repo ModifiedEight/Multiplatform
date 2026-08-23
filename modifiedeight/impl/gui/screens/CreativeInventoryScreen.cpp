@@ -133,9 +133,6 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::rock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::dirt, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::grass, 1, 0);
-	if (Options::instance && Options::instance->newAdditions) {
-		CreativeInventoryScreen::populateItem(Tile::grassPath, 1, 0);
-	}
 	CreativeInventoryScreen::populateItem(Tile::clay, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::sandStone, 5, 0);
 	CreativeInventoryScreen::populateItem(Tile::sandStone, 5, 1);

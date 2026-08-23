@@ -10,6 +10,9 @@
 #include <tile/WaterLilyTile.hpp>
 #include <tile/SeagrassTile.hpp>
 #include <tile/SpongeTile.hpp>
+#include <tile/FlowerPotTile.hpp>
+#include <tile/DaylightDetectorTile.hpp>
+#include <tile/ButtonTile.hpp>
 #include <item/DoublePlantTileItem.hpp>
 #include <entity/ItemEntity.hpp>
 #include <entity/Player.hpp>
@@ -186,6 +189,10 @@ Tile *Tile::coloredBrickSlabHalf1;
 Tile *Tile::coloredBrickSlab1;
 Tile *Tile::coloredBrickSlabHalf2;
 Tile *Tile::coloredBrickSlab2;
+Tile *Tile::flowerRose;
+Tile *Tile::flowerPot;
+Tile *Tile::daylightDetector;
+Tile *Tile::daylightDetectorInverted;
 Tile *Tile::flower;
 Tile *Tile::rose;
 Tile *Tile::flowerPaeonia;
@@ -294,6 +301,14 @@ Tile *Tile::info_updateGame2;
 Tile *Tile::info_reserved6;
 Tile *Tile::fire;
 Tile *Tile::seagrass;
+Tile *Tile::button_stone;
+Tile *Tile::button_wood;
+Tile *Tile::button_spruce;
+Tile *Tile::button_birch;
+Tile *Tile::button_jungle;
+Tile *Tile::button_cobblestone;
+Tile *Tile::button_gold;
+Tile *Tile::button_iron;
 
 std::string Tile::TILE_DESCRIPTION_PREFIX = "tile.";
 
@@ -585,6 +600,36 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                            ->setSoundType(Tile::SOUND_GRASS)
                            ->setCategory(2, 8)
                            ->setDescriptionId("flowerAllium");
+  Tile::flowerRose = (new FlowerTile(242, "flower_rose"))
+                         ->init()
+                         ->setDestroyTime(0)
+                         ->setSoundType(Tile::SOUND_GRASS)
+                         ->setCategory(2, 8)
+                         ->setDescriptionId("flowerRose");
+  Tile::flowerPot = (new FlowerPotTile(140, "flower_pot"))
+                        ->init()
+                        ->setDestroyTime(0.0f)
+                        ->setSoundType(Tile::SOUND_STONE)
+                        ->setCategory(3, 8)
+                        ->setDescriptionId("flowerPot");
+  Tile::solid[140] = 0;
+  Tile::lightBlock[140] = 0;
+  Tile::daylightDetector = (new DaylightDetectorTile(151, false))
+                               ->init()
+                               ->setDestroyTime(0.2f)
+                               ->setSoundType(Tile::SOUND_WOOD)
+                               ->setCategory(3, 8)
+                               ->setDescriptionId("daylightDetector");
+  Tile::solid[151] = 0;
+  Tile::lightBlock[151] = 0;
+  Tile::daylightDetectorInverted = (new DaylightDetectorTile(178, true))
+                                       ->init()
+                                       ->setDestroyTime(0.2f)
+                                       ->setSoundType(Tile::SOUND_WOOD)
+                                       ->setCategory(3, 8)
+                                       ->setDescriptionId("daylightDetectorInverted");
+  Tile::solid[178] = 0;
+  Tile::lightBlock[178] = 0;
   Tile::vine = (new VineTile(106, "vine"))
                    ->init()
                    ->setDestroyTime(0.2f)
@@ -847,7 +892,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_STONE)
-          ->setCategory(2, 1)
+          ->setCategory(3, 1)
           ->setDescriptionId("pressurePlateStone");
   Tile::pressurePlatePlanks =
       (new PressurePlateTile(72, Tile::getTextureUVCoordinateSet("planks", 0),
@@ -855,7 +900,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_WOOD)
-          ->setCategory(2, 1)
+          ->setCategory(3, 1)
           ->setDescriptionId("pressurePlateWood");
   Tile::pressurePlate_gold =
       (new PressurePlateTile(147,
@@ -864,7 +909,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_METAL)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateGold");
   Tile::pressurePlate_iron =
       (new PressurePlateTile(148,
@@ -873,46 +918,118 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_METAL)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateIron");
   Tile::pressurePlate_cobblestone =
-      (new PressurePlateTile(149,
+      (new PressurePlateTile(150,
                              Tile::getTextureUVCoordinateSet("cobblestone", 0),
                              Material::stone))
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_STONE)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateCobblestone");
   Tile::pressurePlate_spruce =
-      (new PressurePlateTile(150, Tile::getTextureUVCoordinateSet("planks", 1),
+      (new PressurePlateTile(152, Tile::getTextureUVCoordinateSet("planks", 1),
                              Material::wood))
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_WOOD)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateSpruce");
   Tile::pressurePlate_birch =
-      (new PressurePlateTile(151, Tile::getTextureUVCoordinateSet("planks", 2),
+      (new PressurePlateTile(153, Tile::getTextureUVCoordinateSet("planks", 2),
                              Material::wood))
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_WOOD)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateBirch");
   Tile::pressurePlate_jungle =
-      (new PressurePlateTile(152, Tile::getTextureUVCoordinateSet("planks", 3),
+      (new PressurePlateTile(154, Tile::getTextureUVCoordinateSet("planks", 3),
                              Material::wood))
           ->init()
           ->setDestroyTime(0.5f)
           ->setSoundType(Tile::SOUND_WOOD)
-          ->setCategory(2, 1)
+          ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateJungle");
+  Tile::button_stone =
+      (new ButtonTile(77, "stone", 0, Material::decoration, 20))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_STONE)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonStone");
+  Tile::solid[77] = 0;
+  Tile::lightBlock[77] = 0;
+  Tile::button_wood =
+      (new ButtonTile(143, "planks", 0, Material::decoration, 30))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_WOOD)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonWood");
+  Tile::solid[143] = 0;
+  Tile::lightBlock[143] = 0;
+  Tile::button_spruce =
+      (new ButtonTile(144, "planks", 1, Material::decoration, 30))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_WOOD)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonSpruce");
+  Tile::solid[144] = 0;
+  Tile::lightBlock[144] = 0;
+  Tile::button_birch =
+      (new ButtonTile(145, "planks", 2, Material::decoration, 30))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_WOOD)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonBirch");
+  Tile::solid[145] = 0;
+  Tile::lightBlock[145] = 0;
+  Tile::button_jungle =
+      (new ButtonTile(146, "planks", 3, Material::decoration, 30))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_WOOD)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonJungle");
+  Tile::solid[146] = 0;
+  Tile::lightBlock[146] = 0;
+  Tile::button_cobblestone =
+      (new ButtonTile(149, "cobblestone", 0, Material::decoration, 20))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_STONE)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonCobblestone");
+  Tile::solid[149] = 0;
+  Tile::lightBlock[149] = 0;
+  Tile::button_gold =
+      (new ButtonTile(163, "gold_block", 0, Material::decoration, 20))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_METAL)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonGold");
+  Tile::solid[163] = 0;
+  Tile::lightBlock[163] = 0;
+  Tile::button_iron =
+      (new ButtonTile(164, "iron_block", 0, Material::decoration, 20))
+          ->init()
+          ->setDestroyTime(0.5f)
+          ->setSoundType(Tile::SOUND_METAL)
+          ->setCategory(3, 8)
+          ->setDescriptionId("buttonIron");
+  Tile::solid[164] = 0;
+  Tile::lightBlock[164] = 0;
   Tile::lever = (new LeverTile(69))
                     ->init()
                     ->setDestroyTime(0.5f)
                     ->setSoundType(Tile::SOUND_WOOD)
-                    ->setCategory(2, 1)
+                    ->setCategory(3, 1)
                     ->setDescriptionId("lever");
   Tile::redstoneLampOff = (new RedstoneLampTile(123, 0))
                               ->init()
@@ -1274,8 +1391,8 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
             ->setDescriptionId("coloredStairs." + std::string(buf));
   }
 
-  int brick_stair_ids[16] = {143, 144, 145, 146, 147, 148, 149, 150,
-                             151, 152, 153, 154, 163, 164, 165, 166};
+  int brick_stair_ids[16] = {23, 25, 28, 29, 33, 34, 36, 52,
+                             55, 75, 76, 84, 88, 90, 93, 94};
   for (int i = 0; i < 16; i++) {
     char buf[16];
     sprintf(buf, "%d", i);
@@ -1287,11 +1404,13 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
   }
 
   // Colored fences
+  int fence_ids[16] = {174, 175, 176, 179, 180, 181, 182, 183,
+                       184, 185, 186, 187, 188, 189, 243, 138};
   for (int i = 0; i < 16; i++) {
     char buf[16];
     sprintf(buf, "%d", i);
     Tile::coloredFences[i] =
-        (new ColoredFenceTile(174 + i, i))
+        (new ColoredFenceTile(fence_ids[i], i))
             ->init()
             ->setCategory(6, 1)
             ->setDescriptionId("coloredFence." + std::string(buf));
@@ -1503,6 +1622,20 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
       (new TileItem(Tile::seagrass->blockID - 256))
           ->setCategory(2, 8)
           ->setDescriptionId("seagrass");
+  Item::items[Tile::flowerRose->blockID] =
+      (new TileItem(Tile::flowerRose->blockID - 256))
+          ->setCategory(2, 8)
+          ->setDescriptionId("flowerRose");
+  Item::items[Tile::flowerPot->blockID] =
+      (new TileItem(Tile::flowerPot->blockID - 256))
+          ->setCategory(3, 8)
+          ->setDescriptionId("flowerPot");
+  Item::daylightDetector = (new TileItem(Tile::daylightDetector->blockID - 256))
+                               ->setCategory(3, 8)
+                               ->setDescriptionId("daylightDetector");
+  (new TileItem(Tile::daylightDetectorInverted->blockID - 256))
+      ->setCategory(3, 8)
+      ->setDescriptionId("daylightDetectorInverted");
   Item::items[Tile::stainedGlass->blockID] =
       (new AuxDataTileItem(Tile::stainedGlass->blockID - 256,
                            Tile::stainedGlass))
@@ -1580,7 +1713,6 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
       }
       if (Item::items[bid]) {
         Tile::tiles[bid]->getDescriptionId();
-        //~str
       }
     }
     ++bid;
@@ -1589,71 +1721,83 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
 
   if (!Item::items[Tile::lever->blockID]) {
     Item::items[Tile::lever->blockID] =
-        (new TileItem(Tile::lever->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("lever");
+        (new TileItem(Tile::lever->blockID - 256));
   }
-  if (!Item::items[Tile::redstoneLampOff->blockID]) {
-    Item::items[Tile::redstoneLampOff->blockID] =
-        (new TileItem(Tile::redstoneLampOff->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("redstoneLamp");
+  Item::items[Tile::lever->blockID]->setCategory(3, 8)->setDescriptionId("lever");
+
+  if (Tile::pressurePlateStone) {
+    if (!Item::items[Tile::pressurePlateStone->blockID]) {
+      Item::items[Tile::pressurePlateStone->blockID] =
+          (new TileItem(Tile::pressurePlateStone->blockID - 256));
+    }
+    Item::items[Tile::pressurePlateStone->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateStone");
   }
-  if (Tile::pressurePlateStone &&
-      !Item::items[Tile::pressurePlateStone->blockID]) {
-    Item::items[Tile::pressurePlateStone->blockID] =
-        (new TileItem(Tile::pressurePlateStone->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateStone");
+  if (Tile::pressurePlatePlanks) {
+    if (!Item::items[Tile::pressurePlatePlanks->blockID]) {
+      Item::items[Tile::pressurePlatePlanks->blockID] =
+          (new TileItem(Tile::pressurePlatePlanks->blockID - 256));
+    }
+    Item::items[Tile::pressurePlatePlanks->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateWood");
   }
-  if (Tile::pressurePlatePlanks &&
-      !Item::items[Tile::pressurePlatePlanks->blockID]) {
-    Item::items[Tile::pressurePlatePlanks->blockID] =
-        (new TileItem(Tile::pressurePlatePlanks->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateWood");
+  if (Tile::pressurePlate_gold) {
+    if (!Item::items[Tile::pressurePlate_gold->blockID]) {
+      Item::items[Tile::pressurePlate_gold->blockID] =
+          (new TileItem(Tile::pressurePlate_gold->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_gold->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateGold");
   }
-  if (Tile::pressurePlate_gold &&
-      !Item::items[Tile::pressurePlate_gold->blockID]) {
-    Item::items[Tile::pressurePlate_gold->blockID] =
-        (new TileItem(Tile::pressurePlate_gold->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateGold");
+  if (Tile::pressurePlate_iron) {
+    if (!Item::items[Tile::pressurePlate_iron->blockID]) {
+      Item::items[Tile::pressurePlate_iron->blockID] =
+          (new TileItem(Tile::pressurePlate_iron->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_iron->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateIron");
   }
-  if (Tile::pressurePlate_iron &&
-      !Item::items[Tile::pressurePlate_iron->blockID]) {
-    Item::items[Tile::pressurePlate_iron->blockID] =
-        (new TileItem(Tile::pressurePlate_iron->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateIron");
+  if (Tile::pressurePlate_cobblestone) {
+    if (!Item::items[Tile::pressurePlate_cobblestone->blockID]) {
+      Item::items[Tile::pressurePlate_cobblestone->blockID] =
+          (new TileItem(Tile::pressurePlate_cobblestone->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_cobblestone->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateCobblestone");
   }
-  if (Tile::pressurePlate_cobblestone &&
-      !Item::items[Tile::pressurePlate_cobblestone->blockID]) {
-    Item::items[Tile::pressurePlate_cobblestone->blockID] =
-        (new TileItem(Tile::pressurePlate_cobblestone->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateCobblestone");
+  if (Tile::pressurePlate_spruce) {
+    if (!Item::items[Tile::pressurePlate_spruce->blockID]) {
+      Item::items[Tile::pressurePlate_spruce->blockID] =
+          (new TileItem(Tile::pressurePlate_spruce->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_spruce->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateSpruce");
   }
-  if (Tile::pressurePlate_spruce &&
-      !Item::items[Tile::pressurePlate_spruce->blockID]) {
-    Item::items[Tile::pressurePlate_spruce->blockID] =
-        (new TileItem(Tile::pressurePlate_spruce->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateSpruce");
+  if (Tile::pressurePlate_birch) {
+    if (!Item::items[Tile::pressurePlate_birch->blockID]) {
+      Item::items[Tile::pressurePlate_birch->blockID] =
+          (new TileItem(Tile::pressurePlate_birch->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_birch->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateBirch");
   }
-  if (Tile::pressurePlate_birch &&
-      !Item::items[Tile::pressurePlate_birch->blockID]) {
-    Item::items[Tile::pressurePlate_birch->blockID] =
-        (new TileItem(Tile::pressurePlate_birch->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateBirch");
+  if (Tile::pressurePlate_jungle) {
+    if (!Item::items[Tile::pressurePlate_jungle->blockID]) {
+      Item::items[Tile::pressurePlate_jungle->blockID] =
+          (new TileItem(Tile::pressurePlate_jungle->blockID - 256));
+    }
+    Item::items[Tile::pressurePlate_jungle->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateJungle");
   }
-  if (Tile::pressurePlate_jungle &&
-      !Item::items[Tile::pressurePlate_jungle->blockID]) {
-    Item::items[Tile::pressurePlate_jungle->blockID] =
-        (new TileItem(Tile::pressurePlate_jungle->blockID - 256))
-            ->setCategory(2, 1)
-            ->setDescriptionId("pressurePlateJungle");
+  Tile *buttons[] = {Tile::button_stone, Tile::button_wood,
+                     Tile::button_spruce, Tile::button_birch,
+                     Tile::button_jungle, Tile::button_cobblestone,
+                     Tile::button_gold, Tile::button_iron};
+  const char *buttonDesc[] = {
+      "buttonStone", "buttonWood", "buttonSpruce", "buttonBirch",
+      "buttonJungle", "buttonCobblestone", "buttonGold", "buttonIron"};
+  for (int i = 0; i < 8; i++) {
+    if (buttons[i]) {
+      if (!Item::items[buttons[i]->blockID]) {
+        Item::items[buttons[i]->blockID] =
+            new TileItem(buttons[i]->blockID - 256);
+      }
+      Item::items[buttons[i]->blockID]
+          ->setCategory(3, 8)
+          ->setDescriptionId(buttonDesc[i]);
+    }
   }
   Item::lever = Item::items[Tile::lever->blockID];
   Item::redstoneLamp = Item::items[Tile::redstoneLampOff->blockID];
@@ -1913,7 +2057,8 @@ float Tile::getBrightness(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	return level->getBrightness(x, y, z);
 }
 bool_t Tile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t face) {
-	if(!LevelHeight::inRange(y)) return 0;
+	if(y < 0) return 0;
+	if(y > 127) return 1;
 	if(face == 0) {
 		if(this->minY > 0) return 1;
 	} else if(face == 1) {

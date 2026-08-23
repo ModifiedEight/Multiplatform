@@ -37,9 +37,6 @@ Options::Option Options::Option::AUTO_JUMP{0, "options.autojump", 37};
 Options::Option Options::Option::FOV{1, "options.fov", 38};
 Options::Option Options::Option::CHAT_COLOR{3, "options.chatcolor", 24};
 Options::Option Options::Option::CHAT_BG_COLOR{3, "options.chatbgcolor", 25};
-Options::Option Options::Option::CLASSIC_BACKGROUND{0, "options.classicbackground", 27};
-Options::Option Options::Option::CLASSIC_GUI{0, "options.classicgui", 28};
-Options::Option Options::Option::NEON_COLOR_THEME{3, "options.neoncolortheme", 29};
 Options::Option Options::Option::HUD_CAMERA_BUTTON{0, "options.hudcamerabutton", 30};
 Options::Option Options::Option::SHOW_COORDINATES{0, "options.showcoordinates", 31};
 Options::Option Options::Option::CLASSIC_TEXTURES{0, "options.classictextures", 32};
@@ -55,7 +52,6 @@ std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 std::vector<int32_t> Options::CHAT_BG_COLOR_LEVELS = {0, 1, 2, 3, 4};
-std::vector<int32_t> Options::NEON_COLOR_THEME_LEVELS = {0, 1, 2, 3, 4};
 std::vector<int32_t> Options::NEW_ADDITIONS_LEVELS = {0, 1};
 
 void Options::update() {
@@ -107,12 +103,6 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->animateTextures);
 						} else if(v13[i] == "options.newadditions") {
 							// this->readBool(v13[i + 1], this->newAdditions);
-						} else if(v13[i] == "options.classicbackground") {
-							this->readBool(v13[i + 1], this->classicBackground);
-						} else if(v13[i] == "options.classicgui") {
-							this->readBool(v13[i + 1], this->classicGUI);
-						} else if(v13[i] == "options.neoncolortheme") {
-							this->readInt(v13[i + 1], this->neonColorTheme);
 						} else if(v13[i] == "options.sprint") {
 							this->readBool(v13[i + 1], this->sprintEnabled);
 						} else if(v13[i] == "options.autojump") {
@@ -218,7 +208,7 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 	} else if(a2 == &Options::Option::VIEW_BOBBING) {
 		this->viewBobbing ^= 1u;
 	} else if(a2 == &Options::Option::THIRD_PERSON) {
-		this->thirdPerson ^= 1u;
+		this->thirdPerson = (this->thirdPerson + 1) % 3;
 	} else if(a2 == &Options::Option::HIDE_GUI) {
 		this->hideGUI ^= 1u;
 	} else if(a2 == &Options::Option::SERVER_VISIBLE) {
@@ -237,12 +227,6 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->fancySkies ^= 1u;
 	} else if(a2 == &Options::Option::ANIMATE_TEXTURES) {
 		this->animateTextures ^= 1u;
-	} else if(a2 == &Options::Option::CLASSIC_BACKGROUND) {
-		this->classicBackground ^= 1u;
-	} else if(a2 == &Options::Option::CLASSIC_GUI) {
-		this->classicGUI ^= 1u;
-	} else if(a2 == &Options::Option::NEON_COLOR_THEME) {
-		this->neonColorTheme = (this->neonColorTheme + a3 + 5) % 5;
 	} else if(a2 == &Options::Option::SPRINT) {
 		this->sprintEnabled ^= 1u;
 	} else if(a2 == &Options::Option::AUTO_JUMP) {
@@ -302,8 +286,6 @@ void Options::set(const Options::Option* a2, int32_t a3) {
 		this->chatColor = a3;
 	} else if(a2 == &Options::Option::CHAT_BG_COLOR) {
 		this->chatBgColor = a3;
-	} else if(a2 == &Options::Option::NEON_COLOR_THEME) {
-		this->neonColorTheme = a3;
 	} else if(a2 == &Options::Option::NEW_ADDITIONS) {
 		this->newAdditions = a3;
 	}
@@ -341,9 +323,6 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_FancySkies, this->fancySkies);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_AnimateTextures, this->animateTextures);
 	this->addOptionToSaveOutput(v4, "options.newadditions", this->newAdditions);
-	this->addOptionToSaveOutput(v4, "options.classicbackground", this->classicBackground);
-	this->addOptionToSaveOutput(v4, "options.classicgui", this->classicGUI);
-	this->addOptionToSaveOutput(v4, "options.neoncolortheme", this->neonColorTheme);
 	this->addOptionToSaveOutput(v4, "options.sprint", this->sprintEnabled);
 	this->addOptionToSaveOutput(v4, "options.autojump", this->autoJump);
 	this->addOptionToSaveOutput(v4, "options.fov", this->fov);
@@ -434,9 +413,6 @@ void Options::initDefaultValues(void) {
 	this->fancySkies = 1;
 	this->animateTextures = 1;
 	this->newAdditions = 0;
-	this->classicBackground = 1;
-	this->classicGUI = 1;
-	this->neonColorTheme = 0;
 	this->sprintEnabled = 1;
 	this->autoJump = 1;
 	this->hudCameraButton = 1;
@@ -546,9 +522,6 @@ std::vector<int> Options::getValues(const Options::Option* a2) {
 	if(a2 == &Options::Option::CHAT_BG_COLOR) {
 		return Options::CHAT_BG_COLOR_LEVELS;
 	}
-	if(a2 == &Options::Option::NEON_COLOR_THEME) {
-		return Options::NEON_COLOR_THEME_LEVELS;
-	}
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return Options::NEW_ADDITIONS_LEVELS;
 	}
@@ -624,9 +597,6 @@ int32_t Options::getIntValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::CHAT_BG_COLOR) {
 		return this->chatBgColor;
 	}
-	if(a2 == &Options::Option::NEON_COLOR_THEME) {
-		return this->neonColorTheme;
-	}
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return this->newAdditions;
 	}
@@ -640,10 +610,6 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 	if(a2 == &Options::Option::CHAT_BG_COLOR) {
 		std::string colors[] = {"Black", "Dark Red", "Dark Green", "Dark Blue", "Transparent"};
 		if(this->chatBgColor >= 0 && this->chatBgColor <= 4) return a4 + ": " + colors[this->chatBgColor];
-	}
-	if(a2 == &Options::Option::NEON_COLOR_THEME) {
-		std::string colors[] = {"Cyan & Magenta", "Red & Gold", "Green & Lime", "Purple & Pink", "Orange & Yellow"};
-		if(this->neonColorTheme >= 0 && this->neonColorTheme <= 4) return a4 + ": " + colors[this->neonColorTheme];
 	}
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		std::string modes[] = {"Modded", "New Additions"};
@@ -692,12 +658,6 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 	}
 	if(a2 == &Options::Option::ANIMATE_TEXTURES) {
 		return this->animateTextures;
-	}
-	if(a2 == &Options::Option::CLASSIC_BACKGROUND) {
-		return this->classicBackground;
-	}
-	if(a2 == &Options::Option::CLASSIC_GUI) {
-		return this->classicGUI;
 	}
 	if(a2 == &Options::Option::SPRINT) {
 		return this->sprintEnabled;
@@ -782,23 +742,4 @@ void Options::init(Minecraft* mc, std::string a3) {
 	this->showFps = 0;
 	this->debugScreen = 0;
 	this->initDefaultValues();
-}
-
-void Options::getNeonColors(int32_t& colorA, int32_t& colorB) {
-	if (this->neonColorTheme == 1) {
-		colorA = 0xFFFF0000;
-		colorB = 0xFFFFD700;
-	} else if (this->neonColorTheme == 2) {
-		colorA = 0xFF00FF00;
-		colorB = 0xFFCCFF00;
-	} else if (this->neonColorTheme == 3) {
-		colorA = 0xFFBD00FF;
-		colorB = 0xFFFF00F0;
-	} else if (this->neonColorTheme == 4) {
-		colorA = 0xFFFF5F00;
-		colorB = 0xFFFFD700;
-	} else {
-		colorA = 0xFF00FFFF;
-		colorB = 0xFFFF00B4;
-	}
 }

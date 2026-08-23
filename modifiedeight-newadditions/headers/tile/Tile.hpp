@@ -186,6 +186,18 @@ struct Tile{
 	static Tile* redstoneLampOff;
 	static Tile* redstoneLampOn;
 	static Tile* seagrass;
+	static Tile* flowerRose;
+	static Tile* flowerPot;
+	static Tile* daylightDetector;
+	static Tile* daylightDetectorInverted;
+	static Tile* button_stone;
+	static Tile* button_wood;
+	static Tile* button_spruce;
+	static Tile* button_birch;
+	static Tile* button_jungle;
+	static Tile* button_cobblestone;
+	static Tile* button_gold;
+	static Tile* button_iron;
 
 	static Tile::SoundType SOUND_NORMAL;
 	static Tile::SoundType SOUND_WOOD;

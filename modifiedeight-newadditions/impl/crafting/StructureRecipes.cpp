@@ -24,4 +24,16 @@ void StructureRecipes::addRecipes(Recipes* a1) {
 	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_jungle, 1), "##", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
 	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_gold, 1), "##", definition<Item*>('#', Item::goldIngot));
 	a1->addShapedRecipe(ItemInstance(Tile::pressurePlate_iron, 1), "##", definition<Item*>('#', Item::ironIngot));
+	a1->addShapedRecipe(ItemInstance(Tile::button_stone, 1), "#", definition<Tile*>('#', Tile::rock));
+	a1->addShapedRecipe(ItemInstance(Tile::button_cobblestone, 1), "#", definition<Tile*>('#', Tile::stoneBrick));
+	a1->addShapedRecipe(ItemInstance(Tile::button_wood, 1), "#", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 0)));
+	a1->addShapedRecipe(ItemInstance(Tile::button_spruce, 1), "#", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
+	a1->addShapedRecipe(ItemInstance(Tile::button_birch, 1), "#", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	a1->addShapedRecipe(ItemInstance(Tile::button_jungle, 1), "#", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
+	a1->addShapedRecipe(ItemInstance(Tile::button_gold, 1), "#", definition<Item*>('#', Item::goldIngot));
+	a1->addShapedRecipe(ItemInstance(Tile::button_iron, 1), "#", definition<Item*>('#', Item::ironIngot));
+	a1->addShapedRecipe(ItemInstance(Item::flowerPot, 1), "# #", " # ", definition<Item*>('#', Item::brick));
+	for (int32_t s = 0; s < 4; ++s) {
+		a1->addShapedRecipe(ItemInstance(Tile::daylightDetector, 1), "GGG", "III", "SSS", definition<Tile*, Item*, ItemInstance>('G', Tile::glass, 'I', Item::ironIngot, 'S', ItemInstance(Tile::woodSlabHalf, 1, s)));
+	}
 }

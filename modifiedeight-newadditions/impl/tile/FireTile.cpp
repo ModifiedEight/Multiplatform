@@ -76,21 +76,34 @@ FireTile::FireTile(int32_t ids, const std::string& name)
 	this->setTicking(1);
 	this->replaceable = 1;
 }
+#include <tile/entity/MixedSlabTileEntity.hpp>
+
 bool_t FireTile::canBurn(struct LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	return this->flammability[level->getTile(x, y, z)] > 0;
+	int32_t id = level->getTile(x, y, z);
+	if (Tile::mixedSlab && id == Tile::mixedSlab->blockID) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+		if (te) {
+			if (te->bottomTileId != 0 && this->flammability[te->bottomTileId] > 0) return 1;
+			if (te->topTileId != 0 && this->flammability[te->topTileId] > 0) return 1;
+		}
+	}
+	return this->flammability[id] > 0;
 }
 void FireTile::checkBurn(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6, Random* random) {
-	int32_t v11; // r11
-	int32_t v12; // r0
-	int32_t blockID; // r10
-	int32_t v14; // r11
-	int32_t v15; // r2
-
-	v11 = this->field_480[level->getTile(x, y, z)];
+	int32_t id = level->getTile(x, y, z);
+	int32_t v11 = this->field_480[id];
+	if (Tile::mixedSlab && id == Tile::mixedSlab->blockID) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+		if (te) {
+			if (te->bottomTileId != 0 && this->field_480[te->bottomTileId] > v11) v11 = this->field_480[te->bottomTileId];
+			if (te->topTileId != 0 && this->field_480[te->topTileId] > v11) v11 = this->field_480[te->topTileId];
+		}
+	}
 	if((int32_t)(random->genrand_int32() % a6) < v11) {
-		v12 = level->getTile(x, y, z);
-		blockID = Tile::tnt->blockID;
-		v14 = v12;
+		int32_t v12 = level->getTile(x, y, z);
+		int32_t blockID = Tile::tnt->blockID;
+		int32_t v14 = v12;
+		int32_t v15;
 		if((random->genrand_int32() & 1) != 0) {
 			v15 = 0;
 		} else {
@@ -114,7 +127,15 @@ int32_t FireTile::getFireOdds(Level* level, int32_t x, int32_t y, int32_t z) {
 	return 0;
 }
 int32_t FireTile::getFlammability(Level* level, int32_t x, int32_t y, int32_t z, int32_t mx) {
-	int32_t res = this->flammability[level->getTile(x, y, z)];
+	int32_t id = level->getTile(x, y, z);
+	int32_t res = this->flammability[id];
+	if (Tile::mixedSlab && id == Tile::mixedSlab->blockID) {
+		MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
+		if (te) {
+			if (te->bottomTileId != 0 && this->flammability[te->bottomTileId] > res) res = this->flammability[te->bottomTileId];
+			if (te->topTileId != 0 && this->flammability[te->topTileId] > res) res = this->flammability[te->topTileId];
+		}
+	}
 	if(res < mx) return mx;
 	return res;
 }
@@ -141,7 +162,7 @@ bool_t FireTile::mayPick() {
 	return 0;
 }
 bool_t FireTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	return level->isSolidBlockingTile(x, y - 1, z) || this->isValidFireLocation(level, x, y, z);
+	return level->isSolidBlockingTile(x, y - 1, z) || level->isTopSolidBlocking(x, y - 1, z) || this->canBurn(level, x, y - 1, z) || this->isValidFireLocation(level, x, y, z);
 }
 int32_t FireTile::getTickDelay() {
 	return 30;
@@ -352,12 +373,12 @@ void FireTile::animateTick(Level* level, int32_t x, int32_t y, int32_t z, Random
 	}
 }
 void FireTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t, int32_t, int32_t, int32_t) {
-	if(level->isSolidBlockingTile(x, y - 1, z) && this->isValidFireLocation(level, x, y, z)) {
+	if(!this->mayPlace(level, x, y, z)) {
 		level->setTile(x, y, z, 0, 3);
 	}
 }
 void FireTile::onPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	if(level->isSolidBlockingTile(x, y - 1, z) || this->isValidFireLocation(level, x, y, z)) {
+	if(this->mayPlace(level, x, y, z)) {
 		level->addToTickNextTick(x, y, z, this->blockID, this->getTickDelay());
 	} else {
 		level->setTile(x, y, z, 0, 3);

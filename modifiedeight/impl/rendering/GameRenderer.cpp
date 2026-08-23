@@ -282,8 +282,16 @@ LABEL_16:
 	}
 LABEL_17:
 	if(!this->minecraft->options.field_F1) {
-		glRotatef(viewEntityMaybe->prevPitch + (float)((float)(viewEntityMaybe->pitch - viewEntityMaybe->prevPitch) * a2), 1.0, 0.0, 0.0);
-		glRotatef((float)(viewEntityMaybe->prevYaw + (float)((float)(viewEntityMaybe->yaw - viewEntityMaybe->prevYaw) * a2)) + 180.0, 0.0, 1.0, 0.0);
+		float pPitch = viewEntityMaybe->prevPitch + (float)((float)(viewEntityMaybe->pitch - viewEntityMaybe->prevPitch) * a2);
+		float pYaw = (float)(viewEntityMaybe->prevYaw + (float)((float)(viewEntityMaybe->yaw - viewEntityMaybe->prevYaw) * a2)) + 180.0;
+
+		if (this->minecraft->options.thirdPerson == 2) {
+			pYaw += 180.0f;
+			pPitch = -pPitch;
+		}
+
+		glRotatef(pPitch, 1.0, 0.0, 0.0);
+		glRotatef(pYaw, 0.0, 1.0, 0.0);
 	}
 	glTranslatef(0.0, v11, 0.0);
 }
@@ -734,13 +742,17 @@ void GameRenderer::renderLevel(float a2) {
 	if(this->field_4C == 1.0) {
 		if(viewEntityMaybe->isPlayer()) {
 			if(!this->minecraft->currentScreen && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
+				if(!this->minecraft->options.thirdPerson) {
 #ifndef PCTWEAKS
-				if(this->minecraft->useTouchscreen()) {
+					if(this->minecraft->useTouchscreen()) {
 #endif
-					levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+						levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 #ifndef PCTWEAKS
+					} else {
+						levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+					}
+#endif
 				}
-#endif
 				levelRenderer->renderHit((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 			}
 		}

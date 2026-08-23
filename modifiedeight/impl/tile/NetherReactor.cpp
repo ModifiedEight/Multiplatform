@@ -76,10 +76,6 @@ bool_t NetherReactor::use(Level* level, int32_t x, int32_t y, int32_t z, Player*
 	int32_t v19;				 // [sp+14h] [bp-ACh]
 	int32_t v20;				 // [sp+18h] [bp-A8h]
 
-	if(level->levelData.getGameType()) {
-		return 0;
-	}
-
 	yy = 0;
 	NetherReactorPattern v22;
 	do {

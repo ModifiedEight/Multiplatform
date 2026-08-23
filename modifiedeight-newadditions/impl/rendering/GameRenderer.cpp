@@ -775,6 +775,8 @@ void GameRenderer::renderLevel(float a2) {
 #endif
 						levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 #ifndef PCTWEAKS
+					} else {
+						levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 					}
 #endif
 				}

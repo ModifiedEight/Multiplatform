@@ -33,14 +33,25 @@ static bool isTorchSupportValid(LevelSource* level, int32_t x, int32_t y, int32_
 }
 
 bool_t TorchTile::isConnection(Level* level, int32_t x, int32_t y, int32_t z) {
-	if(level->isSolidBlockingTile(x, y, z)) {
+	if(level->isSolidBlockingTile(x, y, z) || level->isTopSolidBlocking(x, y, z)) {
 		return 1;
 	}
 	int32_t v8 = level->getTile(x, y, z);
+	int32_t vMeta = level->getData(x, y, z);
+	if (v8 == Tile::stoneSlabHalf->blockID || v8 == Tile::woodSlabHalf->blockID ||
+	    (Tile::coloredSlabHalf1 && v8 == Tile::coloredSlabHalf1->blockID) ||
+	    (Tile::coloredSlabHalf2 && v8 == Tile::coloredSlabHalf2->blockID) ||
+	    (Tile::coloredBrickSlabHalf1 && v8 == Tile::coloredBrickSlabHalf1->blockID) ||
+	    (Tile::coloredBrickSlabHalf2 && v8 == Tile::coloredBrickSlabHalf2->blockID) ||
+	    (Tile::dirtSlabHalf && v8 == Tile::dirtSlabHalf->blockID) ||
+	    (Tile::grassSlabHalf && v8 == Tile::grassSlabHalf->blockID) ||
+	    (Tile::rockSlabHalf && v8 == Tile::rockSlabHalf->blockID)) {
+		return (vMeta & 8) == 0;
+	}
 	if (Tile::mixedSlab && v8 == Tile::mixedSlab->blockID) {
 		MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
 		if (te) {
-			if (te->mode == 0) return te->topTileId != 0;
+			if (te->mode == 0) return te->topTileId != 0 || te->bottomTileId != 0;
 			return (te->bottomTileId != 0 || te->topTileId != 0);
 		}
 	}

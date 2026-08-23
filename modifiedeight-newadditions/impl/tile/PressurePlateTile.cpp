@@ -38,17 +38,37 @@ void PressurePlateTile::updateDefaultShape() {
 	this->setShape(0.0625f, 0.0f, 0.0625f, 0.9375f, 0.0625f, 0.9375f);
 }
 
+static bool isBottomHalfSlab(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	int32_t id = level->getTile(x, y, z);
+	int32_t meta = level->getData(x, y, z);
+	if (id == Tile::stoneSlabHalf->blockID || id == Tile::woodSlabHalf->blockID ||
+	    (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
+	    (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
+	    (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
+	    (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) ||
+	    (Tile::dirtSlabHalf && id == Tile::dirtSlabHalf->blockID) ||
+	    (Tile::grassSlabHalf && id == Tile::grassSlabHalf->blockID) ||
+	    (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID)) {
+		return (meta & 8) == 0;
+	}
+	return false;
+}
+
 void PressurePlateTile::updateShape(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	int32_t meta = level->getData(x, y, z);
+	float offset = 0.0f;
+	if (isBottomHalfSlab(level, x, y - 1, z)) {
+		offset = -0.5f;
+	}
 	if (meta > 0) {
-		this->setShape(0.0625f, 0.0f, 0.0625f, 0.9375f, 0.03125f, 0.9375f);
+		this->setShape(0.0625f, offset, 0.0625f, 0.9375f, offset + 0.03125f, 0.9375f);
 	} else {
-		this->setShape(0.0625f, 0.0f, 0.0625f, 0.9375f, 0.0625f, 0.9375f);
+		this->setShape(0.0625f, offset, 0.0625f, 0.9375f, offset + 0.0625f, 0.9375f);
 	}
 }
 
 bool_t PressurePlateTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	return level->isSolidBlockingTile(x, y - 1, z);
+	return level->getTile(x, y - 1, z) != 0;
 }
 
 void PressurePlateTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t, int32_t, int32_t, int32_t) {
@@ -78,7 +98,7 @@ void PressurePlateTile::entityInside(Level* level, int32_t x, int32_t y, int32_t
 
 void PressurePlateTile::checkPressed(Level* level, int32_t x, int32_t y, int32_t z) {
 	int32_t meta = level->getData(x, y, z);
-	AABB box = {(float)x + 0.125f, (float)y, (float)z + 0.125f, (float)x + 0.875f, (float)y + 0.25f, (float)z + 0.875f};
+	AABB box = {(float)x - 0.15f, (float)y - 0.2f, (float)z - 0.15f, (float)x + 1.15f, (float)y + 0.8f, (float)z + 1.15f};
 	std::vector<Entity*>* ents = level->getEntities(nullptr, box);
 	bool hasEntities = false;
 	if (ents) {
@@ -106,7 +126,7 @@ void PressurePlateTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Rand
 	int32_t meta = level->getData(x, y, z);
 	if (meta == 0) return;
 
-	AABB box = {(float)x + 0.125f, (float)y, (float)z + 0.125f, (float)x + 0.875f, (float)y + 0.25f, (float)z + 0.875f};
+	AABB box = {(float)x - 0.15f, (float)y - 0.2f, (float)z - 0.15f, (float)x + 1.15f, (float)y + 0.8f, (float)z + 1.15f};
 	std::vector<Entity*>* ents = level->getEntities(nullptr, box);
 	bool hasEntities = false;
 	if (ents) {
@@ -118,13 +138,13 @@ void PressurePlateTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Rand
 		}
 	}
 
-	if (hasEntities) {
-		level->addToTickNextTick(x, y, z, this->blockID, 20);
-	} else {
+	if (!hasEntities) {
 		level->setData(x, y, z, 0, 3);
 		level->playSound((float)x + 0.5f, (float)y + 0.1f, (float)z + 0.5f, "random.click", 0.3f, 0.5f);
 		level->updateNeighborsAt(x, y, z, this->blockID);
 		level->updateNeighborsAt(x, y - 1, z, this->blockID);
+	} else {
+		level->addToTickNextTick(x, y, z, this->blockID, 20);
 	}
 }
 

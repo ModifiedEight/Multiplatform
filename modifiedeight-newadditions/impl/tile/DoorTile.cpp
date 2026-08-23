@@ -80,14 +80,14 @@ int32_t DoorTile::getRenderShape() {
 	return 7;
 }
 void DoorTile::updateShape(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	uint32_t cdata; // r6
-	int32_t v7;		// r2
-	int32_t v8;		// r3
-	int32_t v9;		// r6
-	Tile* tile;		// r0
-	float minZ;		// r3
-	float maxX;		// [sp+0h] [bp-20h]
-	float maxZ;		// [sp+8h] [bp-18h]
+	uint32_t cdata;
+	int32_t v7;
+	int32_t v8;
+	int32_t v9;
+	Tile* tile;
+	float minZ;
+	float maxX;
+	float maxZ;
 
 	cdata = DoorTile::getCompositeData(level, x, y, z);
 	this->setShape(0.0, 0.0, 0.0, 1.0, 2.0, 1.0);
@@ -252,7 +252,7 @@ bool_t DoorTile::isSolidRender() {
 	return 0;
 }
 bool_t DoorTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	return y <= 126 && level->isSolidBlockingTile(x, y - 1, z) && Tile::mayPlace(level, x, y, z) && Tile::mayPlace(level, x, y + 1, z);
+	return y <= 126 && (level->getTile(x, y - 1, z) != 0) && Tile::mayPlace(level, x, y, z) && Tile::mayPlace(level, x, y + 1, z);
 }
 void DoorTile::playerWillDestroy(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6, Player* player) {
 	if(player->abilities.instabuild) {
@@ -288,7 +288,7 @@ void DoorTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, in
 			v15 = 1;
 		}
 		v17 = v15;
-		if(!level->isSolidBlockingTile(x, y - 1, z)) {
+		if(level->getTile(x, y - 1, z) == 0) {
 			level->setTile(x, y, z, 0, 3);
 			if(level->getTile(x, y + 1, z) == this->blockID) {
 				level->setTile(x, y + 1, z, 0, 3);

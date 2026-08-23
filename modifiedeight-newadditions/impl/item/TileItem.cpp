@@ -60,13 +60,19 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 	}
 
 	bool_t canPlace = level->mayPlace(this->blockID, x, yNew, zNew, 0, sideNew);
-	if (!canPlace && this->blockID == Tile::torch->blockID && side == 1) {
+	if (Tile::seagrass && this->blockID == Tile::seagrass->blockID) {
+		canPlace = Tile::seagrass->mayPlace(level, x, yNew, zNew);
+	}
+	if (!canPlace && (this->blockID == Tile::torch->blockID || this->blockID == Tile::lever->blockID) && side == 1) {
 		int32_t clickedTileId = level->getTile(x, y, z);
 		for (int i = 0; i < 16; i++) {
 			if (Tile::coloredFences[i] && clickedTileId == Tile::coloredFences[i]->blockID) {
 				canPlace = true;
 				break;
 			}
+		}
+		if (level->isTopSolidBlocking(x, y, z)) {
+			canPlace = true;
 		}
 	}
 

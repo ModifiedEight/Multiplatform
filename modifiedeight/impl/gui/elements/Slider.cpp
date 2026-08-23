@@ -98,32 +98,21 @@ void Slider::render(Minecraft* a2, int32_t a3, int32_t a4) {
 	v8 = posX + 5;
 	posY = this->posY;
 	v10 = this->width - 10;
-	if (!a2->options.classicGUI) {
-		int32_t colorA, colorB;
-		a2->options.getNeonColors(colorA, colorB);
-		this->fill(posX + 5, posY + 8, posX + this->width - 5, posY + 10, colorB);
-		int32_t hx = v8 + (int32_t)(float)((float)v10 * this->progress) - 4;
-		int32_t hy = this->posY + 4;
-		this->fill(hx - 2, hy - 2, hx + 10, hy + 10, (colorA & 0x00FFFFFF) | 0x33000000);
-		this->fill(hx - 1, hy - 1, hx + 9, hy + 9, 0xFF000000);
-		this->fill(hx, hy, hx + 8, hy + 8, colorA);
-	} else {
-		this->fill(posX + 5, posY + 7, posX + this->width - 5, posY + 10, -9408400);
-		if(this->isStepSliderMaybe == 1) {
-			v12 = posY + 5;
-			v13 = posX + 4;
-			v14 = 0;
-			v15 = posY + 12;
-			v16 = v10 / (this->field_44 - 1);
-			while(this->field_44 > v14) {
-				++v14;
-				this->fill(v13, v12, v13 + 4, v15, -7303024);
-				v13 += v16;
-			}
+	this->fill(posX + 5, posY + 7, posX + this->width - 5, posY + 10, -9408400);
+	if(this->isStepSliderMaybe == 1) {
+		v12 = posY + 5;
+		v13 = posX + 4;
+		v14 = 0;
+		v15 = posY + 12;
+		v16 = v10 / (this->field_44 - 1);
+		while(this->field_44 > v14) {
+			++v14;
+			this->fill(v13, v12, v13 + 4, v15, -7303024);
+			v13 += v16;
 		}
-		a2->texturesPtr->loadAndBindTexture("gui/touchgui.png");
-		this->blit(v8 + (int32_t)(float)((float)v10 * this->progress) - 5, this->posY, 225, 125, 11, 17, 11, 17);
 	}
+	a2->texturesPtr->loadAndBindTexture("gui/touchgui.png");
+	this->blit(v8 + (int32_t)(float)((float)v10 * this->progress) - 5, this->posY, 225, 125, 11, 17, 11, 17);
 }
 void Slider::mouseClicked(Minecraft* a2, int32_t a3, int32_t a4, int32_t a5) {
 	if(this->pointInside(a3, a4)) {

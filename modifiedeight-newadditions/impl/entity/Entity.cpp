@@ -655,63 +655,33 @@ void Entity::move(float dx, float dy, float dz) {
 		stepHeight = this->stepHeight;
 		if(stepHeight > 0.0 && (fallingFlag || this->isInWater()) && this->ySize < 0.05 && (movX != v43 || movZ != v42)) {
 			AABB v96{this->boundingBox.minX, this->boundingBox.minY, this->boundingBox.minZ, this->boundingBox.maxX, this->boundingBox.maxY, this->boundingBox.maxZ};
-			v55 = this->boundingBox.maxZ;
-			this->boundingBox.minX = boundingBox.minX;
-			v56 = this->level;
-			this->boundingBox.minY = boundingBox.minY;
-			this->boundingBox.minZ = boundingBox.minZ;
-			this->boundingBox.maxX = boundingBox.maxX;
-			this->boundingBox.maxY = boundingBox.maxY;
-			this->boundingBox.maxZ = boundingBox.maxZ;
-			v57 = v56;
-			v58 = 0;
-			std::vector<AABB>* v38 = v57->getCubes(this, this->boundingBox.expand(movX, stepHeight, movZ), 0);
-			v61 = v38->size();
-			while(v58 != v61) {
-				v62 = v38->at(v58).clipYCollide(this->boundingBox, stepHeight);
-				++v58;
-				stepHeight = v62;
+			this->boundingBox = boundingBox;
+			std::vector<AABB>* v38 = this->level->getCubes(this, this->boundingBox.expand(movX, stepHeight, movZ), 0);
+			float curStepY = stepHeight;
+			for (size_t k = 0; k < v38->size(); ++k) {
+				curStepY = v38->at(k).clipYCollide(this->boundingBox, curStepY);
 			}
-			this->boundingBox.move(0.0, stepHeight, 0.0);
-			if(this->field_103 || movY == stepHeight) {
-				v63 = movZ;
-				v64 = movX;
-			} else {
-				stepHeight = 0.0;
-				v63 = 0.0;
-				v64 = 0.0;
+			this->boundingBox.move(0.0, curStepY, 0.0);
+			float curStepX = movX;
+			for (size_t k = 0; k < v38->size(); ++k) {
+				curStepX = v38->at(k).clipXCollide(this->boundingBox, curStepX);
 			}
-			v65 = 0;
-			v67 = v38->size();
-			while(v65 != v67) {
-				v68 = v38->at(v65).clipXCollide(this->boundingBox, v64);
-				++v65;
-				v64 = v68;
+			this->boundingBox.move(curStepX, 0.0, 0.0);
+			float curStepZ = movZ;
+			for (size_t k = 0; k < v38->size(); ++k) {
+				curStepZ = v38->at(k).clipZCollide(this->boundingBox, curStepZ);
 			}
-			this->boundingBox.move(v64, 0.0, 0.0);
-			if(!this->field_103 && movX != v64) {
-				v63 = 0.0;
-				stepHeight = 0.0;
-				v64 = 0.0;
+			this->boundingBox.move(0.0, 0.0, curStepZ);
+			float downY = -curStepY;
+			for (size_t k = 0; k < v38->size(); ++k) {
+				downY = v38->at(k).clipYCollide(this->boundingBox, downY);
 			}
-			v71 = 0;
-			v72 = v38->size();
-			while(v71 != v72) {
-				v73 = v38->at(v71).clipZCollide(this->boundingBox, v63);
-				++v71;
-				v63 = v73;
-			}
-			this->boundingBox.move(0.0, 0.0, v63);
-			if(!this->field_103 && movZ != v63) {
-				v63 = 0.0;
-				stepHeight = 0.0;
-				v64 = 0.0;
-			}
-			if((float)((float)(v42 * v42) + (float)(v43 * v43)) < (float)((float)(v63 * v63) + (float)(v64 * v64))) {
-				v42 = v63;
-				this->ySize = this->ySize + 0.5;
-				v36 = stepHeight;
-				v43 = v64;
+			this->boundingBox.move(0.0, downY, 0.0);
+			curStepY += downY;
+			if ((v42 * v42 + v43 * v43) < (curStepZ * curStepZ + curStepX * curStepX)) {
+				v42 = curStepZ;
+				v43 = curStepX;
+				v36 = curStepY;
 			} else {
 				this->boundingBox = v96;
 			}

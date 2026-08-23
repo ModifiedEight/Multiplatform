@@ -60,6 +60,11 @@ ColoredSlabTile::ColoredSlabTile(int32_t id, bool_t isFull, int32_t colorOffset,
 ColoredSlabTile::~ColoredSlabTile() {}
 
 TextureUVCoordinateSet* ColoredSlabTile::getTexture(int32_t face, int32_t data) {
+	std::string tname = (this->material == Material::stone) ? "colored_bricks" : "colored_planks";
+	TextureAtlasTextureItem* item = this->getTextureItem(tname);
+	if (item) {
+		return item->getUV((data & 7) + this->colorOffset);
+	}
 	return this->tex.getUV((data & 7) + colorOffset);
 }
 

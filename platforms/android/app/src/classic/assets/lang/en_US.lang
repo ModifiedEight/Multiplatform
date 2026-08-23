@@ -308,15 +308,6 @@ tile.goldenRail.name=Powered Rail
 tile.detectorRail.name=Detector Rail
 tile.stairsStone.name=Stone Stairs
 tile.lever.name=Lever
-tile.pressurePlate.name=Pressure Plate
-tile.pressurePlateStone.name=Stone Pressure Plate
-tile.pressurePlateWood.name=Oak Pressure Plate
-tile.pressurePlateCobblestone.name=Cobblestone Pressure Plate
-tile.pressurePlateSpruce.name=Spruce Pressure Plate
-tile.pressurePlateBirch.name=Birch Pressure Plate
-tile.pressurePlateJungle.name=Jungle Pressure Plate
-tile.pressurePlateGold.name=Gold Weighted Pressure Plate
-tile.pressurePlateIron.name=Iron Weighted Pressure Plate
 tile.doorIron.name=Iron Door
 tile.oreRedstone.name=Redstone Ore
 tile.notGate.name=Redstone Torch
@@ -1098,6 +1089,12 @@ tile.trapdoor_birch.name=Birch Trapdoor
 
 item.doorSpruce.name=Spruce Door
 item.doorBirch.name=Birch Door
+
+tile.flowerRose.name=Rose
+tile.flowerPot.name=Flower Pot
+item.flowerPot.name=Flower Pot
+tile.daylightDetector.name=Daylight Sensor
+tile.daylightDetectorInverted.name=Moonlight Sensor
 
 item.bed.white.name=White Bed
 item.bed.orange.name=Orange Bed

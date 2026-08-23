@@ -376,7 +376,9 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				}
 			}
 			if (mc->level) {
+				mc->level->levelData.stopTime = -1;
 				mc->level->setTime(timeVal);
+				mc->level->_syncTime(timeVal);
 			}
 			mc->gui.addMessage("", "Set time to " + toStr(timeVal), 200);
 			return true;
@@ -385,7 +387,10 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 			try {
 				int addVal = parseI(args[1]);
 				if (mc->level) {
-					mc->level->setTime(mc->level->getTime() + addVal);
+					mc->level->levelData.stopTime = -1;
+					int newTime = mc->level->getTime() + addVal;
+					mc->level->setTime(newTime);
+					mc->level->_syncTime(newTime);
 				}
 				mc->gui.addMessage("", "Added " + toStr(addVal) + " to time", 200);
 			} catch (...) {
@@ -431,15 +436,15 @@ void ChatScreen::sendChatMessage() {
 		 * MCPE servers and single player keep the original behaviour.
 		 */
 		if(JavaBridge::sendChat(this->field_54)) {
-			// The server echoes our own message back, so nothing to add here.
+		} else if (this->minecraft->isOnlineClient()) {
+			MessagePacket v7(this->field_54, this->minecraft->player->username);
+			this->minecraft->rakNetInstance->send(v7);
 		} else if (this->field_54[0] == '/') {
 			executeCommand(this->minecraft, this->field_54);
 		} else {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);
-			if(!this->minecraft->isOnlineClient()) {
-				this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
-			}
+			this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
 		}
 		this->field_78.emplace_back(this->field_54);
 		this->field_84 = this->field_78.size();
