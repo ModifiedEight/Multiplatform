@@ -282,14 +282,23 @@ void Arrow::tick() {
 		int px = (int)floorf(this->posX);
 		int py = (int)floorf(this->posY);
 		int pz = (int)floorf(this->posZ);
-		int coords[5][3] = {
+		int coords[14][3] = {
 			{this->xTile, this->yTile, this->zTile},
+			{this->xTile + 1, this->yTile, this->zTile},
+			{this->xTile - 1, this->yTile, this->zTile},
 			{this->xTile, this->yTile + 1, this->zTile},
+			{this->xTile, this->yTile - 1, this->zTile},
+			{this->xTile, this->yTile, this->zTile + 1},
+			{this->xTile, this->yTile, this->zTile - 1},
 			{px, py, pz},
+			{px + 1, py, pz},
+			{px - 1, py, pz},
+			{px, py + 1, pz},
 			{px, py - 1, pz},
-			{px, py + 1, pz}
+			{px, py, pz + 1},
+			{px, py, pz - 1}
 		};
-		for (int ci = 0; ci < 5; ++ci) {
+		for (int ci = 0; ci < 14; ++ci) {
 			int tid = this->level->getTile(coords[ci][0], coords[ci][1], coords[ci][2]);
 			Tile* t = Tile::tiles[tid];
 			if (t) {
@@ -493,14 +502,23 @@ void Arrow::tick() {
 				int px = (int)floorf(this->posX);
 				int py = (int)floorf(this->posY);
 				int pz = (int)floorf(this->posZ);
-				int coords[5][3] = {
+				int coords[14][3] = {
 					{this->xTile, this->yTile, this->zTile},
+					{this->xTile + 1, this->yTile, this->zTile},
+					{this->xTile - 1, this->yTile, this->zTile},
 					{this->xTile, this->yTile + 1, this->zTile},
+					{this->xTile, this->yTile - 1, this->zTile},
+					{this->xTile, this->yTile, this->zTile + 1},
+					{this->xTile, this->yTile, this->zTile - 1},
 					{px, py, pz},
+					{px + 1, py, pz},
+					{px - 1, py, pz},
+					{px, py + 1, pz},
 					{px, py - 1, pz},
-					{px, py + 1, pz}
+					{px, py, pz + 1},
+					{px, py, pz - 1}
 				};
-				for (int ci = 0; ci < 5; ++ci) {
+				for (int ci = 0; ci < 14; ++ci) {
 					int tid = this->level->getTile(coords[ci][0], coords[ci][1], coords[ci][2]);
 					Tile* t = Tile::tiles[tid];
 					if (t) {

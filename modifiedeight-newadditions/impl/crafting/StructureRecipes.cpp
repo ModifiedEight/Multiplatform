@@ -36,4 +36,8 @@ void StructureRecipes::addRecipes(Recipes* a1) {
 	for (int32_t s = 0; s < 4; ++s) {
 		a1->addShapedRecipe(ItemInstance(Tile::daylightDetector, 1), "GGG", "III", "SSS", definition<Tile*, Item*, ItemInstance>('G', Tile::glass, 'I', Item::ironIngot, 'S', ItemInstance(Tile::woodSlabHalf, 1, s)));
 	}
+
+	if (Tile::redstoneLampOff && Item::redStone && Tile::lightGem) {
+		a1->addShapedRecipe(ItemInstance(Tile::redstoneLampOff, 1), " R ", "RGR", " R ", definition<Item*, Tile*>('R', Item::redStone, 'G', Tile::lightGem));
+	}
 }

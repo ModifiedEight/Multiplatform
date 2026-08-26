@@ -41,6 +41,7 @@ bool_t FlintAndSteelItem::useOn(ItemInstance* a2, Player* a3, Level* a4, int32_t
 	} else {
 		v15 = a6 - 1;
 	}
+
 	if(!a4->getTile(v14, v15, v16)) {
 		f = a4->random.nextFloat();
 		a4->playSound((float)v14 + 0.5, (float)v15 + 0.5, (float)v16 + 0.5, "fire.ignite", 1.0, (float)(f * 0.4) + 0.8);

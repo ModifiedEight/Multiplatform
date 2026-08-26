@@ -75,9 +75,9 @@ Color4 Biome::getSkyColor(float a3){
 	return Color4::fromHSB(0.62222 - (float)(v3 * 0.05), (float)(v3 * 0.1) + 0.5, 1.0);
 }
 std::vector<Biome::MobSpawnerData>* Biome::getMobs(const MobCategory& cat){
-	if(&cat == &MobCategory::monster) return &this->monsterVec;
-	if(&cat == &MobCategory::creature) return &this->creatureVec;
-	if(&cat == &MobCategory::waterCreature) return &this->waterCreatureVec;
+	if(cat.id == MobCategory::monster.id || cat.id == 1) return &this->monsterVec;
+	if(cat.id == MobCategory::creature.id || cat.id == 2) return &this->creatureVec;
+	if(cat.id == MobCategory::waterCreature.id || cat.id == 3) return &this->waterCreatureVec;
 
 	return &Biome::_emptyMobList;
 }
@@ -207,37 +207,48 @@ Biome* Biome::getBiome(float a1, float a2) {
 }
 
 Biome* Biome::_getBiome(float temp, float rain) {
-	if (temp < 0.15f) {
-		return (rain < 0.2f) ? Biome::icePeaks : Biome::tundra;
+	Biome** v2; // r2
+	float newRain; // s14
+
+	if(temp < 0.1) {
+		goto LABEL_2;
 	}
-	if (temp < 0.45f) {
-		if (rain < 0.35f) {
-			return Biome::mountain;
+	newRain = rain * temp;
+	if((float)(rain * temp) >= 0.2) {
+		if(newRain <= 0.5 || temp >= 0.7) {
+			if(temp >= 0.5) {
+				if(temp >= 0.90f && newRain >= 0.85f) {
+					v2 = &Biome::jungle;
+				} else if(temp >= 0.97) {
+					if(newRain >= 0.45) {
+						v2 = &Biome::seasonalForest;
+					} else {
+						v2 = &Biome::plains;
+					}
+				} else if(newRain >= 0.35) {
+					v2 = (newRain > 0.6) ? &Biome::birchForest : &Biome::forest;
+				} else {
+					v2 = &Biome::mountain;
+				}
+			} else {
+				v2 = &Biome::taiga;
+			}
+		} else {
+			v2 = &Biome::swampland;
 		}
-		return Biome::taiga;
-	}
-	if (temp >= 0.85f) {
-		if (rain < 0.15f) {
-			return Biome::desert;
+	} else {
+		if(temp < 0.5) {
+LABEL_2:
+			v2 = (rain < 0.2) ? &Biome::icePeaks : &Biome::tundra;
+			return (*v2);
 		}
-		if (rain < 0.45f) {
-			return Biome::savanna;
+		if(temp >= 0.95) {
+			v2 = &Biome::desert;
+		} else {
+			v2 = &Biome::savanna;
 		}
-		if (rain < 0.75f) {
-			return Biome::seasonalForest;
-		}
-		return Biome::jungle;
 	}
-	if (rain >= 0.75f) {
-		return Biome::swampland;
-	}
-	if (rain >= 0.55f) {
-		return Biome::birchForest;
-	}
-	if (rain >= 0.25f) {
-		return Biome::forest;
-	}
-	return Biome::plains;
+	return (*v2);
 }
 
 Biome* Biome::getOldBiome(float temp, float rain) {

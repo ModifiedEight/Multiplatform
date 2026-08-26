@@ -53,8 +53,8 @@ bool_t ChestTileEntity::_saveClientSideState(CompoundTag* a2) {
 	if(TileEntity::save(a2)) {
 		if(this->pair) {
 			if(this->isUnpaired) {
-				a2->putInt("pairx", this->posX);
-				a2->putInt("pairz", this->posZ);
+				a2->putInt("pairx", this->pair->posX);
+				a2->putInt("pairz", this->pair->posZ);
 			}
 		}
 		return 1;
@@ -219,7 +219,7 @@ void ChestTileEntity::tick() {
 
 	if(this->field_A4) {
 		te = this->level->getTileEntity(this->field_9C, this->posY, this->field_A0);
-		if(te) {
+		if(te && te != this) {
 			this->pairWith((ChestTileEntity*)te, 1);
 			((ChestTileEntity*)te)->pairWith(this, 0);
 			this->field_A4 = 0;

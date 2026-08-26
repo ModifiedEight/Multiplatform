@@ -143,7 +143,9 @@ struct Tile{
 	static Tile* fence;
 	static Tile* pumpkin;
 	static Tile* netherrack;
+	static Tile* soulSand;
 	static Tile* lightGem;
+	static Tile* netherQuartz;
 	static Tile* litPumpkin;
 	static Tile* cake;
 	static Tile* invisible_bedrock;

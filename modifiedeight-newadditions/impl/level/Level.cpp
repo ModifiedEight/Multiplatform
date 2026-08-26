@@ -56,6 +56,7 @@ Level::Level(struct LevelStorage* a2, const std::string& a3, const struct LevelS
 	this->nightMode = 0;
 	this->field_B64_ = 0.0;
 	this->prevTimeSent = 0;
+	this->difficulty = 2;
 	this->_init(a3, a4, a6, a7);
 }
 void Level::_init(const std::string& levelName, const struct LevelSettings& a3, int32_t a4, struct Dimension* a5) {
@@ -1156,16 +1157,16 @@ TilePos Level::getSharedSpawnPos() {
 	return {this->levelData.getXSpawn(), this->levelData.getYSpawn(), this->levelData.getZSpawn()};
 }
 int32_t Level::getSignal(int32_t x, int32_t y, int32_t z, int32_t side) {
-	int32_t result; // r0
-
+	int32_t tileId = this->getTile(x, y, z);
+	if(tileId > 0 && tileId < 256 && Tile::tiles[tileId]) {
+		if(Tile::tiles[tileId]->isSignalSource()) {
+			return Tile::tiles[tileId]->getSignal(this, x, y, z, side);
+		}
+	}
 	if(this->isSolidBlockingTile(x, y, z)) {
 		return this->hasDirectSignal(x, y, z);
 	}
-	result = this->getTile(x, y, z);
-	if(result) {
-		return Tile::tiles[result]->getSignal(this, x, y, z, side);
-	}
-	return result;
+	return 0;
 }
 Color4 Level::getSkyColor(struct Entity* a3, float a4) {
 	return this->getSkyColor(Mth::floor(a3->posX), Mth::floor(a3->posZ), a4);
@@ -2360,15 +2361,13 @@ struct Biome* Level::getBiome(int32_t x, int32_t z) {
 static int32_t _D6E4DF90 = 0;
 void Level::tick() {
 	if(!this->isClientMaybe) {
-		if(this->levelData.getSpawnMobs()) {
-			if(_D6E4DF90 + 1 > 1) {
-				_D6E4DF90 = 0;
-				bool spawnMonsters = this->spawnMonstersMaybe && this->difficulty > 0 && this->levelData.spawnMonsters;
-				bool spawnAnimals = this->spawnAnimalsMaybe && this->levelData.spawnAnimals && (this->getTime() % 400) <= 1;
-				MobSpawner::tick(this, spawnMonsters, spawnAnimals);
-			} else {
-				++_D6E4DF90;
-			}
+		if(_D6E4DF90 + 1 > 1) {
+			_D6E4DF90 = 0;
+			bool spawnMonsters = this->spawnMonstersMaybe;
+			bool spawnAnimals = this->spawnAnimalsMaybe && (this->getTime() % 400) <= 1;
+			MobSpawner::tick(this, spawnMonsters, spawnAnimals);
+		} else {
+			++_D6E4DF90;
 		}
 	}
 	this->chunkSource->tick();

@@ -390,3 +390,21 @@ int32_t FireTile::getResourceCount(Random*) {
 int32_t FireTile::getRenderLayer() {
 	return 1;
 }
+
+TextureUVCoordinateSet* FireTile::getTexture(int32_t a2) {
+	if(Tile::_terrainTextureAtlas) {
+		auto* item = Tile::_terrainTextureAtlas->getTextureItem("fire");
+		if(item) {
+			if(a2 == 1 && item->getUVCount() > 1) {
+				return item->getUV(1);
+			}
+			return item->getUV(0);
+		}
+	}
+	return &this->textureUV;
+}
+
+TextureUVCoordinateSet* FireTile::getTexture(int32_t a2, int32_t a3) {
+	return this->getTexture(a2);
+}
+

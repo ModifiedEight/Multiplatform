@@ -197,10 +197,11 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 			TextureUVCoordinateSet main_uv;
 			bool has_valid_uv = (v32.isMember("uv") && v32["uv"].isArray() && v32["uv"].size() >= 6 && v32["uv"][2].asFloat() > 0.0001f);
 
+			bool is_procedural = is_terrain && (name == "fire" || name == "still_water" || name == "flowing_water" || name == "still_lava" || name == "flowing_lava");
 			std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
 			std::string main_img_path = base_path + name + ".png";
-			uint8_t* main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
-			if (!main_pixels) {
+			uint8_t* main_pixels = is_procedural ? nullptr : load_and_resize_png(mc, main_img_path, 16, 16);
+			if (!main_pixels && !is_procedural) {
 				main_img_path = base_path + name + "_0.png";
 				main_pixels = load_and_resize_png(mc, main_img_path, 16, 16);
 			}
@@ -252,8 +253,8 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 					sprintf(num_buf, "%d", i + 1);
 					std::string base_path = is_terrain ? "textures/blocks/" : "textures/items/";
 					std::string add_img_path = base_path + name + "_" + num_buf + ".png";
-					uint8_t* add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);
-					if (!add_pixels) {
+					uint8_t* add_pixels = is_procedural ? nullptr : load_and_resize_png(mc, add_img_path, 16, 16);
+					if (!add_pixels && !is_procedural) {
 						sprintf(num_buf, "%d", i);
 						add_img_path = base_path + name + "_" + num_buf + ".png";
 						add_pixels = load_and_resize_png(mc, add_img_path, 16, 16);

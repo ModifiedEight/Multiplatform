@@ -31,6 +31,7 @@
 #include <util/DirtyChunkSorter.hpp>
 #include <perf/Stopwatch.hpp>
 #include <sstream>
+#include <Options.hpp>
 
 LevelRenderer::LevelRenderer(Minecraft* minecraft, std::shared_ptr<TextureAtlas> a3)
 	: field_164(Color4::BLACK) {
@@ -402,6 +403,9 @@ void LevelRenderer::deleteChunks() {
 		}
 		this->chunks = 0;
 	}
+	this->_renderChunks.clear();
+	this->nearChunks.clear();
+	this->farChunks.clear();
 }
 std::string LevelRenderer::gatherStats1() {
 	std::stringstream ss;
@@ -1272,11 +1276,22 @@ LABEL_4:
 		}
 		int v19 = v7->size();
 		int v20 = v19 - 1;
+		bool smooth = Options::instance ? Options::instance->smoothChunks : true;
+		int rebuilt = 0;
 		while(v20 >= 0) {
 			RenderChunk* v22 = v7->at(v20);
 			--v20;
 			v22->rebuild();
 			v22->setClean();
+			++rebuilt;
+			if(smooth && rebuilt >= 2 && v40.stopContinue() >= 0.007) {
+				break;
+			}
+		}
+		while(v20 >= 0) {
+			RenderChunk* unbuilt = v7->at(v20);
+			--v20;
+			this->_renderChunks.push_back(unbuilt);
 		}
 		delete v7;
 	}

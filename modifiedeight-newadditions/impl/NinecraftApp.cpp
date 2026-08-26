@@ -223,7 +223,10 @@ void NinecraftApp::init(void){
 	this->levelStorageSource = new ExternalFileLevelStorageSource(this->dataPathMaybe, this->field_CC4);
 	this->field_CFC = 0;
 	this->texturesPtr = new Textures(&this->options, this->platform());
-	this->texturesPtr->addDynamicTexture(new FireTexture());
+	this->texturesPtr->addDynamicTexture(new FireTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUV(0)));
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUVCount() > 1) {
+		this->texturesPtr->addDynamicTexture(new FireTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUV(1)));
+	}
 	this->texturesPtr->addDynamicTexture(new WaterTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("still_water")->getUV(0)));
 	this->texturesPtr->addDynamicTexture(new WaterSideTexture());
 	this->texturesPtr->addDynamicTexture(new LavaTexture());

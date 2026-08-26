@@ -73,14 +73,13 @@ void CreateWorldScreen::generateLocalGame() {
   if (text == "")
     text = "Level";
   std::string ret = this->getUniqueLevelName(text);
-  // 0 = Old, 1 = Infinite, 2 = Flat
-  int32_t genType = 0;
+  int32_t genType = 1;
   if (this->selectedWorldType == this->worldTypeInfButton)
-    genType = CreateWorldScreen_useAdvancedGen ? 3 : 1;
+    genType = 1;
   else if (this->selectedWorldType == this->worldTypeFlatButton)
     genType = 2;
   else if (this->selectedWorldType == this->worldTypeOldButton)
-    genType = CreateWorldScreen_useAdvancedGen ? 4 : 0;
+    genType = 0;
   this->minecraft->selectLevel(
       ret, text, LevelSettings{this->getSeed(), this->isCreative(), genType, this->optCaves, this->optMonsters, this->optAnimals, this->optTimeFreeze});
   this->minecraft->hostMultiplayer(19132);
@@ -339,7 +338,7 @@ void CreateWorldScreen::init() {
   this->worldTypeFlatButton->height = 26;
   this->worldTypeFlatButton->setYOffset(this->worldTypeFlatButton->height / 2 -
                                         4);
-  this->selectedWorldType = this->worldTypeOldButton;
+  this->selectedWorldType = this->worldTypeInfButton;
   
   this->btnAdvancedSettings = new Touch::TButton(10, CreateWorldScreen_useAdvancedGen ? "Terrain: New" : "Terrain: Old (0.8.1)", 0);
   ((Touch::TButton *)this->btnAdvancedSettings)->init(this->minecraft);

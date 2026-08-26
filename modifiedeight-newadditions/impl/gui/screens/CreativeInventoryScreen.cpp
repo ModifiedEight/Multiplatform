@@ -1,4 +1,5 @@
 #include <gui/screens/CreativeInventoryScreen.hpp>
+#include <gui/screens/ArmorScreen.hpp>
 #include <Minecraft.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <gui/buttons/CategoryButton.hpp>
@@ -89,6 +90,8 @@ ItemInstance CreativeInventoryScreen::getItemFromType(int32_t a3) {
 			return Item::bed ? ItemInstance(Item::bed, 1, 0) : ItemInstance();
 		case 6:
 			return Tile::coloredPlanks ? ItemInstance(Tile::coloredPlanks, 1, 6) : ItemInstance();
+		case 7:
+			return Item::chestplate_iron ? ItemInstance(Item::chestplate_iron) : ItemInstance();
 		default:
 			return Tile::redBrick ? ItemInstance(Tile::redBrick) : ItemInstance();
 	}
@@ -116,7 +119,7 @@ void CreativeInventoryScreen::populateFilteredItems() {
 		    it.tileClass == Tile::button_cobblestone ||
 		    it.tileClass == Tile::button_gold ||
 		    it.tileClass == Tile::button_iron)) ||
-		    id == 69 || id == 70 || id == 72 || id == 77 || id == 143 || id == 144 || id == 145 || id == 146 || id == 147 || id == 148 || id == 149 || id == 150 || id == 151 || id == 152 || id == 153 || id == 154 || id == 163 || id == 164 || id == 178) {
+		    id == 69 || id == 70 || id == 72 || id == 143 || id == 144 || id == 145 || id == 146 || id == 147 || id == 148 || id == 149 || id == 150 || id == 151 || id == 152 || id == 154 || id == 163 || id == 166 || id == 178) {
 			f54 = 3;
 		} else if((it.itemClass && it.itemClass == Item::flowerPot) || id == 390) {
 			f54 = 3;
@@ -214,12 +217,14 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::emeraldOre, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::lapisOre, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::redStoneOre, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::netherQuartz, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::goldBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::ironBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::emeraldBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::lapisBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::coalBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::obsidian, 1, 0);
+	CreativeInventoryScreen::populateItem(Tile::soulSand, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::ice, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::snow, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::topSnow, 1, 0);
@@ -445,6 +450,18 @@ void CreativeInventoryScreen::render(int32_t a2, int32_t a3, float a4) {
 	this->fill(v15, v25->field_228.minY - v25->field_24C, v15 + this->field_B8, v25->field_228.minY + v25->field_228.height + v25->field_24C, 0xFF333333);
 	v25->render(a2, a3, a4);
 	Screen::render(a2, a3, a4);
+	if (this->armorButton) {
+		float v8 = 0.0f;
+		int v9 = this->field_58;
+		float v10 = (float)v9;
+		if (this->armorButton->pressed) {
+			v8 = 2.0f;
+		}
+		float v13 = (float)(v10 - v8) / 25.0f;
+		float v11 = (float)((float)this->armorButton->posY + (float)(v10 * 0.5f)) - 8.0f;
+		ItemInstance chestplate(Item::chestplate_iron);
+		ItemRenderer::renderGuiItemNew(this->minecraft->texturesPtr, &chestplate, 0, (float)(this->armorButton->posX + v9 / 2 - 8) + 1.0f, v11, 1.0f, 1.0f, v13);
+	}
 	for(auto v27: this->field_98) {
 		if(v27.field_4.get() == this->field_A4) {
 			v27.field_4->color = Color4::WHITE;
@@ -465,9 +482,26 @@ void CreativeInventoryScreen::init()
 		Item::bed->setCategory((Options::instance && Options::instance->newAdditions) ? 5 : 2, 1);
 	}
 	CreativeInventoryScreen::populateItems();
-	if (this->minecraft->options.newAdditions) {
+	if (Options::instance && Options::instance->newAdditions) {
+		if (Tile::stainedGlass) {
+			for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
+				CreativeInventoryScreen::populateItem(Tile::stainedGlass, 1, i);
+			}
+		}
+		if (Tile::stainedGlassPane) {
+			for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
+				CreativeInventoryScreen::populateItem(Tile::stainedGlassPane, 1, i);
+			}
+		}
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			CreativeInventoryScreen::populateItem(Tile::coloredPlanks, 1, i);
+			if (Tile::coloredPlanks) {
+				CreativeInventoryScreen::populateItem(Tile::coloredPlanks, 1, i);
+			}
+		}
+		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
+			if (Tile::coloredLogs[i]) {
+				CreativeInventoryScreen::populateItem(Tile::coloredLogs[i], 1, 0);
+			}
 		}
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredStairs[i]) {
@@ -482,11 +516,6 @@ void CreativeInventoryScreen::init()
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			if (Tile::coloredFences[i]) {
 				CreativeInventoryScreen::populateItem(Tile::coloredFences[i], 1, 0);
-			}
-		}
-		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			if (Tile::coloredLogs[i]) {
-				CreativeInventoryScreen::populateItem(Tile::coloredLogs[i], 1, 0);
 			}
 		}
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
@@ -516,7 +545,7 @@ void CreativeInventoryScreen::init()
 
 	NinePatchFactory v16(this->minecraft->texturesPtr, "gui/spritesheet.png");
 	this->field_68 = std::shared_ptr<NinePatchLayer>(v16.createSymmetrical(IntRectangle{34, 43, 14, 14}, 3, 3, 14, 14));
-	int num_tabs = (Options::instance && Options::instance->newAdditions) ? 7 : 5;
+	int num_tabs = (Options::instance && Options::instance->newAdditions) ? 6 : 4;
 	int v4 = (height - 25) / num_tabs - this->field_5C;
 	if(v4 >= 30) {
 		v4 = 30;
@@ -524,6 +553,7 @@ void CreativeInventoryScreen::init()
 	this->field_58 = v4;
 	IntRectangle a5 = {this->minecraft->options.leftHanded ? 65 : 49, this->minecraft->options.leftHanded ? 55 : 43, 14, 14};
 	this->field_70 = std::shared_ptr<NinePatchLayer>(v16.createSymmetrical(a5, 3, 3, v4, v4));
+	this->field_98.clear();
 	this->field_98.emplace_back(CreativeInventoryScreen::TabButtonWithMeta(1, this->createInventoryTabButton(6, 1)));
 	this->field_98.emplace_back(CreativeInventoryScreen::TabButtonWithMeta(2, this->createInventoryTabButton(7, 2)));
 	this->field_98.emplace_back(CreativeInventoryScreen::TabButtonWithMeta(3, this->createInventoryTabButton(8, 3)));
@@ -551,34 +581,46 @@ void CreativeInventoryScreen::init()
 	v5->height = this->field_58 - 1;
 	v5->setImageDef(v18, 0);
 	this->field_60 = std::shared_ptr<ImageWithBackground>(v5);
+
+	ImageWithBackground* vArmor = new ImageWithBackground(12);
+	vArmor->init(this->minecraft->texturesPtr, this->field_58, this->field_58, a5, a5, 2, 2, "gui/spritesheet.png");
+	vArmor->width = this->field_58;
+	vArmor->height = this->field_58 - 1;
+	this->armorButton = std::shared_ptr<ImageWithBackground>(vArmor);
+
 	this->field_A4 = this->field_98[0].field_4.get();
+	this->buttons.clear();
 	for(auto p: this->field_98) {
 		this->buttons.emplace_back(p.field_4.get());
 	}
 	this->buttons.emplace_back(this->field_60.get());
+	this->buttons.emplace_back(this->armorButton.get());
 	this->field_BC = 1;
 }
 void CreativeInventoryScreen::setupPositions()
 {
-	this->field_68->setSize((float)((float)this->width - 4.0) - (float)this->field_58, (float)this->height - 25.0);
-	int v3;
-	if(this->minecraft->options.leftHanded) {
-		v3 = 2;
-	} else {
-		v3 = this->field_58 + 2;
-	}
+	this->field_68->setSize((float)((float)this->width - 4.0) - (float)this->field_58 * 2.0f, (float)this->height - 25.0);
+	int v3 = this->field_58 + 2;
 	this->field_AC = 2;
 	this->field_A8 = v3;
 	this->field_B0 = 0;
 	int v6 = ~this->field_60->height + (int)this->field_68->height2;
 	float v7;
 	if(this->minecraft->options.leftHanded) {
-		v7 = (float)((float)v3 + this->field_68->width2) - 2.0;
+		v7 = (float)((float)v3 + this->field_68->width2) + 2.0;
 	} else {
 		v7 = (float)(v3 - this->field_58 + 3);
 	}
 	this->field_60->posX = (int)v7;
 	this->field_60->posY = this->field_AC;
+
+	float rightX = this->minecraft->options.leftHanded ? 2.0f : (float)((float)v3 + this->field_68->width2) + 2.0f;
+	if (this->armorButton) {
+		this->armorButton->posX = (int)rightX;
+		this->armorButton->posY = this->field_AC;
+		this->armorButton->width = this->field_58;
+		this->armorButton->height = this->field_58 - 1;
+	}
 
 	for(auto&& p: this->field_98) {
 		p.field_4->posX = (int)v7;
@@ -630,8 +672,10 @@ bool_t CreativeInventoryScreen::renderGameBehind() {
 void CreativeInventoryScreen::buttonClicked(Button* a2) {
 	if(a2 == this->field_60.get()) {
 		this->closeWindow();
+	} else if(a2 == this->armorButton.get() || a2->buttonID == 12) {
+		this->minecraft->setScreen(new ArmorScreen());
 	} else {
-		if(a2->buttonID > 5) {
+		if(a2->buttonID >= 6 && a2->buttonID <= 11) {
 			this->field_A4 = a2;
 			this->currentPaneMaybe = a2->buttonID - 6;
 			this->setupPositions();

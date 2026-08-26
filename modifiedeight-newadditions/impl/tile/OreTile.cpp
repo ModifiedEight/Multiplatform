@@ -17,13 +17,15 @@ int32_t OreTile::getResource(int32_t a2, Random* a3) {
 		v4 = Item::coal;
 	} else if(result == Tile::emeraldOre->blockID) {
 		v4 = Item::emerald;
+	} else if(Tile::netherQuartz && result == Tile::netherQuartz->blockID) {
+		v4 = Item::netherQuartz;
 	} else {
 		if(result != Tile::lapisOre->blockID) {
 			return result;
 		}
 		v4 = Item::dye_powder;
 	}
-	return v4->itemID;
+	return v4 ? v4->itemID : result;
 }
 int32_t OreTile::getResourceCount(Random* a2) {
 	if(this->blockID == Tile::lapisOre->blockID) {

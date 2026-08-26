@@ -15,6 +15,7 @@
 #include <tile/StemTile.hpp>
 #include <tile/ThinFenceTile.hpp>
 #include <tile/Tile.hpp>
+#include <tile/TreeTile.hpp>
 #include <tile/WallTile.hpp>
 #include <tile/material/Material.hpp>
 #include <rendering/EntityTileRenderer.hpp>
@@ -23,6 +24,7 @@
 #include <util/CushionManager.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <tile/FlowerPotTile.hpp>
+#include <utils.h>
 
 void TileRenderer::_randomizeFaceDirection(Tile* a2, int32_t a3, float a4, float a5, float a6) {
 	int32_t* v6; // r2
@@ -162,6 +164,9 @@ void TileRenderer::renderEast(Tile* a2, float a3, float a4, float a5, const stru
 		if (Tile::grassSlabHalf && a2 == Tile::grassSlabHalf && maxY <= 0.5f) {
 			minY = a6->minY;
 			v17 = a6->minY + 0.5f * v23;
+		} else if (Tile::daylightDetector && (a2 == Tile::daylightDetector || a2 == Tile::daylightDetectorInverted)) {
+			minY = a6->minY;
+			v17 = a6->minY + 0.375f * v23;
 		} else {
 			v17 = v17 - (float)(v21 * (float)(v17 - minY));
 			minY = a6->maxY - (float)(maxY * v23);
@@ -837,6 +842,9 @@ void TileRenderer::renderNorth(Tile* a2, float a3, float a4, float a5, const str
 		if (Tile::grassSlabHalf && a2 == Tile::grassSlabHalf && maxY <= 0.5f) {
 			minY = a6->minY;
 			v17 = a6->minY + 0.5f * v23;
+		} else if (Tile::daylightDetector && (a2 == Tile::daylightDetector || a2 == Tile::daylightDetectorInverted)) {
+			minY = a6->minY;
+			v17 = a6->minY + 0.375f * v23;
 		} else {
 			v17 = v17 - (float)(v21 * (float)(v17 - minY));
 			minY = a6->maxY - (float)(maxY * v23);
@@ -975,6 +983,9 @@ void TileRenderer::renderSouth(Tile* a2, float a3, float a4, float a5, const Tex
 		if (Tile::grassSlabHalf && a2 == Tile::grassSlabHalf && maxY <= 0.5f) {
 			minY = v10->minY;
 			v17 = v10->minY + 0.5f * v23;
+		} else if (Tile::daylightDetector && (a2 == Tile::daylightDetector || a2 == Tile::daylightDetectorInverted)) {
+			minY = v10->minY;
+			v17 = v10->minY + 0.375f * v23;
 		} else {
 			v17 = v17 - (float)(v21 * (float)(v17 - minY));
 			minY = v10->maxY - (float)(maxY * v23);
@@ -1388,6 +1399,9 @@ void TileRenderer::renderWest(Tile* a2, float a3, float a4, float a5, const stru
 		if (Tile::grassSlabHalf && a2 == Tile::grassSlabHalf && maxY <= 0.5f) {
 			minY = a6->minY;
 			v17 = a6->minY + 0.5f * v23;
+		} else if (Tile::daylightDetector && (a2 == Tile::daylightDetector || a2 == Tile::daylightDetectorInverted)) {
+			minY = a6->minY;
+			v17 = a6->minY + 0.375f * v23;
 		} else {
 			v17 = v17 - (float)(v21 * (float)(v17 - minY));
 			minY = a6->maxY - (float)(maxY * v23);
@@ -3509,9 +3523,8 @@ bool_t TileRenderer::tesselateFireInWorld(Tile* tile, int32_t x, int32_t y, int3
 	return 1;
 }
 bool_t TileRenderer::tesselateInWorld(Tile* a2, int32_t a3, int32_t a4, int32_t a5) {
-	int32_t v9; // r9
-
-	v9 = a2->getRenderShape();
+	if (!a2) return 0;
+	int32_t v9 = a2->getRenderShape();
 	a2->updateShape(this->levelSource, a3, a4, a5);
 	switch(v9) {
 		case 0: {
@@ -3655,7 +3668,8 @@ bool_t TileRenderer::tesselateVineInWorld(Tile* tile, int32_t x, int32_t y, int3
 }
 
 bool_t TileRenderer::tesselateWaterLilyInWorld(Tile* tile, int32_t x, int32_t y, int32_t z) {
-	TextureUVCoordinateSet* tex = tile->getTexture(0);
+	TextureUVCoordinateSet* tex = tile->getTexture(this->levelSource, x, y, z, 0);
+	if (!tex) tex = tile->getTexture(0);
 	float brightness = tile->getBrightness(this->levelSource, x, y, z);
 	int32_t color = tile->getColor(this->levelSource, x, y, z);
 	float r = brightness * (float)((color >> 16) & 0xFF) / 255.0f;
@@ -5142,12 +5156,16 @@ bool_t TileRenderer::tesselateLeverInWorld(Tile* tile, int32_t x, int32_t y, int
 		baseTile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	}
 
+	float br = tile->getBrightness(this->levelSource, x, y, z);
+	Tesselator::instance.color(br, br, br);
+
 	TextureUVCoordinateSet texUV;
 	if (this->hasUVCoords) {
 		texUV = this->field_8;
 	} else {
 		TextureUVCoordinateSet* pTex = tile->getTexture(0);
 		if (pTex) texUV = *pTex;
+		else if (Tile::stoneBrick && Tile::stoneBrick->getTexture(0)) texUV = *Tile::stoneBrick->getTexture(0);
 	}
 
 	float uW = texUV.maxX - texUV.minX;
@@ -5338,6 +5356,15 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			cr = (float)((fc >> 16) & 0xFF) / 255.0f;
 			cg = (float)((fc >> 8) & 0xFF) / 255.0f;
 			cb = (float)(fc & 0xFF) / 255.0f;
+		} else if (bTile && (bTile == Tile::grass || (Tile::grassSlab && bTile == Tile::grassSlab) || (Tile::grassSlabHalf && bTile == Tile::grassSlabHalf))) {
+			if (face == 1) {
+				uint32_t gc = Tile::grass ? Tile::grass->getColor(this->levelSource, x, y, z) : 0x7CBD6B;
+				cr = (float)((gc >> 16) & 0xFF) / 255.0f;
+				cg = (float)((gc >> 8) & 0xFF) / 255.0f;
+				cb = (float)(gc & 0xFF) / 255.0f;
+			} else {
+				cr = 1.0f; cg = 1.0f; cb = 1.0f;
+			}
 		} else {
 			cr = b_cr; cg = b_cg; cb = b_cb;
 		}
@@ -5349,6 +5376,15 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			cr = (float)((fc >> 16) & 0xFF) / 255.0f;
 			cg = (float)((fc >> 8) & 0xFF) / 255.0f;
 			cb = (float)(fc & 0xFF) / 255.0f;
+		} else if (tTile && (tTile == Tile::grass || (Tile::grassSlab && tTile == Tile::grassSlab) || (Tile::grassSlabHalf && tTile == Tile::grassSlabHalf))) {
+			if (face == 1) {
+				uint32_t gc = Tile::grass ? Tile::grass->getColor(this->levelSource, x, y, z) : 0x7CBD6B;
+				cr = (float)((gc >> 16) & 0xFF) / 255.0f;
+				cg = (float)((gc >> 8) & 0xFF) / 255.0f;
+				cb = (float)(gc & 0xFF) / 255.0f;
+			} else {
+				cr = 1.0f; cg = 1.0f; cb = 1.0f;
+			}
 		} else {
 			cr = t_cr; cg = t_cg; cb = t_cb;
 		}

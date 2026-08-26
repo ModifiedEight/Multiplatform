@@ -462,7 +462,7 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight New Additions 1.6.3.1 (%d fps)",
+            sprintf(dbgText1, "ModifiedEight New Additions 1.6.4.1 (%d fps)",
                     fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
@@ -592,8 +592,10 @@ void Gui::renderChatMessages(int32_t a2, int32_t a3, uint32_t a4, bool_t a5,
       if (this->minecraftInst->options.debugScreen) {
         chatBaseY = 78;
       } else {
-        if (this->minecraftInst->options.showCoordinates) chatBaseY += 10;
-        if (this->minecraftInst->options.showFps) chatBaseY += 10;
+        if (this->minecraftInst->options.showCoordinates)
+          chatBaseY += 10;
+        if (this->minecraftInst->options.showFps)
+          chatBaseY += 10;
       }
     }
     int32_t v7 = 0;
@@ -633,8 +635,7 @@ void Gui::renderChatMessages(int32_t a2, int32_t a3, uint32_t a4, bool_t a5,
                 bgColor = 0;
 
               float lineY = (float)(9 * (v16 - 1) + chatBaseY);
-              this->fill(2.0f, lineY - 1.0f,
-                         (float)this->field_18 + 2.0f,
+              this->fill(2.0f, lineY - 1.0f, (float)this->field_18 + 2.0f,
                          lineY + 8.0f, bgColor);
 
               int textColor = 0xFFFFFF; // White

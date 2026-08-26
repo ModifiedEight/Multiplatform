@@ -28,6 +28,7 @@ struct CreativeInventoryScreen: Screen, Touch::IInventoryPaneCallback
 
 	int32_t field_58, field_5C;
 	std::shared_ptr<ImageWithBackground> field_60;
+	std::shared_ptr<ImageWithBackground> armorButton;
 	std::shared_ptr<NinePatchLayer> field_68;
 	std::shared_ptr<NinePatchLayer> field_70;
 	std::shared_ptr<Touch::InventoryPane> field_78[6];

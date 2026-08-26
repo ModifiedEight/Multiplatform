@@ -6,37 +6,45 @@ bool_t FireTexture::isEnabled() {
 	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateFire) : 1;
 }
 
-FireTexture::FireTexture()
-	: DynamicTexture(Tile::fire->textureUV, 1) {
+FireTexture::FireTexture(const TextureUVCoordinateSet& uv)
+	: DynamicTexture(uv, 1) {
 	this->field_28 = new float[320];
 	this->field_2C = new float[320];
 	for(int32_t i = 0; i < 320; ++i) {
 		this->field_28[i] = 0;
 		this->field_2C[i] = 0;
 	}
+	for(int32_t i = 0; i < 50; ++i) {
+		this->tick();
+	}
+}
+
+FireTexture::FireTexture()
+	: FireTexture(*Tile::fire->getTexture(0)) {
 }
 
 FireTexture::~FireTexture() {
 	if(this->field_28) delete[] this->field_28;
 	if(this->field_2C) delete[] this->field_2C;
 }
+
 void FireTexture::tick() {
-	int32_t v2;	  // r5
-	float v4;	  // s15
-	int32_t i;	  // r3
-	int32_t v6;	  // r0
-	int32_t j;	  // r2
-	uint32_t v8;  // r0
-	int32_t v9;	  // r6
-	int32_t v10;  // r7
-	int32_t v11;  // r8
-	int32_t v12;  // r1
-	int32_t v13;  // r10
-	float* v14;	  // r2
-	uint32_t v15; // r3
-	float v16;	  // s15
-	int8_t v17;	  // r1
-	uint8_t* v18; // r2
+	int32_t v2;
+	float v4;
+	int32_t i;
+	int32_t v6;
+	int32_t j;
+	uint32_t v8;
+	int32_t v9;
+	int32_t v10;
+	int32_t v11;
+	int32_t v12;
+	int32_t v13;
+	float* v14;
+	uint32_t v15;
+	float v16;
+	int8_t v17;
+	uint8_t* v18;
 
 	v2 = 0;
 	do {

@@ -27,4 +27,6 @@ struct FireTile : Tile{
 	virtual void onPlace(Level*, int32_t, int32_t, int32_t);
 	virtual int32_t getResourceCount(Random*);
 	virtual int32_t getRenderLayer();
+	virtual TextureUVCoordinateSet* getTexture(int32_t);
+	virtual TextureUVCoordinateSet* getTexture(int32_t, int32_t);
 };

@@ -7,6 +7,7 @@ struct FireTexture: DynamicTexture
 	float* field_28, * field_2C;
 	Random random;
 
+	FireTexture(const TextureUVCoordinateSet& uv);
 	FireTexture();
 
 	virtual ~FireTexture();

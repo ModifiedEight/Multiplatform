@@ -183,7 +183,7 @@ int32_t GrassTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z)
 				else if (b == Biome::seasonalForest) c = 0x68B244;
 				else if (b == Biome::rainForest) c = 0x59C93C;
 				else if (b == Biome::taiga) c = 0x86B783;
-				else if (b == Biome::tundra || b == Biome::icePeaks) c = 0x80B497;
+				else if (b == Biome::tundra) c = 0x80B497;
 				else if (b == Biome::savanna) c = 0xBFB755;
 				else if (b == Biome::desert || b == Biome::iceDesert) c = 0xBFA243;
 				totalR += (c >> 16) & 0xFF;

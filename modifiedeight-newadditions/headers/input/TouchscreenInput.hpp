@@ -32,6 +32,7 @@ struct TouchscreenInput: IMoveInput
 	RectangleArea* chatButton;
 	RectangleArea* cameraButton;
 	RectangleArea* jumpButton;
+	RectangleArea* sneakButton;
 	RectangleArea* upLeftButton;
 	RectangleArea* upRightButton;
 	int8_t field_7C;
@@ -44,7 +45,7 @@ struct TouchscreenInput: IMoveInput
 	int8_t field_AA;
 	int8_t field_AB;
 	float field_AC;
-	int8_t field_B0[8];
+	int8_t field_B0[16];
 
 	int32_t forwardTapTimer;
 	bool_t forwardDoubleTapDetected;

@@ -6,14 +6,21 @@ bool_t FireTexture::isEnabled() {
 	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateFire) : 1;
 }
 
-FireTexture::FireTexture()
-	: DynamicTexture(Tile::fire->textureUV, 1) {
+FireTexture::FireTexture(const TextureUVCoordinateSet& uv)
+	: DynamicTexture(uv, 1) {
 	this->field_28 = new float[320];
 	this->field_2C = new float[320];
 	for(int32_t i = 0; i < 320; ++i) {
 		this->field_28[i] = 0;
 		this->field_2C[i] = 0;
 	}
+	for(int32_t i = 0; i < 50; ++i) {
+		this->tick();
+	}
+}
+
+FireTexture::FireTexture()
+	: FireTexture(*Tile::fire->getTexture(0)) {
 }
 
 FireTexture::~FireTexture() {

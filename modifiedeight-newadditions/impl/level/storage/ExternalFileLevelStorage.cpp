@@ -1,4 +1,5 @@
 #include <level/storage/ExternalFileLevelStorage.hpp>
+#include <level/dimension/Dimension.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <util/CushionManager.hpp>
 #include <GetTime.h>

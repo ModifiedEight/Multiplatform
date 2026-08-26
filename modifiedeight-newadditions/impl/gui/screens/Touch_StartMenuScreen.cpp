@@ -471,14 +471,14 @@ void Touch::StartMenuScreen::init() {
   this->settingsButtonMaybe->setImageDef(v13, 0);
   this->settingsButtonMaybe->width = 32;
   this->settingsButtonMaybe->height = 32;
-#if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
   this->marketplaceButton.init(this->minecraft);
   this->marketplaceButton.setMsg("Texture Packs");
-  this->marketplaceButton.active = 1;
-  this->marketplaceButton.visible = 1;
+  this->marketplaceButton.active =
+      (Options::instance && Options::instance->marketplace);
+  this->marketplaceButton.visible =
+      (Options::instance && Options::instance->marketplace);
   this->buttons.emplace_back(&this->marketplaceButton);
   this->field_2C.emplace_back(&this->marketplaceButton);
-#endif
   this->buttons.emplace_back(&this->playButton);
   this->buttons.emplace_back(&this->playOnRealmsButton);
   this->buttons.emplace_back(this->settingsButtonMaybe);
@@ -486,7 +486,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->playOnRealmsButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
   this->field_138 =
-      "\x0fMojang AB, ModifiedEight New Additions 1.6.3.1 by eqozqq";
+      "\x0fMojang AB, ModifiedEight New Additions 1.6.4.1 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;
@@ -518,18 +518,22 @@ void Touch::StartMenuScreen::setupPositions() {
                        (posY + this->playOnRealmsButton.height - v13)) /
                           2;
 
-#if !defined(ANDROID) && !defined(MCPE_IOS) && !defined(__APPLE__)
-  this->playButton.posY = v13 + v14 - 30;
   this->marketplaceButton.width = this->playButton.width;
   this->marketplaceButton.height = this->playButton.height;
   this->marketplaceButton.posX = this->playButton.posX;
-  this->marketplaceButton.posY = this->playButton.posY + 32;
-  this->playOnRealmsButton.posY = this->marketplaceButton.posY + 32;
-#else
-  this->playButton.posY = v13 + v14;
-  this->playOnRealmsButton.posY = posY + v14;
-  this->marketplaceButton.visible = 0;
-#endif
+  if (Options::instance && Options::instance->marketplace) {
+    this->playButton.posY = v13 + v14 - 30;
+    this->marketplaceButton.posY = this->playButton.posY + 32;
+    this->playOnRealmsButton.posY = this->marketplaceButton.posY + 32;
+    this->marketplaceButton.visible = 1;
+    this->marketplaceButton.active = 1;
+  } else {
+    this->playButton.posY = v13 + v14;
+    this->playOnRealmsButton.posY = posY + v14;
+    this->marketplaceButton.posY = -1000;
+    this->marketplaceButton.visible = 0;
+    this->marketplaceButton.active = 0;
+  }
   this->settingsButtonMaybe->height = 32;
   this->settingsButtonMaybe->width = 32;
   this->settingsButtonMaybe->posX =

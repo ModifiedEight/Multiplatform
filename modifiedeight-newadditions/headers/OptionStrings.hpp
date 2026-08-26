@@ -25,6 +25,7 @@ struct OptionStrings{
 	static char_t* Graphics_AnimateLava;
 	static char_t* Graphics_AnimateFire;
 	static char_t* Graphics_Gamma;
+	static char_t* Graphics_SmoothChunks;
 	static char_t* Multiplayer_ServerVisible;
 	static char_t* Controls_FeedbackVibration;
 	static char_t* Graphics_PixelsPerMilimeter;

@@ -376,6 +376,14 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Shows a camera toggle button in the HUD";
     return 1;
   }
+  if (a1 == "options.swapjumpandsneak") {
+    a2 = "Swap Jump and Sneak";
+    return 1;
+  }
+  if (a1 == "options.swapjumpandsneak.desc") {
+    a2 = "Swaps the positions of the Jump and Sneaking buttons";
+    return 1;
+  }
   if (a1 == "options.showcoordinates") {
     a2 = "Show Coordinates";
     return 1;
@@ -418,6 +426,14 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   }
   if (a1 == "options.animatefire") {
     a2 = "Animated Fire";
+    return 1;
+  }
+  if (a1 == "options.smoothchunks") {
+    a2 = "Smooth Chunk Loading";
+    return 1;
+  }
+  if (a1 == "options.smoothchunks.desc") {
+    a2 = "Smooths chunk rebuilds to eliminate frame drops";
     return 1;
   }
   if (a1 == "tile.pressurePlateStone.name") {
@@ -481,6 +497,22 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Seagrass";
     return 1;
   }
+  if (a1 == "tile.redstoneLamp.name" || a1 == "tile.redstoneLight.name" || a1 == "item.redstoneLamp.name") {
+    a2 = "Redstone Lamp";
+    return 1;
+  }
+  if (a1 == "tile.hellsand.name" || a1 == "item.hellsand.name" || a1 == "tile.soulSand.name") {
+    a2 = "Soul Sand";
+    return 1;
+  }
+  if (a1 == "tile.netherquartz.name" || a1 == "item.netherquartz.name" || a1 == "tile.quartzOre.name") {
+    a2 = "Nether Quartz Ore";
+    return 1;
+  }
+  if (a1 == "tile.portal.name") {
+    a2 = "Nether Portal";
+    return 1;
+  }
   if (translateCustomDesc(a1, a2)) {
     return 1;
   }
@@ -524,6 +556,10 @@ std::string I18n::get(const std::string &a2) {
     return "HUD Camera Button";
   if (a2 == "options.hudcamerabutton.desc")
     return "Shows a camera toggle button in the HUD";
+  if (a2 == "options.swapjumpandsneak")
+    return "Swap Jump and Sneak";
+  if (a2 == "options.swapjumpandsneak.desc")
+    return "Swaps the positions of the Jump and Sneaking buttons";
   if (a2 == "options.showcoordinates")
     return "Show Coordinates";
   if (a2 == "options.showcoordinates.desc")
@@ -546,6 +582,10 @@ std::string I18n::get(const std::string &a2) {
     return "Animated Lava";
   if (a2 == "options.animatefire")
     return "Animated Fire";
+  if (a2 == "options.smoothchunks")
+    return "Smooth Chunk Loading";
+  if (a2 == "options.smoothchunks.desc")
+    return "Smooths chunk rebuilds to eliminate frame drops";
   if (a2 == "tile.pressurePlateStone.name")
     return "Stone Pressure Plate";
   if (a2 == "tile.pressurePlateWood.name")
@@ -609,6 +649,8 @@ std::string I18n::get(const std::string &a2) {
     return "Vines";
   if (a2 == "tile.seagrass.name" || a2 == "item.seagrass.name")
     return "Seagrass";
+  if (a2 == "tile.redstoneLamp.name" || a2 == "tile.redstoneLight.name" || a2 == "item.redstoneLamp.name")
+    return "Redstone Lamp";
   if (a2 == "tile.dirtSlab.name" || a2 == "item.dirtSlab.name")
     return "Dirt Slab";
   if (a2 == "tile.grassSlab.name" || a2 == "item.grassSlab.name")

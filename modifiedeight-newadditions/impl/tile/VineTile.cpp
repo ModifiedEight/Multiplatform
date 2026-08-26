@@ -44,10 +44,27 @@ int32_t VineTile::getColor(int32_t) {
 
 int32_t VineTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	if (level) {
-		Biome* b = level->getBiome(x, z);
-		if (b == Biome::swampland) {
-			return 0x6A7039;
+		int totalR = 0, totalG = 0, totalB = 0;
+		for (int sx = -1; sx <= 1; ++sx) {
+			for (int sz = -1; sz <= 1; ++sz) {
+				Biome* b = level->getBiome(x + sx, z + sz);
+				int c = 0x30BB0B;
+				if (b == Biome::swampland) c = 0x6A7039;
+				else if (b == Biome::jungle || b == Biome::rainForest) c = 0x30BB0B;
+				else if (b == Biome::plains) c = 0x77AB2F;
+				else if (b == Biome::forest) c = 0x59AE30;
+				else if (b == Biome::birchForest) c = 0x6BAE41;
+				else if (b == Biome::seasonalForest) c = 0x509C2C;
+				else if (b == Biome::savanna || b == Biome::desert || b == Biome::iceDesert) c = 0xAEA42A;
+				else if (b == Biome::taiga) c = 0x68B55F;
+				else if (b == Biome::tundra || b == Biome::icePeaks) c = 0x60A17B;
+				else if (b == Biome::mountain) c = 0x55A834;
+				totalR += (c >> 16) & 0xFF;
+				totalG += (c >> 8) & 0xFF;
+				totalB += c & 0xFF;
+			}
 		}
+		return ((totalR / 9) << 16) | ((totalG / 9) << 8) | (totalB / 9);
 	}
 	return 0x30BB0B;
 }

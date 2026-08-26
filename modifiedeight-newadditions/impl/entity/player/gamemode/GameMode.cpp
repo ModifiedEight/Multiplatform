@@ -177,9 +177,10 @@ bool_t GameMode::useItemOn(Player* player, Level* level, ItemInstance* a4, int32
 		this->minecraft->rakNetInstance->send(v24);
 	}
 	int32_t bid = level->getTile(x, y, z);
-	if(bid == Tile::invisible_bedrock->blockID) return 0;
-	if(CushionManager::handleUse(player, level, x, y, z, face, faceX, faceY, faceZ, sel)) return 1;
-	if(bid > 0 && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
+	bool_t isSneakingWithItem = player->isSneaking() && ItemInstance::isItem(sel);
+	if(!isSneakingWithItem) {
+		if(bid > 0 && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
+	}
 	if(!ItemInstance::isItem(sel)) {
 		return 0;
 	}

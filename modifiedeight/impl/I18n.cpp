@@ -78,6 +78,8 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.discordrpc") { a2 = "Discord Integration"; return 1; }
 	if (a1 == "options.hudcamerabutton") { a2 = "HUD Camera Button"; return 1; }
 	if (a1 == "options.hudcamerabutton.desc") { a2 = "Shows a camera toggle button in the HUD"; return 1; }
+	if (a1 == "options.swapjumpandsneak") { a2 = "Swap Jump and Sneak"; return 1; }
+	if (a1 == "options.swapjumpandsneak.desc") { a2 = "Swaps the positions of the Jump and Sneaking buttons"; return 1; }
 	if (a1 == "options.showcoordinates") { a2 = "Show Coordinates"; return 1; }
 	if (a1 == "options.showcoordinates.desc") { a2 = "Shows the player coordinates on screen"; return 1; }
 	if (a1 == "options.classictextures") { a2 = "Classic texture loader"; return 1; }
@@ -89,6 +91,8 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.animatewater") { a2 = "Animated Water"; return 1; }
 	if (a1 == "options.animatelava") { a2 = "Animated Lava"; return 1; }
 	if (a1 == "options.animatefire") { a2 = "Animated Fire"; return 1; }
+	if (a1 == "options.smoothchunks") { a2 = "Smooth Chunk Loading"; return 1; }
+	if (a1 == "options.smoothchunks.desc") { a2 = "Smooths chunk rebuilds to eliminate frame drops"; return 1; }
 
 	auto&& v3 = I18n::_strings.find(a1);
 	if(v3 == I18n::_strings.end()) return 0;
@@ -108,6 +112,8 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "options.chatbgcolor") return "Chat BG Color";
 	if (a2 == "options.hudcamerabutton") return "HUD Camera Button";
 	if (a2 == "options.hudcamerabutton.desc") return "Shows a camera toggle button in the HUD";
+	if (a2 == "options.swapjumpandsneak") return "Swap Jump and Sneak";
+	if (a2 == "options.swapjumpandsneak.desc") return "Swaps the positions of the Jump and Sneaking buttons";
 	if (a2 == "options.showcoordinates") return "Show Coordinates";
 	if (a2 == "options.showcoordinates.desc") return "Shows the player coordinates on screen";
 	if (a2 == "options.classictextures") return "Classic texture loader";
@@ -119,6 +125,8 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "options.animatewater") return "Animated Water";
 	if (a2 == "options.animatelava") return "Animated Lava";
 	if (a2 == "options.animatefire") return "Animated Fire";
+	if (a2 == "options.smoothchunks") return "Smooth Chunk Loading";
+	if (a2 == "options.smoothchunks.desc") return "Smooths chunk rebuilds to eliminate frame drops";
 	if (a2 == "options.showfps") return "Show FPS";
 	if (a2 == "options.debugscreen") return "Debug Screen";
 	if (a2 == "options.discordrpc") return "Discord Integration";

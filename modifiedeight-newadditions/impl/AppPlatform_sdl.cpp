@@ -220,7 +220,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.3.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.4.1", 0);
 
   {
     int w, h, ch;
@@ -434,6 +434,12 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
     mc->screenChooser.setScreen(CHAT_SCREEN);
     return;
   }
+  if ((key == SDLK_SLASH || key == '/' || key == 47 || scancode == 61 || scancode == 53) &&
+      mc->mouseGrabbed) {
+    mc->screenChooser.setScreen(CHAT_SCREEN);
+    mc->setTextboxText("/");
+    return;
+  }
   if ((key == SDLK_q || key == 1738 || key == 1770 || scancode == 24) &&
       mc->mouseGrabbed) {
     mc->player->inventory->dropSlot(mc->player->inventory->selectedSlot, 0, 0);
@@ -554,7 +560,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.3.1",
+              details, "icon", "ModifiedEight New Additions 1.6.4.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

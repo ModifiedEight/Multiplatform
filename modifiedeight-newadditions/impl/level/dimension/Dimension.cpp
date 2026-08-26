@@ -114,12 +114,9 @@ bool_t Dimension::mayRespawn(void) {
 	return 1;
 }
 void Dimension::updateLightRamp(void) {
-	float bright = 0.5f;
-	if(Options::instance) bright = Options::instance->brightness;
 	for(int32_t i = 0; i != 16; ++i) {
-		float f1 = 1.0f - (float)i / 15.0f;
-		float base = (1.0f - f1) / (f1 * 3.0f + 1.0f) * 0.95f + 0.05f;
-		this->lightRamp[i] = base + (1.0f - base) * bright * 0.85f;
+		float f1 = 1.0f - (float)i * 0.0625f;
+		this->lightRamp[i] = (1.0f - f1) / (f1 * 3.0f + 1.0f) * 0.95f + 0.15f;
 	}
 }
 void Dimension::init() {

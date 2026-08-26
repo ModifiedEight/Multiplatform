@@ -1272,11 +1272,22 @@ LABEL_4:
 		}
 		int v19 = v7->size();
 		int v20 = v19 - 1;
+		bool smooth = Options::instance ? Options::instance->smoothChunks : true;
+		int rebuilt = 0;
 		while(v20 >= 0) {
 			RenderChunk* v22 = v7->at(v20);
 			--v20;
 			v22->rebuild();
 			v22->setClean();
+			++rebuilt;
+			if(smooth && rebuilt >= 2 && v40.stopContinue() >= 0.007) {
+				break;
+			}
+		}
+		while(v20 >= 0) {
+			RenderChunk* unbuilt = v7->at(v20);
+			--v20;
+			this->_renderChunks.push_back(unbuilt);
 		}
 		delete v7;
 	}

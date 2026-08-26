@@ -79,6 +79,7 @@
 #include <tile/Mushroom.hpp>
 #include <tile/NetherReactor.hpp>
 #include <tile/ObsidianTile.hpp>
+#include <tile/SoulSandTile.hpp>
 #include <tile/OreTile.hpp>
 #include <tile/PotatoTile.hpp>
 #include <tile/PoweredRailTile.hpp>
@@ -257,7 +258,9 @@ Tile *Tile::reeds;
 Tile *Tile::fence;
 Tile *Tile::pumpkin;
 Tile *Tile::netherrack;
+Tile *Tile::soulSand;
 Tile *Tile::lightGem;
+Tile *Tile::netherQuartz;
 Tile *Tile::litPumpkin;
 Tile *Tile::cake;
 Tile *Tile::invisible_bedrock;
@@ -938,7 +941,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->setCategory(3, 8)
           ->setDescriptionId("pressurePlateSpruce");
   Tile::pressurePlate_birch =
-      (new PressurePlateTile(153, Tile::getTextureUVCoordinateSet("planks", 2),
+      (new PressurePlateTile(166, Tile::getTextureUVCoordinateSet("planks", 2),
                              Material::wood))
           ->init()
           ->setDestroyTime(0.5f)
@@ -1117,7 +1120,12 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                          ->setSoundType(Tile::SOUND_STONE)
                          ->setCategory(1, 1)
                          ->setDescriptionId("hellrock");
-  Tile::netherrack->field_5C = 255;
+  Tile::soulSand = (new SoulSandTile(88, "soul_sand"))
+                       ->init()
+                       ->setDestroyTime(0.5)
+                       ->setSoundType(Tile::SOUND_SAND)
+                       ->setCategory(1, 1)
+                       ->setDescriptionId("hellsand");
   Tile::lightGem = (new LightGemTile(89, "glowstone", Material::glass))
                        ->init()
                        ->setDestroyTime(0.3)
@@ -1125,6 +1133,13 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                        ->setSoundType(Tile::SOUND_GLASS)
                        ->setLightEmission(1.0)
                        ->setDescriptionId("lightgem");
+  Tile::netherQuartz = (new OreTile(153, "quartz_ore"))
+                           ->init()
+                           ->setDestroyTime(3.0)
+                           ->setExplodeable(5.0)
+                           ->setSoundType(Tile::SOUND_STONE)
+                           ->setCategory(1, 8)
+                           ->setDescriptionId("netherquartz");
   Tile::litPumpkin = (new PumpkinTile(91, 1))
                          ->init()
                          ->setDestroyTime(1.0)
@@ -1391,8 +1406,8 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
             ->setDescriptionId("coloredStairs." + std::string(buf));
   }
 
-  int brick_stair_ids[16] = {23, 25, 28, 29, 33, 34, 36, 52,
-                             55, 75, 76, 84, 88, 90, 93, 94};
+  int brick_stair_ids[16] = {202, 203, 204, 205, 206, 207, 208, 209,
+                             210, 211, 212, 213, 214, 215, 216, 165};
   for (int i = 0; i < 16; i++) {
     char buf[16];
     sprintf(buf, "%d", i);
@@ -1404,7 +1419,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
   }
 
   // Colored fences
-  int fence_ids[16] = {174, 175, 176, 179, 180, 181, 182, 183,
+  int fence_ids[16] = {174, 175, 176, 177, 180, 181, 182, 183,
                        184, 185, 186, 187, 188, 189, 243, 138};
   for (int i = 0; i < 16; i++) {
     char buf[16];

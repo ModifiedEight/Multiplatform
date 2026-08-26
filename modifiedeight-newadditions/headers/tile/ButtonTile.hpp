@@ -21,6 +21,7 @@ public:
     virtual bool_t mayPlace(Level* level, int32_t x, int32_t y, int32_t z, uint8_t side) override;
     virtual int32_t getPlacementDataValue(Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float fx, float fy, float fz, Mob* mob, int32_t meta) override;
     virtual void neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t ox, int32_t oy, int32_t oz, int32_t tileId) override;
+    virtual void entityInside(Level* level, int32_t x, int32_t y, int32_t z, Entity* entity) override;
     virtual bool_t use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) override;
     virtual void tick(Level* level, int32_t x, int32_t y, int32_t z, Random* rand) override;
     virtual void onRemove(Level* level, int32_t x, int32_t y, int32_t z) override;

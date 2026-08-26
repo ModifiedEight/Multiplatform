@@ -704,7 +704,7 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 	if(biomeAtChunk == Biome::plains) {
 		amountOfTrees -= 20;
 	}
-	if(this->level->getLevelData()->getGeneratorVersion() >= 2) {
+	if(this->level->getLevelData()->getGeneratorVersion() >= 1) {
 		amountOfTrees += 4;
 	}
 	for(int32_t v65 = 0; v65 < amountOfTrees; ++v65) {
@@ -928,7 +928,7 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 	} else if (biomeAtChunk == Biome::taiga) {
 		grassCount = 1;
 	}
-	if (this->level->getLevelData()->getGeneratorVersion() >= 2) grassCount = 2;
+	if (this->level->getLevelData()->getGeneratorVersion() >= 1) grassCount = 2;
 	for (int i = 0; i < grassCount; ++i) {
 		int32_t xx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
 		int32_t zz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
@@ -1101,7 +1101,7 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 			}
 		}
 	}
-	if (this->level->getLevelData()->getGeneratorVersion() >= 2) {
+	if (this->level->getLevelData()->getGeneratorVersion() >= 1) {
 		int32_t vChunkX = (int32_t)floorf((float)chunkX / 24.0f);
 		int32_t vChunkZ = (int32_t)floorf((float)chunkZ / 24.0f);
 		uint64_t vSeed = ((uint64_t)vChunkX * 341873128712ULL + (uint64_t)vChunkZ * 132897987541ULL) ^ (uint64_t)this->level->getSeed();

@@ -202,6 +202,7 @@ options.usetouchpad=Split controls
 options.destroyvibration=Destroy block (vibrate)
 options.fancyskies=Beautiful skies
 options.animatetextures=Animated water
+options.smoothchunks=Smooth Chunk Loading
 options.pixelspermilimeter=D-Pad size
 options.name=Name
 options.ordercraftable=Show craftable recipes first

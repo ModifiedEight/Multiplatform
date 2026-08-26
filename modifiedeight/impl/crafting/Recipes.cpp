@@ -172,6 +172,8 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Tile::stairs_sandStone, 4), "#  ", "## ", "###", definition<Tile*>('#', Tile::sandStone));
 	this->addShapedRecipe(ItemInstance(Tile::stairs_stoneBrickSmooth, 4), "#  ", "## ", "###", definition<Tile*>('#', Tile::stoneBrickSmooth));
 	this->addShapedRecipe(ItemInstance(Tile::stairs_netherBricks, 4), "#  ", "## ", "###", definition<Tile*>('#', (Tile*)Tile::netherBrick));
+	this->addShapedRecipe(ItemInstance(Tile::stairs_quartz, 4), "#  ", "## ", "###", definition<Tile*>('#', Tile::quartzBlock));
+	this->addShapedRecipe(ItemInstance(Tile::quartzBlock, 2, 2), "#", "#", definition<Tile*>('#', Tile::quartzBlock));
 	this->addShapedRecipe(ItemInstance(Item::painting, 1), "###", "#X#", "###", definition<Item*, Tile*>('#', Item::stick, 'X', Tile::cloth));
 	this->addShapedRecipe(ItemInstance(Item::clock, 1), " # ", "#X#", " # ", definition<Item*, Item*>('#', Item::goldIngot, 'X', Item::redStone));
 	this->addShapedRecipe(ItemInstance(Item::compass, 1), " # ", "#X#", " # ", definition<Item*, Item*>('#', Item::ironIngot, 88, Item::redStone));

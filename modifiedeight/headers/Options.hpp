@@ -50,6 +50,10 @@ struct Options{
 		static Options::Option ANIMATE_WATER;
 		static Options::Option ANIMATE_LAVA;
 		static Options::Option ANIMATE_FIRE;
+		static Options::Option BRIGHTNESS;
+		static Options::Option LOD_CHUNKS;
+		static Options::Option SMOOTH_CHUNKS;
+		static Options::Option SWAP_JUMP_AND_SNEAK;
 	};
 
 	static Options* instance;
@@ -122,6 +126,9 @@ struct Options{
 	bool_t showFps;
 	bool_t debugScreen;
 	bool_t discordIntegration;
+	bool_t lodChunks;
+	bool_t smoothChunks;
+	bool_t swapJumpAndSneak;
 	char_t field_109;
 	char_t field_10A;
 	char_t field_10B;

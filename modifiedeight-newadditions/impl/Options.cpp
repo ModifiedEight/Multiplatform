@@ -58,6 +58,8 @@ Options::Option Options::Option::ANIMATE_LAVA{0, "options.animatelava", 42};
 Options::Option Options::Option::ANIMATE_FIRE{0, "options.animatefire", 43};
 Options::Option Options::Option::BRIGHTNESS{1, "options.gamma", 44};
 Options::Option Options::Option::LOD_CHUNKS{0, "options.lodchunks", 45};
+Options::Option Options::Option::SWAP_JUMP_AND_SNEAK{0, "options.swapjumpandsneak", 46};
+Options::Option Options::Option::SMOOTH_CHUNKS{0, "options.smoothchunks", 47};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -151,6 +153,10 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->discordIntegration);
 						} else if(v13[i] == "options.lodchunks") {
 							this->readBool(v13[i + 1], this->lodChunks);
+						} else if(v13[i] == OptionStrings::Graphics_SmoothChunks || v13[i] == "options.smoothchunks") {
+							this->readBool(v13[i + 1], this->smoothChunks);
+						} else if(v13[i] == "options.swapjumpandsneak") {
+							this->readBool(v13[i + 1], this->swapJumpAndSneak);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -290,6 +296,10 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		if(this->minecraft && this->minecraft->levelRenderer) {
 			this->minecraft->levelRenderer->allChanged();
 		}
+	} else if(a2 == &Options::Option::SWAP_JUMP_AND_SNEAK) {
+		this->swapJumpAndSneak ^= 1u;
+	} else if(a2 == &Options::Option::SMOOTH_CHUNKS || (a2 && (a2->field_8 == 47 || a2->name == "options.smoothchunks"))) {
+		this->smoothChunks ^= 1u;
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
@@ -398,6 +408,8 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.chatcolor", this->chatColor);
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
 	this->addOptionToSaveOutput(v4, "options.lodchunks", this->lodChunks);
+	this->addOptionToSaveOutput(v4, "options.smoothchunks", this->smoothChunks);
+	this->addOptionToSaveOutput(v4, "options.swapjumpandsneak", this->swapJumpAndSneak);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
@@ -492,6 +504,9 @@ void Options::initDefaultValues(void) {
 	this->animateWater = 1;
 	this->animateLava = 1;
 	this->animateFire = 1;
+	this->lodChunks = 0;
+	this->smoothChunks = 1;
+	this->swapJumpAndSneak = 0;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->panoramaAngle = 0;
@@ -793,6 +808,10 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->discordIntegration;
 	} else if(a2 == &Options::Option::LOD_CHUNKS) {
 		return this->lodChunks;
+	} else if(a2 == &Options::Option::SMOOTH_CHUNKS || (a2 && (a2->field_8 == 47 || a2->name == "options.smoothchunks"))) {
+		return this->smoothChunks;
+	} else if(a2 == &Options::Option::SWAP_JUMP_AND_SNEAK) {
+		return this->swapJumpAndSneak;
 	} else if(a2 == &Options::Option::ANIMATE_TEXTURES || (a2 && a2->name == "options.animatetextures")) {
 		return this->animateTextures;
 	} else if(a2 == &Options::Option::ANIMATE_WATER || (a2 && (a2->field_8 == 41 || a2->name == "options.animatewater"))) {

@@ -21,6 +21,7 @@ char_t* OptionStrings::Graphics_AnimateWater = "gfx_animatewater";
 char_t* OptionStrings::Graphics_AnimateLava = "gfx_animatelava";
 char_t* OptionStrings::Graphics_AnimateFire = "gfx_animatefire";
 char_t* OptionStrings::Graphics_Gamma = "gfx_gamma";
+char_t* OptionStrings::Graphics_SmoothChunks = "gfx_smoothchunks";
 char_t* OptionStrings::Graphics_FancySkies =  "gfx_fancyskies";
 char_t* OptionStrings::Graphics_FancyGraphics = "gfx_fancygraphics";
 char_t* OptionStrings::Graphics_PixelsPerMilimeter = "gfx_pixeldensity";

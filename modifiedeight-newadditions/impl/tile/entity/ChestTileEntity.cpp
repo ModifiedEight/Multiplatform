@@ -53,8 +53,8 @@ bool_t ChestTileEntity::_saveClientSideState(CompoundTag* a2) {
 	if(TileEntity::save(a2)) {
 		if(this->pair) {
 			if(this->isUnpaired) {
-				a2->putInt("pairx", this->posX);
-				a2->putInt("pairz", this->posZ);
+				a2->putInt("pairx", this->pair->posX);
+				a2->putInt("pairz", this->pair->posZ);
 			}
 		}
 		return 1;
@@ -219,7 +219,7 @@ void ChestTileEntity::tick() {
 
 	if(this->field_A4) {
 		te = this->level->getTileEntity(this->field_9C, this->posY, this->field_A0);
-		if(te) {
+		if(te && te != this) {
 			this->pairWith((ChestTileEntity*)te, 1);
 			((ChestTileEntity*)te)->pairWith(this, 0);
 			this->field_A4 = 0;
@@ -328,57 +328,45 @@ std::string ChestTileEntity::getName() {
 	return this->pair ? "container.largechest" : "container.chest";
 }
 ItemInstance* ChestTileEntity::getItem(int32_t a2) {
-	ChestTileEntity* pair; // r3
-	ChestTileEntity* v3;   // r2
-	bool_t v4;			   // cc
-
-	pair = this->pair;
-	if(this->isUnpaired) {
-		v3 = this->pair;
-		pair = this;
-	} else {
-		v3 = this;
+	if(a2 < 0 || a2 >= this->getContainerSize()) return 0;
+	if(this->pair) {
+		if(this->isUnpaired) {
+			if(a2 < 27) return this->items[a2];
+			return this->pair->items[a2 - 27];
+		} else {
+			if(a2 < 27) return this->pair->items[a2];
+			return this->items[a2 - 27];
+		}
 	}
-	if(a2 <= 26) {
-		return pair->items[a2];
-	} else {
-		a2 -= 27;
-		return v3->items[a2];
-	}
+	return this->items[a2];
 }
 void ChestTileEntity::setItem(int32_t a2, ItemInstance* a3) {
-	int32_t v3;			   // r4
-	ChestTileEntity* v6;   // r2
-	ItemInstance* v10;	   // r2
-	ChestTileEntity* pair; // r3
-	ItemInstance v18;	   // [sp+4h] [bp-2Ch] BYREF
-
-	v3 = a2;
-	if(a2 >= 0 && a2 < this->getContainerSize()) {
-		pair = this->pair;
+	if(a2 < 0 || a2 >= this->getContainerSize()) return;
+	ChestTileEntity* target = this;
+	int slot = a2;
+	if(this->pair) {
 		if(this->isUnpaired) {
-			v6 = this->pair;
-			pair = this;
+			if(a2 >= 27) {
+				target = this->pair;
+				slot = a2 - 27;
+			}
 		} else {
-			v6 = this;
-		}
-		ItemInstance* v9;
-		if(v3 > 26) {
-			v3 -= 27;
-			v9 = v6->items[v3];
-		} else {
-			v9 = pair->items[v3];
-		}
-		if(v9) {
-			*v9 = (a3 ? ItemInstance(*a3) : ItemInstance());
-		} else {
-			ItemInstance* v15 = (a3 ? new ItemInstance(*a3) : new ItemInstance());
-			if(a2 > 26) {
-				v6->items[v3] = v15;
+			if(a2 < 27) {
+				target = this->pair;
 			} else {
-				pair->items[v3] = v15;
+				slot = a2 - 27;
 			}
 		}
+	}
+	if(target->items[slot]) {
+		if(a3) {
+			*target->items[slot] = *a3;
+		} else {
+			delete target->items[slot];
+			target->items[slot] = 0;
+		}
+	} else if(a3) {
+		target->items[slot] = new ItemInstance(*a3);
 	}
 }
 bool_t ChestTileEntity::stillValid(Player* a2) {

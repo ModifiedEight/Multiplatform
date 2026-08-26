@@ -606,7 +606,7 @@ void Minecraft::optionUpdated(const Options::Option* a2, bool_t a3) {
 		this->levelRenderer->allChanged();
 		this->gameRenderer->itemInHandRenderer->onAppSuspended();
 	}
-	if(a2 == &Options::Option::LEFT_HANDED || a2 == &Options::Option::USE_TOUCH_JOYPAD || a2 == &Options::Option::USE_TOUCHSCREEN || a2 == &Options::Option::HUD_CAMERA_BUTTON) {
+	if(a2 == &Options::Option::LEFT_HANDED || a2 == &Options::Option::USE_TOUCH_JOYPAD || a2 == &Options::Option::USE_TOUCHSCREEN || a2 == &Options::Option::HUD_CAMERA_BUTTON || a2 == &Options::Option::SWAP_JUMP_AND_SNEAK) {
 		this->_reloadInput();
 	}
 }

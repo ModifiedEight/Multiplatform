@@ -1,6 +1,7 @@
 #include <entity/Monster.hpp>
 #include <level/Level.hpp>
 #include <level/LightLayer.hpp>
+#include <cmath>
 
 Monster::Monster(Level* a2)
 	: PathfinderMob(a2) {
@@ -9,49 +10,25 @@ Monster::Monster(Level* a2)
 	this->entityRenderId = HUMANOID;
 }
 bool_t Monster::isDarkEnoughToSpawn() {
-	float posX; // s15
-	int32_t v4; // r7
-	bool_t v5;	// fnf
-	float minY; // s15
-	int32_t v7; // r6
-	bool_t v8;	// fnf
-	float posZ; // s15
-	int32_t z;	// r5
-	int32_t b;	// r9
-	int32_t rb; // r4
+	int32_t x = (int32_t)floorf(this->posX);
+	int32_t y = (int32_t)floorf(this->boundingBox.minY);
+	int32_t z = (int32_t)floorf(this->posZ);
 
-	posX = this->posX;
-	v4 = (int32_t)posX;
-	v5 = posX < (float)(int32_t)posX;
-	minY = this->boundingBox.minY;
-	v7 = (int32_t)minY;
-	if(v5) {
-		--v4;
-	}
-	v8 = minY < (float)(int32_t)minY;
-	posZ = this->posZ;
-	z = (int32_t)posZ;
-	if(v8) {
-		--v7;
-	}
-	if(posZ < (float)(int32_t)posZ) {
-		--z;
-	}
-	b = this->level->getBrightness(LightLayer::Sky, v4, v7, z);
-	if(b > (int32_t)(this->random.genrand_int32() & 0x1F)) {
+	int32_t rb = this->level->getRawBrightness(x, y, z);
+	if(rb > 7) {
 		return 0;
 	}
-	rb = this->level->getRawBrightness(v4, v7, z);
-	return rb <= (int32_t)(this->random.genrand_int32() & 7);
+	int32_t skyLight = this->level->getBrightness(LightLayer::Sky, x, y, z);
+	if(skyLight > 0 && skyLight > (int32_t)(this->random.genrand_int32() & 0x1F)) {
+		return 0;
+	}
+	return 1;
 }
 
 Monster::~Monster() {
 }
 void Monster::tick() {
 	Mob::tick();
-	if(!this->level->isClientMaybe && !this->level->difficulty) {
-		this->remove();
-	}
 }
 bool_t Monster::hurt(Entity* a2, int32_t a3) {
 	int32_t r; // r0
@@ -93,7 +70,7 @@ bool_t Monster::doHurtTarget(Entity* a2) {
 	return a2->hurt(this, this->attackDamage);
 }
 float Monster::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
-	return 0.5 - this->level->getBrightness(x, y, z);
+	return 0.5f - ((float)this->level->getRawBrightness(x, y, z) / 15.0f);
 }
 Entity* Monster::findAttackTarget() {
 	Entity* np; // r5

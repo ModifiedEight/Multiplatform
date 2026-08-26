@@ -154,7 +154,7 @@ Biome** BiomeSource::getBiomeBlock(Biome** biomes, int32_t a3, int32_t a4, int32
 			}
 			biomes2 = this->biomes;
 			Biome* b;
-			if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() < 2) {
+			if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() < 1) {
 				b = Biome::getOldBiome(v22, v20);
 			} else {
 				b = Biome::getBiome(v22, v20);

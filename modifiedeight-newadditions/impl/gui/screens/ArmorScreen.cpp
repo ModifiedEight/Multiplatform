@@ -1,5 +1,7 @@
 #include <gui/screens/ArmorScreen.hpp>
+#include <gui/screens/CreativeInventoryScreen.hpp>
 #include <Minecraft.hpp>
+#include <entity/player/gamemode/GameMode.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <gui/NinePatchLayer.hpp>
 #include <gui/pane/Touch_InventoryPane.hpp>
@@ -53,7 +55,11 @@ bool_t ArmorScreen::canMoveToSlot(int32_t a2, const ItemInstance* a3) {
 	return 0;
 }
 void ArmorScreen::closeScreen() {
-	this->minecraft->screenChooser.setScreen(INVENTORY_SCREEN);
+	if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
+		this->minecraft->setScreen(new CreativeInventoryScreen());
+	} else {
+		this->minecraft->screenChooser.setScreen(INVENTORY_SCREEN);
+	}
 }
 void ArmorScreen::drawSlotItemAt(Tesselator& a2, int32_t a3, const ItemInstance* a4, int32_t a5, int32_t a6) {
 	float v6;			   // s17
@@ -199,6 +205,10 @@ void ArmorScreen::renderPlayer(float a2, float a3) {
 bool_t ArmorScreen::takeAndClearSlot(int32_t a2) {
 	ItemInstance* item = this->player->getArmor(a2);
 	if(item) {
+		if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
+			this->player->setArmor(a2, 0);
+			return 1;
+		}
 		int32_t empty = this->minecraft->player->inventory->getEmptySlotsCount();
 		if(!this->minecraft->player->inventory->add(item)) {
 			this->minecraft->player->drop(item, 0);
@@ -217,10 +227,30 @@ bool_t ArmorScreen::takeAndClearSlot(int32_t a2) {
 }
 void ArmorScreen::updateItems() {
 	this->field_1E0.clear();
-	for(int32_t i = 9; i < this->minecraft->player->inventory->getContainerSize(); ++i) {
-		ItemInstance* v5 = this->minecraft->player->inventory->getItem(i);
-		if(ItemInstance::isArmorItem(v5)) {
-			this->field_1E0.emplace_back(v5);
+	if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
+		static const Item* creativeArmors[] = {
+			Item::helmet_cloth, Item::chestplate_cloth, Item::leggings_cloth, Item::boots_cloth,
+			Item::helmet_chain, Item::chestplate_chain, Item::leggings_chain, Item::boots_chain,
+			Item::helmet_iron, Item::chestplate_iron, Item::leggings_iron, Item::boots_iron,
+			Item::helmet_diamond, Item::chestplate_diamond, Item::leggings_diamond, Item::boots_diamond,
+			Item::helmet_gold, Item::chestplate_gold, Item::leggings_gold, Item::boots_gold
+		};
+		static std::vector<ItemInstance> creativeArmorInstances;
+		creativeArmorInstances.clear();
+		for (const Item* it : creativeArmors) {
+			if (it) {
+				creativeArmorInstances.emplace_back((Item*)it, 1, 0);
+			}
+		}
+		for (size_t i = 0; i < creativeArmorInstances.size(); ++i) {
+			this->field_1E0.push_back(&creativeArmorInstances[i]);
+		}
+	} else {
+		for(int32_t i = 9; i < this->minecraft->player->inventory->getContainerSize(); ++i) {
+			ItemInstance* v5 = this->minecraft->player->inventory->getItem(i);
+			if(ItemInstance::isArmorItem(v5)) {
+				this->field_1E0.emplace_back(v5);
+			}
 		}
 	}
 }
@@ -383,6 +413,10 @@ void ArmorScreen::buttonClicked(Button* a2) {
 bool_t ArmorScreen::addItem(const Touch::InventoryPane* a2, int32_t a3) {
 	const ItemInstance* v5 = this->field_1E0[a3];
 	if(ItemInstance::isArmorItem(v5)) {
+		if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
+			this->player->setArmor(((ArmorItem*)v5->itemClass)->field_48, v5);
+			return 1;
+		}
 		ItemInstance* armor = this->player->getArmor(((ArmorItem*)v5->itemClass)->field_48);
 		ItemInstance v15;
 		if(ItemInstance::isArmorItem(armor)) {

@@ -183,6 +183,28 @@ void ButtonTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, 
     }
 }
 
+void ButtonTile::entityInside(Level* level, int32_t x, int32_t y, int32_t z, Entity* entity) {
+    if (!level || level->isClientMaybe || !entity) return;
+    if (entity->getEntityTypeId() != 80) return;
+    int32_t meta = level->getData(x, y, z);
+    int32_t dir = meta & 7;
+    if (meta & 8) return;
+
+    level->setData(x, y, z, dir | 8, 3);
+    level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "random.click", 0.3f, 0.6f);
+    level->sendTileUpdated(x, y, z);
+
+    level->updateNeighborsAt(x, y, z, this->blockID);
+    if (dir == 1) level->updateNeighborsAt(x - 1, y, z, this->blockID);
+    else if (dir == 2) level->updateNeighborsAt(x + 1, y, z, this->blockID);
+    else if (dir == 3) level->updateNeighborsAt(x, y, z - 1, this->blockID);
+    else if (dir == 4) level->updateNeighborsAt(x, y, z + 1, this->blockID);
+    else if (dir == 5 || dir == 6) level->updateNeighborsAt(x, y - 1, z, this->blockID);
+    else if (dir == 0 || dir == 7) level->updateNeighborsAt(x, y + 1, z, this->blockID);
+
+    level->addToTickNextTick(x, y, z, this->blockID, this->delayTicks);
+}
+
 bool_t ButtonTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) {
     int32_t meta = level->getData(x, y, z);
     int32_t dir = meta & 7;
@@ -205,9 +227,27 @@ bool_t ButtonTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* pl
 }
 
 void ButtonTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* rand) {
+    if (level->isClientMaybe) return;
     int32_t meta = level->getData(x, y, z);
     int32_t dir = meta & 7;
     if (meta & 8) {
+        AABB box = {(float)x - 0.25f, (float)y - 0.25f, (float)z - 0.25f,
+                    (float)x + 1.25f, (float)y + 1.25f, (float)z + 1.25f};
+        std::vector<Entity*>* ents = level->getEntities(nullptr, box);
+        bool hasArrow = false;
+        if (ents) {
+            for (auto ent : *ents) {
+                if (ent && !ent->isDead && ent->getEntityTypeId() == 80) {
+                    hasArrow = true;
+                    break;
+                }
+            }
+        }
+        if (hasArrow) {
+            level->addToTickNextTick(x, y, z, this->blockID, this->delayTicks);
+            return;
+        }
+
         level->setData(x, y, z, dir, 3);
         level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "random.click", 0.3f, 0.5f);
         level->sendTileUpdated(x, y, z);

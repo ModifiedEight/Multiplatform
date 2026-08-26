@@ -9,6 +9,7 @@
 #include <rendering/Textures.hpp>
 #include <sound/SoundEngine.hpp>
 #include <util/Color4.hpp>
+#include <cstring>
 
 static int _D6E06658, _D6E0665C, _D6E06660, _D6E06664, _D6E06668;
 TouchscreenInput::TouchscreenInput(Minecraft *a2, Options *a3)
@@ -32,6 +33,7 @@ TouchscreenInput::TouchscreenInput(Minecraft *a2, Options *a3)
   this->chatButton = 0;
   this->cameraButton = 0;
   this->jumpButton = 0;
+  this->sneakButton = 0;
   this->upLeftButton = 0;
   this->upRightButton = 0;
   this->field_7C = 0;
@@ -193,28 +195,28 @@ void TouchscreenInput::rebuild() {
       Tesselator::instance.colorABGR(v14);
       sub_D6604D0C(this->chatButton, 200, 82, 18.0);
     }
+    if (!this->minecraft->currentScreen && this->sneakButton) {
+      if (this->isButtonDown(108)) {
+        v14 = _D6E0665C;
+      } else {
+        v14 = _D6E06660;
+      }
+      Tesselator::instance.colorABGR(v14);
+      sub_D6604D0C(this->sneakButton, 218, this->sneakingMaybe ? 82 : 64, 18.0);
+    }
+    if (!this->minecraft->currentScreen && this->cameraButton) {
+      int vCam = this->isButtonDown(107) ? _D6E0665C : _D6E06660;
+      Tesselator::instance.colorABGR(vCam);
+      sub_D6604D0C(this->cameraButton, 236, 64, 18.0);
+    }
     glColor4f(1.0, 1.0, 1.0, 0.65);
     Tesselator::instance.draw(1);
     if (!this->minecraft->currentScreen && this->cameraButton) {
-      bool isDown = this->isButtonDown(107);
-      std::string texPath = isDown ? "gui/empty_button_active.png" : "gui/empty_button_inactive.png";
-      this->minecraft->texturesPtr->loadAndBindTexture(texPath);
-
       float scale = Gui::InvGuiScale;
       float minX = this->cameraButton->minX * scale;
       float maxX = this->cameraButton->maxX * scale;
       float minY = this->cameraButton->minY * scale;
       float maxY = this->cameraButton->maxY * scale;
-
-      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-      Tesselator::instance.begin(4);
-      Tesselator::instance.color(0xFFFFFFFF);
-      Tesselator::instance.vertexUV(minX, maxY, 0.0f, 0.0f, 1.0f);
-      Tesselator::instance.vertexUV(maxX, maxY, 0.0f, 1.0f, 1.0f);
-      Tesselator::instance.vertexUV(maxX, minY, 0.0f, 1.0f, 0.0f);
-      Tesselator::instance.vertexUV(minX, minY, 0.0f, 0.0f, 0.0f);
-      Tesselator::instance.draw(1);
-
       float cx = (minX + maxX) * 0.5f;
       float cy = (minY + maxY) * 0.5f;
 
@@ -390,6 +392,15 @@ void TouchscreenInput::tick(Player *a2) {
             }
             this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
             this->options->thirdPerson = (this->options->thirdPerson + 1) % 3;
+          } else if (pointerId == 108 && this->sneakButton) {
+            if (v7 >= 0 && v7 >= 11) {
+              v7 = 11;
+            }
+            if (Multitouch::_wasPressed[v7]) {
+              this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
+              this->sneakingMaybe = !this->sneakingMaybe;
+            }
+            goto LABEL_40;
           }
           goto LABEL_57;
         }
@@ -460,14 +471,7 @@ void TouchscreenInput::setKey(int32_t, bool_t) {}
 void TouchscreenInput::releaseAllKeys() {
   this->strafeInput = 0.0;
   this->forwardInput = 0.0;
-  this->field_B0[0] = 0;
-  this->field_B0[1] = 0;
-  this->field_B0[2] = 0;
-  this->field_B0[3] = 0;
-  this->field_B0[4] = 0;
-  this->field_B0[5] = 0;
-  this->field_B0[6] = 0;
-  this->field_B0[7] = 0;
+  memset(this->field_B0, 0, sizeof(this->field_B0));
   this->field_40 = 0;
   this->field_A8 = 0;
 }
@@ -495,8 +499,29 @@ void TouchscreenInput::onConfigChanged(const Config &a2) {
   this->touchAreaModel.addArea(100, this->upArrow);
   this->upLeftButton = new RectangleArea(1, v6, v8, v6 + v5, v8 + v5);
   this->upRightButton = new RectangleArea(1, v13, v8, v13 + v5, v8 + v5);
-  this->jumpButton = new RectangleArea(1, v6 + v5, v8 + v5, v11, v16);
-  this->touchAreaModel.addArea(104, this->jumpButton);
+  float dpadCenterX = v6 + v5;
+  float dpadCenterY = v8 + v5;
+  float dpadCenterW = v11;
+  float dpadCenterH = v16;
+
+  float sneakSize = v5 * 1.0f;
+  float sideX = this->options->leftHanded ? (8.0f + v5 * 0.5f) : (v4 - 8.0f - v5 * 1.5f);
+  float sideY = v8 + v5 * 1.0f;
+
+  if (this->options->swapJumpAndSneak) {
+    float pad = v5 * 0.08f;
+    this->sneakButton = new RectangleArea(1, dpadCenterX + pad, dpadCenterY + pad, dpadCenterW - pad, dpadCenterH - pad);
+    this->touchAreaModel.addArea(108, this->sneakButton);
+
+    this->jumpButton = new RectangleArea(1, sideX, sideY, sideX + sneakSize, sideY + sneakSize);
+    this->touchAreaModel.addArea(104, this->jumpButton);
+  } else {
+    this->jumpButton = new RectangleArea(1, dpadCenterX, dpadCenterY, dpadCenterW, dpadCenterH);
+    this->touchAreaModel.addArea(104, this->jumpButton);
+
+    this->sneakButton = new RectangleArea(1, sideX, sideY, sideX + sneakSize, sideY + sneakSize);
+    this->touchAreaModel.addArea(108, this->sneakButton);
+  }
   this->backArrow = new RectangleArea(1, v6 + v5, v18, v11, v18 + v5);
   this->touchAreaModel.addArea(101, this->backArrow);
   this->leftArrow = new RectangleArea(1, v6, v10, v6 + v5, v16);

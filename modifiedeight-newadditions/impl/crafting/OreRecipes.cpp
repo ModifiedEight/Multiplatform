@@ -15,7 +15,7 @@ void OreRecipes::addRecipes(Recipes* a1) {
 	do {
 		v3 = v2++;
 		Tile* a2 = v13[v3].result;
-		a1->addShapedRecipe(ItemInstance(a2), "###", "###", "###", definition<ItemInstance>('#', ItemInstance(v13[v3].material)) /*inlined, does copy of ItemInstance*/);
-		a1->addShapedRecipe(ItemInstance(v13[v3].material) /*v9 reuse*/, "#", definition<Tile*>('#', a2) /*inlined*/);
+		a1->addShapedRecipe(ItemInstance(a2), "###", "###", "###", definition<ItemInstance>('#', ItemInstance(v13[v3].material)));
+		a1->addShapedRecipe(ItemInstance(v13[v3].material), "#", definition<Tile*>('#', a2));
 	} while(v2 != 3);
 }
