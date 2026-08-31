@@ -9,7 +9,7 @@
 #include <time.h>
 #include <util/Common.hpp>
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__ANDROID__)
 #include <execinfo.h>
 #include <unistd.h>
 #endif
@@ -36,7 +36,7 @@ static void writeCrashReport(const char *sigName, void *addr) {
   }
   ss << "\n--- STACK TRACE ---\n";
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__ANDROID__)
   void *callstack[64];
   int frames = backtrace(callstack, 64);
   char **strs = backtrace_symbols(callstack, frames);
@@ -48,6 +48,8 @@ static void writeCrashReport(const char *sigName, void *addr) {
   } else {
     ss << "(Unable to resolve backtrace symbols)\n";
   }
+#else
+  ss << "(Stack trace not available on this platform)\n";
 #endif
 
   ss << "====================================================\n";

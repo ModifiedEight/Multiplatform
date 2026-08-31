@@ -978,7 +978,6 @@ void LevelRenderer::renderHit(Player *a2, const HitResult &a3, int32_t df,
   if (!df && this->destroyProgress > 0.0) {
     v8 = 0;
     glPushMatrix();
-    glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
     glEnable(GL_POLYGON_OFFSET_FILL);
@@ -1008,7 +1007,10 @@ void LevelRenderer::renderHit(Player *a2, const HitResult &a3, int32_t df,
         v8, v11, v12, v14,
         *this->destroyTexture.getUV(stage));
     Tesselator::instance.draw(1);
-    glPopAttrib();
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPopMatrix();
   }
 }
