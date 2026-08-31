@@ -9,9 +9,13 @@
 #include <time.h>
 #include <util/Common.hpp>
 
-#if !defined(_WIN32) && !defined(__ANDROID__)
-#include <execinfo.h>
+#ifndef _WIN32
 #include <unistd.h>
+#if !defined(__ANDROID__)
+#include <execinfo.h>
+#endif
+#else
+#include <windows.h>
 #endif
 
 static std::string g_lastCrash = "";
@@ -75,6 +79,14 @@ static void writeCrashReport(const char *sigName, void *addr) {
 #endif
 }
 
+#ifdef _WIN32
+static LONG WINAPI windowsExceptionFilter(EXCEPTION_POINTERS* ep) {
+  char buf[64];
+  snprintf(buf, sizeof(buf), "Exception Code 0x%08lX", ep->ExceptionRecord->ExceptionCode);
+  writeCrashReport(buf, ep->ExceptionRecord->ExceptionAddress);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+#else
 static void sigHandler(int sig, siginfo_t *info, void *ucontext) {
   const char *name = "UNKNOWN_SIGNAL";
   switch (sig) {
@@ -90,16 +102,21 @@ static void sigHandler(int sig, siginfo_t *info, void *ucontext) {
   case SIGILL:
     name = "SIGILL (Illegal Instruction)";
     break;
+#ifdef SIGBUS
   case SIGBUS:
     name = "SIGBUS (Bus Error)";
     break;
+#endif
   }
   writeCrashReport(name, info ? info->si_addr : 0);
   _exit(sig);
 }
+#endif
 
 void CrashHandler::install() {
-#ifndef _WIN32
+#ifdef _WIN32
+  SetUnhandledExceptionFilter(windowsExceptionFilter);
+#else
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
   sa.sa_sigaction = sigHandler;
@@ -109,7 +126,9 @@ void CrashHandler::install() {
   sigaction(SIGABRT, &sa, NULL);
   sigaction(SIGFPE, &sa, NULL);
   sigaction(SIGILL, &sa, NULL);
+#ifdef SIGBUS
   sigaction(SIGBUS, &sa, NULL);
+#endif
 #endif
 }
 
