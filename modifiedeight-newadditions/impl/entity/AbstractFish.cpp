@@ -60,9 +60,9 @@ void AbstractFish::aiStep() {
 		WaterAnimal::aiStep();
 
 		if (this->isInWater()) {
-			int bx = (int)std::floor(this->posX);
-			int by = (int)std::floor(this->posY + 0.3f);
-			int bz = (int)std::floor(this->posZ);
+			int bx = (int)floor(this->posX);
+			int by = (int)floor(this->posY + 0.3f);
+			int bz = (int)floor(this->posZ);
 
 			int tileAbove = (this->level && by + 1 < 128) ? this->level->getTile(bx, by + 1, bz) : 0;
 			int tileBelow = (this->level && by - 1 >= 0) ? this->level->getTile(bx, by - 1, bz) : 0;
@@ -75,7 +75,7 @@ void AbstractFish::aiStep() {
 				float dz = leaderEnt->posZ - this->posZ;
 				float dsq = dx * dx + dz * dz;
 				if (dsq > 2.25f) {
-					this->targetAngle = (float)(std::atan2(dz, dx) * 180.0 / M_PI) - 90.0f;
+					this->targetAngle = (float)(atan2f(dz, dx) * 180.0 / M_PI) - 90.0f;
 					this->swimSpeed = ((AbstractFish*)leaderEnt)->swimSpeed;
 				} else {
 					this->targetAngle = leaderEnt->yaw;
@@ -90,9 +90,9 @@ void AbstractFish::aiStep() {
 			}
 
 			float forwardRad = this->targetAngle * (float)M_PI / 180.0f;
-			int fwdX = (int)std::floor(this->posX - Mth::sin(forwardRad) * 1.5f);
-			int fwdY = (int)std::floor(this->posY);
-			int fwdZ = (int)std::floor(this->posZ + Mth::cos(forwardRad) * 1.5f);
+			int fwdX = (int)floor(this->posX - Mth::sin(forwardRad) * 1.5f);
+			int fwdY = (int)floor(this->posY);
+			int fwdZ = (int)floor(this->posZ + Mth::cos(forwardRad) * 1.5f);
 			int fwdTile = (this->level && fwdY >= 0 && fwdY < 128) ? this->level->getTile(fwdX, fwdY, fwdZ) : 0;
 			if (fwdTile != 8 && fwdTile != 9) {
 				this->targetAngle += 180.0f + (this->random.nextFloat() * 60.0f - 30.0f);
@@ -122,9 +122,9 @@ void AbstractFish::aiStep() {
 				this->motionY = 0.22f;
 				float bestDistSq = 9999.0f;
 				float targetDx = 0.0f, targetDz = 0.0f;
-				int bx = (int)std::floor(this->posX);
-				int by = (int)std::floor(this->posY);
-				int bz = (int)std::floor(this->posZ);
+				int bx = (int)floor(this->posX);
+				int by = (int)floor(this->posY);
+				int bz = (int)floor(this->posZ);
 				if (this->level) {
 					for (int ox = -3; ox <= 3; ++ox) {
 						for (int oz = -3; oz <= 3; ++oz) {
@@ -146,7 +146,7 @@ void AbstractFish::aiStep() {
 					float len = sqrtf(targetDx * targetDx + targetDz * targetDz);
 					this->motionX = (targetDx / len) * 0.18f;
 					this->motionZ = (targetDz / len) * 0.18f;
-					this->yaw = (float)(std::atan2(targetDz, targetDx) * 180.0 / M_PI) - 90.0f;
+					this->yaw = (float)(atan2f(targetDz, targetDx) * 180.0 / M_PI) - 90.0f;
 				} else {
 					this->motionX = (this->random.nextFloat() * 2.0f - 1.0f) * 0.15f;
 					this->motionZ = (this->random.nextFloat() * 2.0f - 1.0f) * 0.15f;

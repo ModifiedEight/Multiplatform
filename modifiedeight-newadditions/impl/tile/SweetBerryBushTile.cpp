@@ -69,7 +69,7 @@ void SweetBerryBushTile::entityInside(Level* level, int32_t x, int32_t y, int32_
 	int32_t age = data & 3;
 	if (age > 0) {
 		float speedSq = ent->motionX * ent->motionX + ent->motionZ * ent->motionZ;
-		if (speedSq > 0.00005f || std::abs(ent->motionY) > 0.05f) {
+		if (speedSq > 0.00005f || fabsf(ent->motionY) > 0.05f) {
 			static int s_dmgTick = 0;
 			if ((++s_dmgTick % 15) == 0) {
 				ent->hurt(nullptr, 1);

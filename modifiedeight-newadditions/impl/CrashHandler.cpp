@@ -70,7 +70,7 @@ static void writeCrashReport(const char *sigName, void *addr) {
 
   fprintf(stderr, "%s\n", g_lastCrash.c_str());
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__ANDROID__) && !defined(MCPE_IOS)
   FILE *pipe = popen("xclip -selection clipboard 2>/dev/null", "w");
   if (pipe) {
     fputs(g_lastCrash.c_str(), pipe);

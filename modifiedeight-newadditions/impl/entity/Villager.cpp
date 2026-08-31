@@ -192,9 +192,9 @@ void Villager::aiStep() {
 
 		if (!this->level->isDay()) {
 			if (!this->hasBed && (this->random.genrand_int32() % 20 == 0)) {
-				int vx = (int)std::floor(this->posX);
-				int vy = (int)std::floor(this->posY);
-				int vz = (int)std::floor(this->posZ);
+				int vx = (int)floor(this->posX);
+				int vy = (int)floor(this->posY);
+				int vz = (int)floor(this->posZ);
 				for (int dy = -2; dy <= 2 && !this->hasBed; ++dy) {
 					for (int dx = -16; dx <= 16 && !this->hasBed; ++dx) {
 						for (int dz = -16; dz <= 16 && !this->hasBed; ++dz) {

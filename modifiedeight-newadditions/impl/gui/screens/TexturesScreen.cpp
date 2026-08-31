@@ -80,8 +80,9 @@ void TexturesScreen::setupPositions() {
 }
 
 std::string TexturesScreen::pickZipFile() {
-  char buffer[1024];
   std::string result = "";
+#if !defined(ANDROID) && !defined(MCPE_IOS)
+  char buffer[1024];
   FILE *f = popen("zenity --file-selection --title=\"Select Texture Pack\" --file-filter=\"Texture Pack (*.zip) | *.zip\" 2>/dev/null", "r");
   if (!f) {
     f = popen("kdialog --getopenfilename . \"*.zip\" 2>/dev/null", "r");
@@ -95,6 +96,7 @@ std::string TexturesScreen::pickZipFile() {
     }
     pclose(f);
   }
+#endif
   return result;
 }
 

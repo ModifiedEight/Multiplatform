@@ -46,7 +46,7 @@ FishingHook::FishingHook(Level* level, Player* player)
 		if (vy < -5.0f) vy = -5.0f;
 		if (vy > 5.0f) vy = 5.0f;
 		float vz = -h;
-		float len = std::sqrt(vx * vx + vy * vy + vz * vz);
+		float len = sqrtf(vx * vx + vy * vy + vz * vz);
 		float speed = 0.8f / (len > 0.0001f ? len : 1.0f) + 0.4f;
 		this->motionX = vx * speed + (this->random.nextFloat() - 0.5f) * 0.05f;
 		this->motionY = vy * speed + (this->random.nextFloat() - 0.5f) * 0.05f;
@@ -187,9 +187,9 @@ int32_t FishingHook::retrieve(ItemInstance* item) {
 			float dx = this->owner->posX - this->posX;
 			float dy = this->owner->posY - this->posY;
 			float dz = this->owner->posZ - this->posZ;
-			float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+			float dist = sqrtf(dx * dx + dy * dy + dz * dz);
 			entityItem->motionX = dx * 0.12f;
-			entityItem->motionY = dy * 0.12f + std::sqrt(dist) * 0.10f;
+			entityItem->motionY = dy * 0.12f + sqrtf(dist) * 0.10f;
 			entityItem->motionZ = dz * 0.12f;
 			this->level->addEntity(entityItem);
 			this->level->playSound(this->owner, "random.splash", 0.9f, 1.2f);

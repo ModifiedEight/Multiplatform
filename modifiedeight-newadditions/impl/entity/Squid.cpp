@@ -99,9 +99,9 @@ void Squid::aiStep() {
 			this->tz = Mth::sin(angle) * 0.12f;
 		}
 
-		int bx = (int)std::floor(this->posX);
-		int by = (int)std::floor(this->posY + 0.5f);
-		int bz = (int)std::floor(this->posZ);
+		int bx = (int)floor(this->posX);
+		int by = (int)floor(this->posY + 0.5f);
+		int bz = (int)floor(this->posZ);
 		bool waterAbove = this->level && this->level->getMaterial(bx, by + 1, bz)->isLiquid();
 
 		this->motionX = this->tx * this->speed;
@@ -112,13 +112,13 @@ void Squid::aiStep() {
 			this->motionY = -0.02f;
 		}
 
-		float horizontalDist = std::sqrt(this->motionX * this->motionX + this->motionZ * this->motionZ);
-		this->yaw += (-(float)(std::atan2(this->motionX, this->motionZ) * 180.0 / M_PI) - this->yaw) * 0.1f;
+		float horizontalDist = sqrtf(this->motionX * this->motionX + this->motionZ * this->motionZ);
+		this->yaw += (-(float)(atan2f(this->motionX, this->motionZ) * 180.0 / M_PI) - this->yaw) * 0.1f;
 		this->zBodyRot += (float)((double)(float)M_PI * (double)this->rotateSpeed * 1.5 - (double)this->zBodyRot) * 0.1f;
-		this->xBodyRot += ((-(float)(std::atan2(horizontalDist, this->motionY) * 180.0 / M_PI) + 90.0f) - this->xBodyRot) * 0.1f;
+		this->xBodyRot += ((-(float)(atan2f(horizontalDist, this->motionY) * 180.0 / M_PI) + 90.0f) - this->xBodyRot) * 0.1f;
 		this->isJumping = 0;
 	} else {
-		this->tentacleAngle = std::abs(Mth::sin(this->tentacleMovement)) * (float)M_PI * 0.25f;
+		this->tentacleAngle = fabsf(Mth::sin(this->tentacleMovement)) * (float)M_PI * 0.25f;
 		if (this->onGround) {
 			if (this->random.nextFloat() < 0.05f) {
 				this->motionX = (this->random.nextFloat() - 0.5f) * 0.2f;

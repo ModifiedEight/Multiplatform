@@ -144,7 +144,7 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 
 	if (a3 > 0.001f) {
 		float walkSway = Mth::sin(a2 * 0.6662f) * a3 * 0.04f;
-		float walkBob = std::abs(Mth::sin(a2 * 0.6662f)) * a3 * 0.35f;
+		float walkBob = fabsf(Mth::sin(a2 * 0.6662f)) * a3 * 0.35f;
 		this->bodyModel.xRotAngle += a3 * 0.05f;
 		this->bodyModel.zRotAngle += walkSway;
 		this->headModel.zRotAngle = walkSway * 0.5f;

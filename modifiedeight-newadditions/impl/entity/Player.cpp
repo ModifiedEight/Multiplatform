@@ -875,7 +875,6 @@ void Player::aiStep() {
 	if(v2 > 0.1) {
 		v2 = 0.1;
 	}
-	this->onGround;
 	if(this->onGround) {
 		if(health <= 0) {
 			v2 = 0.0;
@@ -916,9 +915,9 @@ LABEL_13:
 
 		float horizSpeed = this->motionX * this->motionX + this->motionZ * this->motionZ;
 		if (this->onGround && horizSpeed > 0.001f && this->level) {
-			int bx = (int)std::floor(this->posX);
-			int by = (int)std::floor(this->posY - 0.2f);
-			int bz = (int)std::floor(this->posZ);
+			int bx = (int)floor(this->posX);
+			int by = (int)floor(this->posY - 0.2f);
+			int bz = (int)floor(this->posZ);
 			int tileBelow = (by >= 0 && by < 128) ? this->level->getTile(bx, by, bz) : 0;
 			int tileAt = (by + 1 >= 0 && by + 1 < 128) ? this->level->getTile(bx, by + 1, bz) : 0;
 			Biome* b = this->level->getBiome(bx, bz);

@@ -15,8 +15,8 @@ SquidModel::SquidModel()
 		this->tentacles[j] = new ModelPart(48, 0, 64, 32);
 		this->tentacles[j]->setModel(this);
 		double d = (double)j * M_PI * 2.0 / 8.0;
-		float f = (float)std::cos(d) * 5.0f;
-		float g = (float)std::sin(d) * 5.0f;
+		float f = (float)cosf(d) * 5.0f;
+		float g = (float)sinf(d) * 5.0f;
 		this->tentacles[j]->addBox(-1.0f, 0.0f, -1.0f, 2, 18, 2);
 		this->tentacles[j]->setPos(f, 15.0f, g);
 		d = (double)j * M_PI * -2.0 / 8.0 + (M_PI / 2.0);

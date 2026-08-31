@@ -94,7 +94,7 @@ void Slime::aiStep() {
 			if (target && !target->abilities.instabuild && !target->abilities.invulnerable) {
 				float dx = target->posX - this->posX;
 				float dz = target->posZ - this->posZ;
-				this->yaw = (float)(std::atan2(dz, dx) * 180.0 / M_PI) - 90.0f;
+				this->yaw = (float)(atan2f(dz, dx) * 180.0 / M_PI) - 90.0f;
 			} else {
 				this->yaw += (this->random.nextFloat() - 0.5f) * 90.0f;
 			}
