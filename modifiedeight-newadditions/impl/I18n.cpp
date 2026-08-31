@@ -408,6 +408,14 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Fog";
     return 1;
   }
+  if (a1 == "options.morningfog") {
+    a2 = "Morning & Rain Fog";
+    return 1;
+  }
+  if (a1 == "options.sunglow") {
+    a2 = "Sun & Moon Glow";
+    return 1;
+  }
   if (a1 == "options.animatetextures") {
     a2 = "Animated Textures";
     return 1;
@@ -436,6 +444,26 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Smooths chunk rebuilds to eliminate frame drops";
     return 1;
   }
+  if (a1 == "item.fishingRod.name") { a2 = "Fishing Rod"; return 1; }
+  if (a1 == "item.fishRaw.name") { a2 = "Raw Fish"; return 1; }
+  if (a1 == "item.fishCooked.name") { a2 = "Cooked Fish"; return 1; }
+  if (a1 == "item.salmonRaw.name") { a2 = "Raw Salmon"; return 1; }
+  if (a1 == "item.salmonCooked.name") { a2 = "Cooked Salmon"; return 1; }
+  if (a1 == "item.clownfish.name") { a2 = "Tropical Fish"; return 1; }
+  if (a1 == "item.pufferfish.name") { a2 = "Pufferfish"; return 1; }
+  if (a1 == "tile.slimeBlock.name") { a2 = "Slime Block"; return 1; }
+  if (a1 == "item.slimeball.name") { a2 = "Slimeball"; return 1; }
+  if (a1 == "entity.Squid.name") { a2 = "Squid"; return 1; }
+  if (a1 == "entity.Wolf.name") { a2 = "Wolf"; return 1; }
+  if (a1 == "entity.PolarBear.name") { a2 = "Polar Bear"; return 1; }
+  if (a1 == "entity.Slime.name") { a2 = "Slime"; return 1; }
+  if (a1 == "entity.Fox.name") { a2 = "Fox"; return 1; }
+  if (a1 == "entity.Turtle.name") { a2 = "Turtle"; return 1; }
+  if (a1 == "entity.Giant.name") { a2 = "Giant"; return 1; }
+  if (a1 == "entity.Cod.name") { a2 = "Cod"; return 1; }
+  if (a1 == "entity.Salmon.name") { a2 = "Salmon"; return 1; }
+  if (a1 == "entity.Pufferfish.name") { a2 = "Pufferfish"; return 1; }
+  if (a1 == "entity.TropicalFish.name") { a2 = "Tropical Fish"; return 1; }
   if (a1 == "tile.pressurePlateStone.name") {
     a2 = "Stone Pressure Plate";
     return 1;
@@ -477,6 +505,17 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
          "F2)";
     return 1;
   }
+  if (a1 == "options.group.realism") { a2 = "Realism"; return 1; }
+  if (a1 == "options.realism.smoothlighting") { a2 = "Smooth Block Lighting"; return 1; }
+  if (a1 == "options.realism.torchlighting") { a2 = "Torches & Lava Lighting"; return 1; }
+  if (a1 == "options.realism.coloredlight") { a2 = "Colored Lighting"; return 1; }
+  if (a1 == "options.realism.dynamiclights") { a2 = "Dynamic Lights"; return 1; }
+  if (a1 == "options.realism.cavelighting") { a2 = "Atmospheric Caves"; return 1; }
+  if (a1 == "options.realism.softshadows") { a2 = "Soft Shadows"; return 1; }
+  if (a1 == "options.extendedinventory") { a2 = "Extended Inventory"; return 1; }
+  if (a1 == "options.realism.ssao") { a2 = "SSAO Occlusion"; return 1; }
+  if (a1 == "options.realism.ssl") { a2 = "Screen-Space Lighting"; return 1; }
+  if (a1 == "options.realism.bloom") { a2 = "Light Bloom"; return 1; }
   if (a1 == "tile.grassPath.name") {
     a2 = "Grass Path";
     return 1;
@@ -572,6 +611,10 @@ std::string I18n::get(const std::string &a2) {
     return "Texture Packs button";
   if (a2 == "options.fogenabled")
     return "Fog";
+  if (a2 == "options.morningfog")
+    return "Morning Fog";
+  if (a2 == "options.sunglow")
+    return "Sun and Moon Glow";
   if (a2 == "options.animatetextures")
     return "Animated Textures";
   if (a2 == "options.animatetextures.desc")
@@ -586,6 +629,28 @@ std::string I18n::get(const std::string &a2) {
     return "Smooth Chunk Loading";
   if (a2 == "options.smoothchunks.desc")
     return "Smooths chunk rebuilds to eliminate frame drops";
+  if (a2 == "item.fishingRod.name") return "Fishing Rod";
+  if (a2 == "item.fishRaw.name") return "Raw Fish";
+  if (a2 == "item.fishCooked.name") return "Cooked Fish";
+  if (a2 == "item.salmonRaw.name") return "Raw Salmon";
+  if (a2 == "item.salmonCooked.name") return "Cooked Salmon";
+  if (a2 == "item.clownfish.name") return "Tropical Fish";
+  if (a2 == "item.pufferfish.name") return "Pufferfish";
+  if (a2 == "tile.slimeBlock.name") return "Slime Block";
+  if (a2 == "item.slimeball.name") return "Slimeball";
+  if (a2 == "entity.Squid.name") return "Squid";
+  if (a2 == "entity.Wolf.name") return "Wolf";
+  if (a2 == "entity.PolarBear.name") return "Polar Bear";
+  if (a2 == "entity.Slime.name") return "Slime";
+  if (a2 == "entity.Fox.name") return "Fox";
+  if (a2 == "entity.Turtle.name") return "Turtle";
+  if (a2 == "entity.Giant.name") return "Giant";
+  if (a2 == "entity.Villager.name") return "Villager";
+  if (a2 == "entity.ZombieVillager.name") return "Zombie Villager";
+  if (a2 == "entity.Cod.name") return "Cod";
+  if (a2 == "entity.Salmon.name") return "Salmon";
+  if (a2 == "entity.Pufferfish.name") return "Pufferfish";
+  if (a2 == "entity.TropicalFish.name") return "Tropical Fish";
   if (a2 == "tile.pressurePlateStone.name")
     return "Stone Pressure Plate";
   if (a2 == "tile.pressurePlateWood.name")
@@ -615,12 +680,29 @@ std::string I18n::get(const std::string &a2) {
     return "Discord Integration";
   if (a2 == "options.lodchunks")
     return "LOD Chunks";
+  if (a2 == "options.group.realism") return "Realism";
+  if (a2 == "options.realism.smoothlighting") return "Smooth Block Lighting";
+  if (a2 == "options.realism.torchlighting") return "Torches & Lava Lighting";
+  if (a2 == "options.realism.coloredlight") return "Colored Lighting";
+  if (a2 == "options.realism.dynamiclights") return "Dynamic Lights";
+  if (a2 == "options.realism.cavelighting") return "Atmospheric Caves";
+  if (a2 == "options.realism.bloom") return "Bloom Effect";
+  if (a2 == "options.extendedinventory") return "Extended Inventory";
+  if (a2 == "options.realism.ssao") return "SSAO Occlusion";
+  if (a2 == "options.realism.ssl") return "Screen-Space Lighting";
+  if (a2 == "options.realism.bloom") return "Light Bloom";
   if (a2 == "tile.grassPath.name")
     return "Grass Path";
   if (a2 == "tile.flowerRose.name")
     return "Rose";
   if (a2 == "tile.flowerPot.name" || a2 == "item.flowerPot.name")
     return "Flower Pot";
+  if (a2 == "item.frame.name" || a2 == "tile.frame.name")
+    return "Item Frame";
+  if (a2 == "item.armorStand.name" || a2 == "tile.armorStand.name")
+    return "Armor Stand";
+  if (a2 == "entity.Frog.name" || a2 == "entity.Frog")
+    return "Frog";
   if (a2 == "tile.daylightDetector.name" || a2 == "item.daylightDetector.name")
     return "Daylight Sensor";
   if (a2 == "tile.daylightDetectorInverted.name" || a2 == "item.daylightDetectorInverted.name")

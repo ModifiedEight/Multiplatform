@@ -105,6 +105,7 @@ struct LevelRenderer: LevelListener, AppPlatform::Listener
 	void renderOutlineHitSelect(Player*, float, Tile*, const HitResult&);
 	void renderShadows(const std::multimap<int32_t, Entity*, std::greater<int>>&, const std::vector<TileEntity*>&, float);
 	void renderSky(float);
+	void renderRainSnow(float);
 	int32_t renderStencilChunks(float);
 	void resortChunks(int32_t, int32_t, int32_t);
 	void setDirty(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);

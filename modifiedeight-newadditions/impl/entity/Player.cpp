@@ -1,6 +1,8 @@
 #include <level/LevelHeight.hpp>
 #include <entity/Player.hpp>
 #include <entity/ItemEntity.hpp>
+
+int g_morningFogTicks = 0;
 #include <inventory/BaseContainerMenu.hpp>
 #include <inventory/Inventory.hpp>
 #include <item/ArmorItem.hpp>
@@ -41,6 +43,7 @@ Player::Player(Level* a2, bool_t a3)
 	this->sleeping = 0;
 	this->field_D4E = 0;
 	this->isDestroying = 0;
+	this->fishing = 0;
 	this->field_106 = 0;
 	this->_init();
 	this->entityRenderId = PLAYER;
@@ -515,6 +518,7 @@ void Player::tick() {
 		}
 	}
 	Mob::tick();
+	if (g_morningFogTicks > 0) g_morningFogTicks--;
 	if (!this->isSleeping() && this->entityHeight < 1.7f) {
 		this->setSize(0.6f, 1.8f);
 		this->ridingHeight = 1.62f;
@@ -536,11 +540,7 @@ void Player::tick() {
 				}
 			}
 		}
-		if (inWater) {
-			this->stepHeight = 1.0f;
-		} else {
-			this->stepHeight = 0.5f;
-		}
+		this->stepHeight = 0.5f;
 	}
 	if(!this->level->isClientMaybe) {
 		this->foodData.tick(this);
@@ -833,6 +833,16 @@ void Player::travel(float a2, float a3) {
 		Mob::travel(a2, a3);
 		this->motionY = motionY * 0.6f;
 		this->jumpMovementFactor = jumpMovementFactor;
+	} else if (this->isInWater() || this->isUnderLiquid(Material::water)) {
+		float speed = 0.04f;
+		this->moveRelative(a2, a3, speed);
+		this->move(this->motionX, this->motionY, this->motionZ);
+		this->motionX *= 0.85f;
+		this->motionY = (this->motionY * 0.85f) - 0.015f;
+		this->motionZ *= 0.85f;
+		if (this->isCollidedHorizontally) {
+			this->motionY = 0.35f;
+		}
 	} else {
 		Mob::travel(a2, a3);
 	}
@@ -902,6 +912,27 @@ LABEL_13:
 				this->touch(v17);
 			}
 			++v13;
+		}
+
+		float horizSpeed = this->motionX * this->motionX + this->motionZ * this->motionZ;
+		if (this->onGround && horizSpeed > 0.001f && this->level) {
+			int bx = (int)std::floor(this->posX);
+			int by = (int)std::floor(this->posY - 0.2f);
+			int bz = (int)std::floor(this->posZ);
+			int tileBelow = (by >= 0 && by < 128) ? this->level->getTile(bx, by, bz) : 0;
+			int tileAt = (by + 1 >= 0 && by + 1 < 128) ? this->level->getTile(bx, by + 1, bz) : 0;
+			Biome* b = this->level->getBiome(bx, bz);
+			bool isSnowy = (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert);
+
+			if (tileBelow == 78 || tileBelow == 80 || tileAt == 78 || (isSnowy && this->level->rainLevel > 0.35f)) {
+				if (this->random.genrand_int32() % 3 == 0) {
+					this->level->addParticle(PT_BREAKING_ITEM_2, this->posX + (this->random.nextFloat() - 0.5f) * 0.35f, this->posY + 0.05f, this->posZ + (this->random.nextFloat() - 0.5f) * 0.35f, -this->motionX * 0.2f, 0.06f, -this->motionZ * 0.2f, 0);
+				}
+			} else if (this->level->rainLevel > 0.35f) {
+				if (this->random.genrand_int32() % 2 == 0) {
+					this->level->addParticle(PT_BUBBLE, this->posX + (this->random.nextFloat() - 0.5f) * 0.35f, this->posY + 0.05f, this->posZ + (this->random.nextFloat() - 0.5f) * 0.35f, (this->random.nextFloat() - 0.5f) * 0.04f, 0.03f, (this->random.nextFloat() - 0.5f) * 0.04f, 0);
+				}
+			}
 		}
 	}
 }
@@ -1111,6 +1142,7 @@ int32_t Player::startSleepInBed(int32_t x, int32_t y, int32_t z) {
 	this->synchedEntityData.setFlag<char>(16, 1);
 	return 0;
 }
+
 void Player::stopSleepInBed(bool_t a2, bool_t a3, bool_t a4) {
 	Level* level;		  // r0
 	Level* v12;			  // r0
@@ -1120,6 +1152,7 @@ void Player::stopSleepInBed(bool_t a2, bool_t a3, bool_t a4) {
 	Level* v16;			  // r0
 
 	if(this->isSleeping()) {
+		g_morningFogTicks = 2400;
 		this->setSize(0.6, 1.8);
 		this->setDefaultHeadHeight();
 		level = this->level;

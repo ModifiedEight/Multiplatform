@@ -1,5 +1,10 @@
 #include <sound/MusicEngine.hpp>
+#include <sound/MusicPlayerManager.hpp>
 #include <Minecraft.hpp>
+#include <NinecraftApp.hpp>
+#include <entity/Player.hpp>
+#include <entity/LocalPlayer.hpp>
+#include <tile/material/Material.hpp>
 #include <gui/Screen.hpp>
 #include <stdlib.h>
 #include <string.h>
@@ -443,6 +448,39 @@ void MusicEngine::startRandomTrack(int32_t mode) {
 	}
 }
 
+static void applyUnderwaterFilter(short* pcm, int numSamps, int numChans) {
+	if (NinecraftApp::instance && NinecraftApp::instance->player) {
+		bool isUnderwater = NinecraftApp::instance->player->isUnderLiquid(Material::water);
+		static float s_underwaterMix = 0.0f;
+		static float s_lpLeft = 0.0f, s_lpRight = 0.0f;
+		float targetMix = isUnderwater ? 1.0f : 0.0f;
+		s_underwaterMix += (targetMix - s_underwaterMix) * 0.08f;
+		if (s_underwaterMix > 0.005f) {
+			float alpha = 0.10f + (1.0f - s_underwaterMix) * 0.40f;
+			float volScale = 1.0f - s_underwaterMix * 0.35f;
+			if (numChans == 2) {
+				for (int s = 0; s < numSamps; s += 2) {
+					float inL = (float)pcm[s];
+					float inR = (float)pcm[s + 1];
+					s_lpLeft += alpha * (inL - s_lpLeft);
+					s_lpRight += alpha * (inR - s_lpRight);
+					float outL = inL * (1.0f - s_underwaterMix) + s_lpLeft * s_underwaterMix;
+					float outR = inR * (1.0f - s_underwaterMix) + s_lpRight * s_underwaterMix;
+					pcm[s] = (short)(outL * volScale);
+					pcm[s + 1] = (short)(outR * volScale);
+				}
+			} else {
+				for (int s = 0; s < numSamps; ++s) {
+					float in = (float)pcm[s];
+					s_lpLeft += alpha * (in - s_lpLeft);
+					float out = in * (1.0f - s_underwaterMix) + s_lpLeft * s_underwaterMix;
+					pcm[s] = (short)(out * volScale);
+				}
+			}
+		}
+	}
+}
+
 void MusicEngine::streamBuffers() {
 #if HAS_OPENAL
 	if (!this->isPlaying || !this->isDecoderOpen || !this->isInitialized || this->musicSource == 0) {
@@ -464,6 +502,7 @@ void MusicEngine::streamBuffers() {
 				if (err == 0) {
 					AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
 					this->streamData = readPtr;
+					applyUnderwaterFilter(this->pcmBuffer.data(), this->aacInfo.outputSamps, this->aacInfo.nChans);
 					ALenum format = (this->aacInfo.nChans == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 					ALsizei freq = this->aacInfo.sampRateCore;
 					alBufferData(buffer, format, this->pcmBuffer.data(), this->aacInfo.outputSamps * sizeof(short), freq);
@@ -512,6 +551,7 @@ void MusicEngine::streamBuffers() {
 						if (err == 0) {
 							AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
 							this->streamData = readPtr;
+							applyUnderwaterFilter(this->pcmBuffer.data(), this->aacInfo.outputSamps, this->aacInfo.nChans);
 							int numSamps = this->aacInfo.outputSamps;
 							this->winPcmBuffers[i].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
 							memset(&this->waveHeaders[i], 0, sizeof(WAVEHDR));
@@ -555,6 +595,7 @@ void MusicEngine::streamBuffers() {
 		if (err == 0) {
 			AACGetLastFrameInfo(this->aacDec, &this->aacInfo);
 			this->streamData = readPtr;
+			applyUnderwaterFilter(this->pcmBuffer.data(), this->aacInfo.outputSamps, this->aacInfo.nChans);
 			int numSamps = this->aacInfo.outputSamps;
 			int bIdx = this->slBufferIndex;
 			this->slPcmBuffers[bIdx].assign(this->pcmBuffer.begin(), this->pcmBuffer.begin() + numSamps);
@@ -586,6 +627,26 @@ void MusicEngine::update(Minecraft* mc) {
 	this->lastUpdateTime = now;
 	if (dt < 0.0f || dt > 1.0f) dt = 0.05f;
 
+	if (!this->isInitialized) {
+		this->init();
+	}
+
+	if (MusicPlayerManager::instance.isPlaying) {
+		if (!mc->level) {
+			MusicPlayerManager::instance.stopImmediate();
+			return;
+		}
+		this->currentMode = MUSIC_MODE_CUSTOM;
+		this->pauseSeconds = 60.0f;
+		if (this->isPlaying) {
+			this->streamBuffers();
+		} else {
+			MusicPlayerManager::instance.onTrackFinished();
+		}
+		MusicPlayerManager::instance.update(mc);
+		return;
+	}
+
 	float musicOpt = mc->options.musicVolume;
 	this->setVolume(musicOpt);
 	if (musicOpt <= 0.001f) {
@@ -593,10 +654,6 @@ void MusicEngine::update(Minecraft* mc) {
 			this->stop();
 		}
 		return;
-	}
-
-	if (!this->isInitialized) {
-		this->init();
 	}
 
 	bool inGame = (mc->level != nullptr);

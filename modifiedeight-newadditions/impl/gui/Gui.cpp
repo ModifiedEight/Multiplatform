@@ -462,8 +462,8 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1, "ModifiedEight New Additions 1.6.4.1 (%d fps)",
-                    fps);
+            sprintf(dbgText1,
+                    "ModifiedEight New Additions 1.6.5.1pre1 (%d fps)", fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFF);
             startY += 10.0f;
 
@@ -786,6 +786,9 @@ void Gui::renderOnSelectItemNameText(int32_t a2, struct Font *a3, int32_t a4) {
   }
 }
 void Gui::renderProgressIndicator(bool_t a2, int32_t a3, int32_t a4, float a5) {
+  if (this->minecraftInst->options.thirdPerson) {
+    return;
+  }
   ItemInstance *Selected;    // r0
   Item *itemClass;           // r9
   bool_t v11;                // r6

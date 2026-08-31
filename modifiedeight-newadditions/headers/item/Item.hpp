@@ -135,6 +135,16 @@ struct Item{
 	static Item* redstoneLamp;
 	static Item* flowerPot;
 	static Item* daylightDetector;
+	static Item* fishingRod;
+	static Item* fish_raw;
+	static Item* fish_cooked;
+	static Item* salmon_raw;
+	static Item* salmon_cooked;
+	static Item* clownfish;
+	static Item* pufferfish;
+	static Item* sweetBerries;
+	static Item* itemFrame;
+	static Item* armorStand;
 
 	int32_t maxStackSize;
 	std::string itemTexture;

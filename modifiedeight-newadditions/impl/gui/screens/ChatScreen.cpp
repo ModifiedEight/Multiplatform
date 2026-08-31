@@ -201,11 +201,18 @@ static bool resolveItem(const std::string& rawName, int& outId, std::string& out
 		return true;
 	}
 
+	std::string cleanName;
+	for (char c : name) {
+		if (isalnum(c)) cleanName += (char)tolower(c);
+	}
+
 	for (int i = 1; i < 512; ++i) {
 		if (i < 256 && Tile::tiles[i]) {
 			std::string d = Tile::tiles[i]->getDescriptionId();
-			for (auto& c : d) c = tolower(c);
-			if (d.find(name) != std::string::npos) {
+			std::string cd;
+			for (char c : d) if (isalnum(c)) cd += (char)tolower(c);
+			if (cd.rfind("tile", 0) == 0) cd = cd.substr(4);
+			if (cd == cleanName || cd.find(cleanName) != std::string::npos) {
 				outId = i;
 				outName = Tile::tiles[i]->getDescriptionId();
 				return true;
@@ -213,8 +220,10 @@ static bool resolveItem(const std::string& rawName, int& outId, std::string& out
 		}
 		if (Item::items[i]) {
 			std::string d = Item::items[i]->getDescriptionId();
-			for (auto& c : d) c = tolower(c);
-			if (d.find(name) != std::string::npos) {
+			std::string cd;
+			for (char c : d) if (isalnum(c)) cd += (char)tolower(c);
+			if (cd.rfind("item", 0) == 0) cd = cd.substr(4);
+			if (cd == cleanName || cd.find(cleanName) != std::string::npos) {
 				outId = i;
 				outName = Item::items[i]->getDescriptionId();
 				return true;
@@ -550,6 +559,57 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 			return true;
 		}
 		mc->gui.addMessage("", "Usage: /time set <day|night|noon|midnight|number> or /time add <number>", 200);
+		return true;
+	}
+
+	if (cmd == "weather") {
+		if (args.empty()) {
+			mc->gui.addMessage("", "Usage: /weather set <clear|rain|thunder|snow> or /weather clear", 200);
+			return true;
+		}
+		if (args[0] == "clear") {
+			if (mc->level) {
+				mc->level->weatherType = 0;
+				mc->level->weatherTicks = 24000;
+				extern int g_morningFogTicks;
+				mc->level->levelEvent(0, 9810, 0, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
+			}
+			mc->gui.addMessage("", "Set weather to clear", 200);
+			return true;
+		}
+		if (args.size() >= 2 && args[0] == "set") {
+			std::string wtype = args[1];
+			for (auto& c : wtype) c = tolower(c);
+			if (wtype == "clear") {
+				if (mc->level) {
+					mc->level->weatherType = 0;
+					mc->level->weatherTicks = 24000;
+					extern int g_morningFogTicks;
+					mc->level->levelEvent(0, 9810, 0, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
+				}
+				mc->gui.addMessage("", "Set weather to clear", 200);
+			} else if (wtype == "rain" || wtype == "snow") {
+				if (mc->level) {
+					mc->level->weatherType = 1;
+					mc->level->weatherTicks = 24000;
+					extern int g_morningFogTicks;
+					mc->level->levelEvent(0, 9810, 1, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
+				}
+				mc->gui.addMessage("", "Set weather to " + wtype, 200);
+			} else if (wtype == "thunder" || wtype == "storm") {
+				if (mc->level) {
+					mc->level->weatherType = 2;
+					mc->level->weatherTicks = 24000;
+					extern int g_morningFogTicks;
+					mc->level->levelEvent(0, 9810, 2, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
+				}
+				mc->gui.addMessage("", "Set weather to thunder storm", 200);
+			} else {
+				mc->gui.addMessage("", "Unknown weather type: " + wtype, 200);
+			}
+			return true;
+		}
+		mc->gui.addMessage("", "Usage: /weather set <clear|rain|thunder|snow> or /weather clear", 200);
 		return true;
 	}
 

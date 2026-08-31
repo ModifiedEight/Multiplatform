@@ -42,9 +42,26 @@ void CreeperModel::render(Entity* a2, float a3, float a4, float a5, float a6, fl
 void CreeperModel::setupAnim(float a2, float a3, float a4, float a5, float a6, float a7){
 	this->field_1C.yRotAngle = a5 / (float)(180.0 / 3.1416);
 	this->field_1C.xRotAngle = a6 / (float)(180.0 / 3.1416);
-	float v8 = (float)(Mth::cos(a2 * 0.6662) * 1.4) * a3;
+	
+	float v8 = (float)(Mth::cos(a2 * 0.6662f) * 1.4f) * a3;
+	float v9 = (float)(Mth::cos(a2 * 0.6662f + 3.14159265f) * 1.4f) * a3;
+	
 	this->field_11C.xRotAngle = v8;
 	this->field_29C.xRotAngle = v8;
-	this->field_19C.xRotAngle = -v8;
-	this->field_21C.xRotAngle = -v8;
+	this->field_19C.xRotAngle = v9;
+	this->field_21C.xRotAngle = v9;
+
+	if (a3 > 0.001f) {
+		float bodySway = Mth::sin(a2 * 0.6662f) * a3 * 0.06f;
+		float stalkLean = a3 * 0.12f;
+		this->field_9C.xRotAngle = stalkLean;
+		this->field_9C.zRotAngle = bodySway;
+		this->field_1C.zRotAngle = -bodySway * 0.5f;
+	} else {
+		this->field_9C.xRotAngle = 0.0f;
+		this->field_9C.zRotAngle = 0.0f;
+		this->field_1C.zRotAngle = 0.0f;
+		// Subtle menacing breath pulse
+		this->field_1C.yRotAngle += Mth::sin(a4 * 0.05f) * 0.03f;
+	}
 }

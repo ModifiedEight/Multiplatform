@@ -990,7 +990,7 @@ LABEL_5:
 		this->motionX = v14;
 		this->motionZ = v15;
 		if(this->isCollidedHorizontally) {
-			this->motionY = 0.35;
+			this->motionY = 0.08;
 		}
 		return;
 	}

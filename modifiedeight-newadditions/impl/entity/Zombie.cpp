@@ -1,4 +1,6 @@
 #include <entity/Zombie.hpp>
+#include <entity/Player.hpp>
+#include <entity/Mob.hpp>
 #include <entity/ai/goals/BreakDoorGoal.hpp>
 #include <entity/ai/goals/FloatGoal.hpp>
 #include <entity/ai/goals/HurtByTargetGoal.hpp>
@@ -128,4 +130,34 @@ int32_t Zombie::getAttackDamage(Entity* a2) {
 		attackDamage += v3->getAttackDamage(this);
 	}
 	return attackDamage;
+}
+
+Entity* Zombie::findAttackTarget() {
+	Player* np = this->level->getNearestPlayer(this, 16.0f);
+	if (np && !np->abilities.instabuild && !np->abilities.invulnerable && this->canSee(np)) {
+		return np;
+	}
+
+	Entity* nearestVillager = nullptr;
+	float minDistSq = 16.0f * 16.0f;
+	if (this->level) {
+		for (Entity* e : this->level->entities) {
+			if (e && e->isAlive() && e->getEntityTypeId() == 15) {
+				float dx = e->posX - this->posX;
+				float dy = e->posY - this->posY;
+				float dz = e->posZ - this->posZ;
+				float distSq = dx * dx + dy * dy + dz * dz;
+				if (distSq < minDistSq && this->canSee(e)) {
+					minDistSq = distSq;
+					nearestVillager = e;
+				}
+			}
+		}
+	}
+	return nearestVillager;
+}
+
+bool_t Zombie::doHurtTarget(Entity* a2) {
+	this->swing();
+	return a2->hurt(this, this->getAttackDamage(a2));
 }

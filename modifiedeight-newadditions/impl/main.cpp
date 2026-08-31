@@ -12,10 +12,13 @@
 #include <util/Util.hpp>
 #include <unigl.h>
 
+#include <CrashHandler.hpp>
+
 AppPlatform_sdl appPlatform;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <windows.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+	CrashHandler::install();
 	struct timeval start;
 	gettimeofday(&start, 0);
 	startedAtSec = start.tv_sec;
@@ -27,6 +30,7 @@ int main(int argc, char** argv) {
 }
 #else
 int main(int argc, char** argv) {
+	CrashHandler::install();
 	struct timeval start;
 	gettimeofday(&start, 0);
 	startedAtSec = start.tv_sec;

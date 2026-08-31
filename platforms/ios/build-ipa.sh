@@ -18,12 +18,16 @@ builddir="$platformdir/build"
 
 if [ "$nbcclient" = "newadditions" ]; then
     target_sub="new-additions/assets"
+    android_assets="platforms/android/app/src/newadditions/assets"
 else
     target_sub="classic/assets"
+    android_assets="platforms/android/app/src/classic/assets"
 fi
 
 if [ -n "$ASSET_DIR" ]; then
     assetdir="$ASSET_DIR"
+elif [ -n "$android_assets" ] && [ -d "$android_assets" ]; then
+    assetdir="$android_assets"
 elif [ -d "assets_repo/$target_sub" ]; then
     assetdir="assets_repo/$target_sub"
 elif [ -d "$platformdir/build/assets_repo/$target_sub" ]; then
@@ -116,6 +120,12 @@ fi
 if [ -d "$assetdir" ]; then
     rm -rf "$apppath/assets"
     cp -a "$assetdir" "$apppath/assets"
+    if [ -n "$android_assets" ] && [ -d "$android_assets" ]; then
+        cp -a "$android_assets"/* "$apppath/assets/" 2>/dev/null || true
+    fi
+    if [ -d "modifiedeight-newadditions/assets" ]; then
+        cp -a modifiedeight-newadditions/assets/* "$apppath/assets/" 2>/dev/null || true
+    fi
     if [ -z "$(ls -A "$assetdir" 2>/dev/null | grep -v '^\.gitkeep$')" ]; then
         printf 'WARNING: %s is empty. Unpack a real MCPE 0.8.1 APK assets/ there;\n' "$assetdir"
         printf '         the app will launch but cannot load textures/UI.\n'

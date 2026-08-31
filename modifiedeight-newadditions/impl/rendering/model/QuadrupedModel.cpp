@@ -67,14 +67,27 @@ void QuadrupedModel::render(Entity* a2, float a3, float a4, float a5, float a6, 
 	}
 }
 void QuadrupedModel::setupAnim(float a2, float a3, float a4, float a5, float a6, float a7) {
-	float v7; // s15
-
 	this->field_18.xRotAngle = a6 / (float)(180.0 / 3.1416);
 	this->field_18.yRotAngle = a5 / (float)(180.0 / 3.1416);
 	this->field_118.xRotAngle = 90.0 / (float)(180.0 / 3.1416);
-	v7 = (float)(Mth::cos(a2 * 0.6662) * 1.4) * a3;
+	
+	float v7 = (float)(Mth::cos(a2 * 0.6662f) * 1.4f) * a3;
+	float v8 = (float)(Mth::cos(a2 * 0.6662f + 3.14159265f) * 1.4f) * a3;
+	
 	this->field_198.xRotAngle = v7;
 	this->field_318.xRotAngle = v7;
-	this->field_218.xRotAngle = -v7;
-	this->field_298.xRotAngle = -v7;
+	this->field_218.xRotAngle = v8;
+	this->field_298.xRotAngle = v8;
+
+	if (a3 > 0.001f) {
+		float bodySway = Mth::sin(a2 * 0.6662f) * a3 * 0.05f;
+		float headBob = Mth::cos(a2 * 0.6662f * 2.0f) * a3 * 0.08f;
+		this->field_118.zRotAngle = bodySway;
+		this->field_18.xRotAngle += headBob;
+		this->field_18.zRotAngle = -bodySway * 0.5f;
+	} else {
+		this->field_118.zRotAngle = 0.0f;
+		this->field_18.zRotAngle = 0.0f;
+		this->field_18.xRotAngle += Mth::sin(a4 * 0.06f) * 0.02f;
+	}
 }

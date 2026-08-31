@@ -27,6 +27,27 @@ bool_t NearestAttackableTargetGoal::canUse() {
 		this->targetedPlayer = nearestPlayer;
 		return 1;
 	}
+
+	if(this->mob && this->mob->level && (this->mob->getEntityTypeId() == 32 || this->mob->getEntityTypeId() == 121)) {
+		Mob* nearestVillager = 0;
+		float nearestDistSq = this->radius * this->radius;
+		for(auto ent : this->mob->level->entities) {
+			if(ent && ent->isMob() && ent->getEntityTypeId() == 120) {
+				float dx = ent->posX - this->mob->posX;
+				float dy = ent->posY - this->mob->posY;
+				float dz = ent->posZ - this->mob->posZ;
+				float distSq = dx * dx + dy * dy + dz * dz;
+				if(distSq < nearestDistSq && this->canAttack((Mob*)ent, 0)) {
+					nearestDistSq = distSq;
+					nearestVillager = (Mob*)ent;
+				}
+			}
+		}
+		if(nearestVillager) {
+			this->targetedPlayer = (Player*)nearestVillager;
+			return 1;
+		}
+	}
 	return 0;
 }
 void NearestAttackableTargetGoal::start() {

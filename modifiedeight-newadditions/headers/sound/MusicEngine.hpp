@@ -44,7 +44,8 @@ struct Minecraft;
 enum MusicMode {
 	MUSIC_MODE_NONE = 0,
 	MUSIC_MODE_MENU = 1,
-	MUSIC_MODE_GAME = 2
+	MUSIC_MODE_GAME = 2,
+	MUSIC_MODE_CUSTOM = 3
 };
 
 struct MusicEngine {

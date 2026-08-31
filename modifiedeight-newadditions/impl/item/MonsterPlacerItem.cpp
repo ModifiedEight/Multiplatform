@@ -26,7 +26,7 @@ Mob* MonsterPlacerItem::spawnMobAt(struct Level* level, int32_t type, float x, f
 	Mob* mob; // r0
 
 	mobb = MobFactory::getStaticTestMob(type, level);
-	if(!mobb || (mobb->getCreatureBaseType() != 2 && mobb->getCreatureBaseType() != 1)) {
+	if(!mobb || (mobb->getCreatureBaseType() != 2 && mobb->getCreatureBaseType() != 1 && mobb->getCreatureBaseType() != 3)) {
 		return 0;
 	}
 	mob = MobFactory::CreateMob(type, level);
@@ -43,17 +43,39 @@ Mob* MonsterPlacerItem::spawnMobAt(struct Level* level, int32_t type, float x, f
 MonsterPlacerItem::~MonsterPlacerItem() {
 }
 TextureUVCoordinateSet* MonsterPlacerItem::getIcon(int32_t a2, int32_t a3, bool_t a4) {
+	const char* namedEgg = nullptr;
+	switch (a2) {
+		case 14: namedEgg = "spawn_egg_wolf"; break;
+		case 17: namedEgg = "spawn_egg_squid"; break;
+		case 26: namedEgg = "spawn_egg_polar_bear"; break;
+		case 27: namedEgg = "spawn_egg_cod"; break;
+		case 28: namedEgg = "spawn_egg_salmon"; break;
+		case 29: namedEgg = "spawn_egg_pufferfish"; break;
+		case 30: namedEgg = "spawn_egg_tropical_fish"; break;
+		case 37: namedEgg = "spawn_egg_slime"; break;
+		case 38: namedEgg = "spawn_egg_fox"; break;
+		case 39: namedEgg = "spawn_egg_turtle"; break;
+		case 40: namedEgg = "spawn_egg_frog"; break;
+		case 15:
+		case 120: namedEgg = "spawn_egg_villager"; break;
+		default: break;
+	}
+	if (namedEgg) {
+		TextureAtlasTextureItem* t = Item::getTextureItem(namedEgg);
+		if (t) return t->getUV(0);
+	}
 	TextureAtlasTextureItem* texItem = Item::getTextureItem("spawn_egg");
 	if (texItem) {
 		int index = 0;
-		if (a2 == 11) index = 1;
+		if (a2 == 10) index = 0;
+		else if (a2 == 11) index = 1;
 		else if (a2 == 12) index = 2;
 		else if (a2 == 13) index = 3;
-		else if (a2 == 32) index = 4; // Zombie
-		else if (a2 == 33) index = 5; // Creeper
-		else if (a2 == 34) index = 6; // Skeleton
-		else if (a2 == 35) index = 7; // Spider
-		else if (a2 == 36) index = 8; // PigZombie
+		else if (a2 == 32 || a2 == 53) index = 4;
+		else if (a2 == 33) index = 5;
+		else if (a2 == 34) index = 6;
+		else if (a2 == 35) index = 7;
+		else if (a2 == 36) index = 8;
 		return texItem->getUV(index);
 	}
 	return &this->field_48;

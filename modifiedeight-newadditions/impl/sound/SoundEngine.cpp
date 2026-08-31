@@ -1,9 +1,16 @@
 #include <sound/SoundEngine.hpp>
 #include <sound/MusicEngine.hpp>
+#include <sound/MusicPlayerManager.hpp>
 #include <Options.hpp>
 #include <entity/Mob.hpp>
 #include <math.h>
 #include <sounddata.hpp>
+#include <sound/NewSoundData.hpp>
+#include <AppPlatform.hpp>
+#include <_AssetFile.hpp>
+#include <cstring>
+
+extern "C" int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
 
 SoundEngine::SoundEngine(float a2)
 	: SS_SUPER_CLASS() {
@@ -142,6 +149,68 @@ void SoundEngine::init(struct Minecraft* a2, struct Options* a3) {
 	this->sounds.add("random.eat", SA_eat2);
 	this->sounds.add("random.eat", SA_eat3);
 	this->sounds.add("random.fuse", SA_fuse);
+	registerNewSounds(this->sounds);
+
+	auto loadOggSound = [](SoundRepository& repo, const std::string& name, const std::string& relPath) {
+		AssetFile af = AppPlatform::_singleton ? AppPlatform::_singleton->readAssetFile(relPath) : AssetFile(0, -1);
+		if (af.bytes && af.length > 0) {
+			int channels = 0, sampleRate = 0;
+			short* pcm = nullptr;
+			int samples = stb_vorbis_decode_memory((const unsigned char*)af.bytes, af.length, &channels, &sampleRate, &pcm);
+			delete[] af.bytes;
+			if (samples > 0 && pcm) {
+				int32_t bytesPerSample = 2;
+				int32_t dataLen = samples * channels * bytesPerSample;
+				char_t* buf = new char_t[16 + dataLen];
+				((int32_t*)buf)[0] = channels;
+				((int32_t*)buf)[1] = bytesPerSample;
+				((int32_t*)buf)[2] = sampleRate;
+				((int32_t*)buf)[3] = samples;
+				memcpy(buf + 16, pcm, dataLen);
+				free(pcm);
+				SoundDesc desc(buf);
+				repo.add(name, desc);
+			}
+		}
+	};
+
+	for (int i = 1; i <= 8; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/idle%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.ambient", b);
+	}
+	for (int i = 1; i <= 5; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/hurt%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.hurt", b);
+	}
+	for (int i = 1; i <= 3; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/death%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.death", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/step%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.step", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/long_jump%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.jump", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/eat%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.eat", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/frog/tongue%d.ogg", i);
+		loadOggSound(this->sounds, "mob.frog.tongue", b);
+	}
+
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/armor_stand/break%d.ogg", i);
+		loadOggSound(this->sounds, "mob.armor_stand.break", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/armor_stand/hit%d.ogg", i);
+		loadOggSound(this->sounds, "mob.armor_stand.hit", b);
+	}
 }
 void SoundEngine::play(const std::string& a2, float a3, float a4, float a5, float a6, float a7) {
 	float v8;  // s16

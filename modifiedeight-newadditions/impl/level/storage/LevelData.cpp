@@ -69,6 +69,9 @@ LevelData::LevelData(const struct LevelSettings& settings, const std::string& a3
 	} else {
 		this->stopTime = -1;
 	}
+	this->field_2C = 0;
+	this->field_30 = 24000 + (rand() % 48000);
+	this->field_34 = 0;
 }
 LevelData::LevelData(void) {
 	this->sizeOnDisk = 0; //TODO doesnt seem to exist in mcpe
@@ -186,6 +189,21 @@ void LevelData::getTagData(const CompoundTag* a2) {
 			this->spawnAnimals = a2->getByte("spawnAnimals") != 0;
 		} else {
 			this->spawnAnimals = 1;
+		}
+		if(a2->contains("weatherType")) {
+			this->field_2C = a2->getInt("weatherType");
+		} else {
+			this->field_2C = 0;
+		}
+		if(a2->contains("weatherTicks")) {
+			this->field_30 = a2->getInt("weatherTicks");
+		} else {
+			this->field_30 = 12000;
+		}
+		if(a2->contains("rainLevel")) {
+			this->field_34 = a2->getInt("rainLevel");
+		} else {
+			this->field_34 = 0;
 		}
 FINALS:
 		if(a2->contains("Player", 10)) {
@@ -311,6 +329,9 @@ void LevelData::setTagData(struct CompoundTag* a2, struct CompoundTag* a3) {
 	a2->putBoolean("generateCaves", this->generateCaves);
 	a2->putBoolean("spawnMonsters", this->spawnMonsters);
 	a2->putBoolean("spawnAnimals", this->spawnAnimals);
+	a2->putInt("weatherType", this->field_2C);
+	a2->putInt("weatherTicks", this->field_30);
+	a2->putInt("rainLevel", this->field_34);
 	if(a3) {
 		a2->put("Player", a3);
 	}

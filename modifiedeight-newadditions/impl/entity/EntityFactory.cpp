@@ -10,6 +10,11 @@
 #include <entity/MinecartRideable.hpp>
 #include <nbt/CompoundTag.hpp>
 #include <entity/MobFactory.hpp>
+#include <entity/Villager.hpp>
+#include <entity/ZombieVillager.hpp>
+#include <entity/ItemFrame.hpp>
+#include <entity/ArmorStand.hpp>
+#include <entity/Frog.hpp>
 
 Entity* EntityFactory::CreateEntity(int32_t type, Level* level) {
 	switch(type) {
@@ -19,6 +24,10 @@ Entity* EntityFactory::CreateEntity(int32_t type, Level* level) {
 			return new PrimedTnt(level);
 		case 66:
 			return new FallingTile(level);
+		case 71:
+			return new ItemFrame(level);
+		case 78:
+			return new ArmorStand(level);
 		case 80:
 			return new Arrow(level);
 		case 81:
@@ -29,6 +38,12 @@ Entity* EntityFactory::CreateEntity(int32_t type, Level* level) {
 			return new Painting(level);
 		case 84:
 			return new MinecartRideable(level);
+		case 120:
+			return new Villager(level);
+		case 121:
+			return new ZombieVillager(level);
+		case 122:
+			return new Frog(level);
 		default:
 			return 0;
 	}

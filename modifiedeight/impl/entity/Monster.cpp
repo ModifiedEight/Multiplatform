@@ -95,11 +95,11 @@ bool_t Monster::doHurtTarget(Entity* a2) {
 float Monster::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
 	return 0.5 - this->level->getBrightness(x, y, z);
 }
-Entity* Monster::findAttackTarget() {
-	Entity* np; // r5
+#include <entity/Player.hpp>
 
-	np = (Entity*)this->level->getNearestPlayer(this, 16.0);
-	if(!np || !this->canSee(np)) {
+Entity* Monster::findAttackTarget() {
+	Player* np = this->level->getNearestPlayer(this, 16.0);
+	if(!np || np->abilities.instabuild || np->abilities.invulnerable || !this->canSee(np)) {
 		return 0;
 	}
 	return np;

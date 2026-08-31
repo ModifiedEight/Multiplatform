@@ -307,7 +307,9 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 		if (is_terrain) {
 			const char* customSlots[] = {
 				"seagrass", "tall_seagrass_bottom", "tall_seagrass_top", "kelp", "kelp_plant",
-				"flower_rose", "flower_pot", "daylight_detector_side", "daylight_detector_top", "daylight_detector_inverted_top"
+				"flower_rose", "flower_pot", "daylight_detector_side", "daylight_detector_top", "daylight_detector_inverted_top",
+				"sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3",
+				"jukebox_top", "jukebox_side", "slime", "slime_block"
 			};
 			for (const char* cs : customSlots) {
 				std::string img_path = std::string("textures/blocks/") + cs + ".png";
@@ -343,10 +345,23 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 			}
 		} else {
 			const char* customItemSlots[] = {
-				"flower_pot"
+				"flower_pot", "sweet_berries",
+				"spawn_egg_wolf", "spawn_egg_squid", "spawn_egg_polar_bear",
+				"spawn_egg_cod", "spawn_egg_salmon", "spawn_egg_pufferfish",
+				"spawn_egg_tropical_fish", "spawn_egg_slime", "spawn_egg_fox",
+				"spawn_egg_turtle", "spawn_egg_frog", "spawn_egg_villager"
 			};
-			for (const char* cs : customItemSlots) {
-				std::string img_path = std::string("textures/items/") + cs + ".png";
+			const char* customItemFiles[] = {
+				"textures/items/flower_pot.png", "textures/items/sweet_berries.png",
+				"textures/items/spawn_egg_wolf.png", "textures/items/spawn_egg_squid.png", "textures/items/spawn_egg_polar_bear.png",
+				"textures/items/spawn_egg_cod.png", "textures/items/spawn_egg_salmon.png", "textures/items/spawn_egg_pufferfish.png",
+				"textures/items/spawn_egg_tropical_fish.png", "textures/items/spawn_egg_slime.png", "textures/items/spawn_egg_fox.png",
+				"textures/items/spawn_egg_turtle.png", "textures/items/spawn_egg_frog.png", "textures/items/spawn_egg_villager.png"
+			};
+			int numSlots = sizeof(customItemSlots) / sizeof(customItemSlots[0]);
+			for (int ci = 0; ci < numSlots; ++ci) {
+				const char* cs = customItemSlots[ci];
+				std::string img_path = customItemFiles[ci];
 				uint8_t* pixels = load_and_resize_png(mc, img_path, 16, 16);
 
 				int sx = (slot_idx % slots_per_row) * 16;

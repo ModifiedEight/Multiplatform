@@ -10,8 +10,10 @@
 #include <item/HatchetItem.hpp>
 #include <item/FlintAndSteelItem.hpp>
 #include <item/FoodItem.hpp>
-#include <item/BowItem.hpp>
+#include <item/CameraItem.hpp>
+#include <item/FishingRodItem.hpp>
 #include <item/CoalItem.hpp>
+#include <item/BowItem.hpp>
 #include <item/WeaponItem.hpp>
 #include <item/BowlFoodItem.hpp>
 #include <item/HoeItem.hpp>
@@ -34,6 +36,9 @@
 #include <item/ShearsItem.hpp>
 #include <item/MonsterPlacerItem.hpp>
 #include <item/SeedFoodItem.hpp>
+#include <item/SweetBerriesItem.hpp>
+#include <item/ItemFrameItem.hpp>
+#include <item/ArmorStandItem.hpp>
 #include <item/SnowballItem.hpp>
 #include <item/CameraItem.hpp>
 #include <entity/Player.hpp>
@@ -155,6 +160,16 @@ Item* Item::camera;
 Item* Item::beetroot;
 Item* Item::seeds_beetroot;
 Item* Item::beetrootSoup;
+Item* Item::fishingRod;
+Item* Item::fish_raw;
+Item* Item::fish_cooked;
+Item* Item::salmon_raw;
+Item* Item::salmon_cooked;
+Item* Item::clownfish;
+Item* Item::pufferfish;
+Item* Item::sweetBerries;
+Item* Item::itemFrame;
+Item* Item::armorStand;
 Item* Item::items[512];
 std::string Item::ICON_DESCRIPTION_PREFIX = "item.";
 Random Item::random;
@@ -283,6 +298,16 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	Item::beetroot = (new FoodItem(201, 1, 0.6, 0))->setIcon("beetroot", 0)->setCategory(4, 4)->setDescriptionId("beetroot");
 	Item::seeds_beetroot = (new SeedItem(202, Tile::beetroot->blockID, Tile::farmland->blockID))->setIcon("seeds_beetroot", 0)->setCategory(4, 4)->setDescriptionId("seedsBeetroot");
 	Item::beetrootSoup = (new BowlFoodItem(203, 8))->setIcon("beetroot_soup", 0)->setCategory(4, 4)->setDescriptionId("beetrootSoup");
+	Item::fishingRod = (new FishingRodItem(90))->setIcon("fishing_rod_uncast", 0)->setCategory(3, 2)->setDescriptionId("fishingRod");
+	Item::fish_raw = (new FoodItem(93, 2, 0.4f, 0))->setIcon("fish_raw", 0)->setCategory(4, 4)->setDescriptionId("fishRaw");
+	Item::fish_cooked = (new FoodItem(94, 5, 0.6f, 0))->setIcon("fish_cooked", 0)->setCategory(4, 4)->setDescriptionId("fishCooked");
+	Item::salmon_raw = (new FoodItem(206, 2, 0.4f, 0))->setIcon("salmon_raw", 0)->setCategory(4, 4)->setDescriptionId("salmonRaw");
+	Item::salmon_cooked = (new FoodItem(207, 6, 0.8f, 0))->setIcon("salmon_cooked", 0)->setCategory(4, 4)->setDescriptionId("salmonCooked");
+	Item::clownfish = (new FoodItem(208, 1, 0.2f, 0))->setIcon("clownfish", 0)->setCategory(4, 4)->setDescriptionId("clownfish");
+	Item::sweetBerries = (new SweetBerriesItem(210, 2, 0.2f, 0))->setIcon("sweet_berries", 0)->setCategory(4, 4)->setDescriptionId("sweetBerries");
+	if (Tile::sweetBerryBush && !Item::items[Tile::sweetBerryBush->blockID]) new TileItem(Tile::sweetBerryBush->blockID - 256);
+	if (Tile::musicPlayer && !Item::items[Tile::musicPlayer->blockID]) new TileItem(Tile::musicPlayer->blockID - 256);
+	if (Tile::slimeBlock && !Item::items[Tile::slimeBlock->blockID]) new TileItem(Tile::slimeBlock->blockID - 256);
 	
 	if (Item::items[Tile::stainedGlass->blockID])
 		Item::items[Tile::stainedGlass->blockID]->setStackedByData(true);
@@ -316,6 +341,18 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	                      ->setCategory(3, 8)
 	                      ->setDescriptionId("flowerPot");
 	Item::items[390] = Item::flowerPot;
+
+	Item::itemFrame = (new ItemFrameItem(133))
+	                      ->setIcon("item_frame", 0)
+	                      ->setCategory(3, 8)
+	                      ->setDescriptionId("frame");
+	Item::items[389] = Item::itemFrame;
+
+	Item::armorStand = (new ArmorStandItem(160))
+	                       ->setIcon("armorstand", 0)
+	                       ->setCategory(3, 8)
+	                       ->setDescriptionId("armorStand");
+	Item::items[416] = Item::armorStand;
 
 	int32_t v556 = 0;
 	do {

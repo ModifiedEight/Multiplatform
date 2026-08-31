@@ -27,6 +27,8 @@ FurnaceRecipes::FurnaceRecipes() {
 	this->addFurnaceRecipe(Tile::treeTrunk->blockID, ItemInstance(Item::coal, 1, 1));
 	this->addFurnaceRecipe(Tile::netherrack->blockID, ItemInstance(Item::netherbrick));
 	this->addFurnaceRecipe(Item::potato->itemID, ItemInstance(Item::potatoBaked));
+	this->addFurnaceRecipe(Item::fish_raw ? Item::fish_raw->itemID : 349, ItemInstance(Item::fish_cooked ? Item::fish_cooked->itemID : 350, 1, 0));
+	this->addFurnaceRecipe(Item::salmon_raw ? Item::salmon_raw->itemID : 462, ItemInstance(Item::salmon_cooked ? Item::salmon_cooked->itemID : 463, 1, 0));
 }
 void FurnaceRecipes::addFurnaceRecipe(int32_t a2, const ItemInstance& a3) {
 	this->recipes.insert({a2, ItemInstance(a3)});

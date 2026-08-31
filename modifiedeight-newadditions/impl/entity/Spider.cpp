@@ -1,4 +1,5 @@
 #include <entity/Spider.hpp>
+#include <entity/Player.hpp>
 #include <level/Level.hpp>
 #include <item/Item.hpp>
 #include <entity/Player.hpp>
@@ -73,7 +74,11 @@ Entity* Spider::findAttackTarget() {
 	if(this->getBrightness(1.0) >= 0.5) {
 		return 0;
 	}
-	return this->level->getNearestPlayer(this, 16);
+	Player* np = this->level->getNearestPlayer(this, 16);
+	if(!np || np->abilities.instabuild || np->abilities.invulnerable) {
+		return 0;
+	}
+	return np;
 }
 void Spider::checkHurtTarget(Entity* a2, float a3) {
 	float diffX; // s17

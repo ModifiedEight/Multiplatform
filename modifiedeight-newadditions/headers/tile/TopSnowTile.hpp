@@ -19,5 +19,6 @@ struct TopSnowTile : Tile{
 	virtual int32_t getResourceCount(Random*);
 	virtual float getThickness();
 	virtual void playerDestroy(Level*, Player*, int32_t, int32_t, int32_t, int32_t);
+	virtual void updateShape(LevelSource*, int32_t, int32_t, int32_t);
 
 };

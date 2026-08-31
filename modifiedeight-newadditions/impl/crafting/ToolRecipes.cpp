@@ -53,4 +53,5 @@ void ToolRecipes::addRecipes(Recipes* a1) {
 		++v2;
 	} while(v2 != 5);
 	a1->addShapedRecipe(ItemInstance(Item::shears), " #", "# ", definition<Item*>('#', Item::ironIngot) /*inlined*/);
+	a1->addShapedRecipe(ItemInstance(Item::fishingRod), "  #", " #X", "# X", definition<Item*, Item*>('#', Item::stick, 'X', Item::string));
 }

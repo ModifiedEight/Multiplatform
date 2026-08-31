@@ -103,7 +103,8 @@ bool_t Region::isEmptyTile(int32_t x, int32_t y, int32_t z) {
 	return Tile::tiles[this->getTile(x, y, z)] == 0;
 }
 float Region::getBrightness(int32_t x, int32_t y, int32_t z) {
-	return this->level->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
+	if (this->level) return this->level->getBrightness(x, y, z);
+	return 0.5f;
 }
 int32_t Region::getData(int32_t x, int32_t y, int32_t z) {
 	if(!LevelHeight::inRange(y)) return 0;

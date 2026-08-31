@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <entity/EntityFactory.hpp>
 #include <entity/Player.hpp>
+#include <inventory/Inventory.hpp>
+#include <item/ItemInstance.hpp>
 #include <entity/Zombie.hpp>
 #include <entity/path/PathFinder.hpp>
 #include <level/BiomeSource.hpp>
@@ -21,6 +23,8 @@
 #include <level/storage/LevelStorage.hpp>
 #include <math/HitResult.hpp>
 #include <math/Mth.hpp>
+
+extern int g_morningFogTicks;
 #include <nbt/CompoundTag.hpp>
 #include <network/RakNetInstance.hpp>
 #include <network/packet/EntityEventPacket.hpp>
@@ -78,6 +82,9 @@ void Level::_init(const std::string& levelName, const struct LevelSettings& a3, 
 	} else {
 		this->dimensionPtr = DimensionFactory::createDefaultDimension(&this->levelData);
 	}
+	this->weatherType = this->levelData.field_2C;
+	this->weatherTicks = this->levelData.field_30 > 0 ? this->levelData.field_30 : 12000;
+	this->rainLevel = (float)this->levelData.field_34 / 1000.0f;
 	this->dimensionPtr->init(this);
 	v10 = this->createChunkSource();
 	this->nightMode = 0;
@@ -1008,7 +1015,7 @@ struct Player* Level::getNearestPlayer(float x, float y, float z, float a5) {
 	Player* v11 = 0;
 	for(int v6 = 0; v6 < this->playersMaybe.size(); ++v6) {
 		Player* v12 = this->playersMaybe[v6];
-		if(!v12->isDead) {
+		if(v12 && !v12->isDead) {
 			float v13 = v12->distanceToSqr(x, y, z);
 			if((a5 < 0.0 || v13 < (float)(a5 * a5)) && (v5 == -1.0 || v13 < v5)) {
 				v5 = v13;
@@ -1051,21 +1058,22 @@ std::string Level::getPlayerNames() {
 
 Biome::MobSpawnerData Level::getRandomMobSpawnAt(const MobCategory& a3, int32_t a4, int32_t a5, int32_t a6) {
 	std::vector<Biome::MobSpawnerData> v18 = this->chunkSource->getMobsAt(a3, a4, a5, a6);
-	if(!v18.empty()) {
-		int v10 = 0;
-		for(auto&& v: v18) {
-			v10 += v.rarity;
-		}
+	int v10 = 0;
+	for(auto&& v: v18) {
+		v10 += v.rarity;
+	}
+	if (v10 <= 0) {
+		return Biome::MobSpawnerData(-128, 0, 0, 0);
+	}
 
-		int v12 = this->random.genrand_int32() % v10;
-		for(auto&& v: v18) {
-			v12 -= v.rarity;
-			if(v12 < 0) {
-				return Biome::MobSpawnerData(v);
-			}
+	int v12 = this->random.genrand_int32() % v10;
+	for(auto&& v: v18) {
+		v12 -= v.rarity;
+		if(v12 < 0) {
+			return Biome::MobSpawnerData(v);
 		}
 	}
-	return Biome::MobSpawnerData(-128, 0, 0, 0); //TODO actually sets only ->rarity to -128
+	return Biome::MobSpawnerData(-128, 0, 0, 0);
 }
 int32_t Level::getRawBrightness(int32_t x, int32_t y, int32_t z) {
 	return this->getRawBrightness(x, y, z, 1);
@@ -1668,6 +1676,9 @@ void Level::saveGame() {
 	}
 }
 void Level::saveLevelData() {
+	this->levelData.field_2C = this->weatherType;
+	this->levelData.field_30 = this->weatherTicks;
+	this->levelData.field_34 = (int)(this->rainLevel * 1000.0f);
 	this->levelStoragePtr->saveLevelData(this->levelData, &this->playersMaybe);
 }
 void Level::savePlayers() {
@@ -2320,7 +2331,29 @@ bool_t Level::isEmptyTile(int32_t x, int32_t y, int32_t z) {
 	return this->getTile(x, y, z) == 0;
 }
 float Level::getBrightness(int32_t x, int32_t y, int32_t z) {
-	return this->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
+	float base = this->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
+	for (Player* p : this->playersMaybe) {
+		if (!p || !p->inventory) continue;
+		ItemInstance* held = p->inventory->getSelected();
+		if (!held || held->count <= 0) continue;
+		int id = held->getId();
+		int lightPower = 0;
+		if (id == 50) lightPower = 14;
+		else if (id == 89 || id == 91 || id == 327) lightPower = 15;
+		if (lightPower > 0) {
+			float dx = (float)x + 0.5f - p->posX;
+			float dy = (float)y + 0.5f - (p->posY + 1.2f);
+			float dz = (float)z + 0.5f - p->posZ;
+			float distSq = dx * dx + dy * dy + dz * dz;
+			float maxR = (float)lightPower;
+			if (distSq < maxR * maxR) {
+				float dist = sqrtf(distSq);
+				float dyn = (1.0f - (dist / maxR)) * 0.95f;
+				if (dyn > base) base = dyn;
+			}
+		}
+	}
+	return base;
 }
 int32_t Level::getData(int32_t x, int32_t y, int32_t z) {
 	if(!LevelHeight::inRange(y)) {
@@ -2332,7 +2365,7 @@ int32_t Level::getData(int32_t x, int32_t y, int32_t z) {
 }
 struct Material* Level::getMaterial(int32_t x, int32_t y, int32_t z) {
 	int32_t id = this->getTile(x, y, z);
-	if(id) return (Material*)Tile::tiles[id]->material;
+	if(id > 0 && id < 256 && Tile::tiles[id]) return (Material*)Tile::tiles[id]->material;
 	return Material::air;
 }
 
@@ -2389,6 +2422,82 @@ void Level::tick() {
 		}
 	}
 	this->gameTickCounter++;
+	int32_t prevWType = this->weatherType;
+	if (--this->weatherTicks <= 0) {
+		if (this->weatherType == 0) {
+			this->weatherType = (this->random.genrand_int32() % 4 == 0) ? 2 : 1;
+			this->weatherTicks = 12000 + (this->random.genrand_int32() % 12000);
+		} else {
+			this->weatherType = 0;
+			this->weatherTicks = 12000 + (this->random.genrand_int32() % 24000);
+		}
+	}
+	if (this->weatherType != 0) {
+		if (this->rainLevel < 1.0f) this->rainLevel += 0.003f;
+		if (this->rainLevel > 1.0f) this->rainLevel = 1.0f;
+	} else {
+		if (this->rainLevel > 0.0f) {
+			this->rainLevel -= 0.003f;
+			if (this->rainLevel < 0.0f) this->rainLevel = 0.0f;
+			if (g_morningFogTicks < 1800) {
+				g_morningFogTicks = 1800;
+			}
+		}
+	}
+	if (!this->isClientMaybe && (prevWType != this->weatherType || this->gameTickCounter % 120 == 0)) {
+		this->levelEvent(0, 9810, (int16_t)this->weatherType, (int16_t)(this->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, this->weatherTicks);
+	}
+
+	if (this->rainLevel > 0.35f) {
+		if (this->gameTickCounter % 10 == 0) {
+			if (this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
+				Player* p = this->playersMaybe[0];
+				Biome* b = this->getBiome(Mth::floor(p->posX), Mth::floor(p->posZ));
+				bool isSnowy = (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert);
+				if (!isSnowy) {
+					float dropAlpha = (this->rainLevel - 0.35f) / 0.65f;
+					this->playSound(p->posX, p->posY, p->posZ, "ambient.weather.rain", dropAlpha * 0.7f, 1.0f);
+				}
+			}
+		}
+		if (this->weatherType == 2 && this->gameTickCounter % 120 == 0 && (this->random.genrand_int32() % 2 == 0)) {
+			if (this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
+				Player* p = this->playersMaybe[0];
+				float ox = (this->random.nextFloat() * 80.0f - 40.0f);
+				float oz = (this->random.nextFloat() * 80.0f - 40.0f);
+				this->playSound(p->posX + ox, p->posY, p->posZ + oz, "ambient.weather.thunder", 1.0f, 0.9f + this->random.nextFloat() * 0.2f);
+			}
+		}
+
+		if (this->gameTickCounter % 6 == 0 && this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
+			Player* p = this->playersMaybe[0];
+			int px = Mth::floor(p->posX);
+			int pz = Mth::floor(p->posZ);
+			int cx = px + (this->random.genrand_int32() % 64) - 32;
+			int cz = pz + (this->random.genrand_int32() % 64) - 32;
+			for (int dx = -1; dx <= 1; ++dx) {
+				for (int dz = -1; dz <= 1; ++dz) {
+					if (this->random.genrand_int32() % 2 == 0) continue;
+					int rx = cx + dx;
+					int rz = cz + dz;
+					Biome* b = this->getBiome(rx, rz);
+					if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert) {
+						int topY = this->getHeightmap(rx, rz);
+						if (topY > 0 && topY < 127) {
+							int tileBelow = this->getTile(rx, topY - 1, rz);
+							int tileAt = this->getTile(rx, topY, rz);
+							if (tileAt == 0 && tileBelow > 0 && Tile::tiles[tileBelow] && Tile::tiles[tileBelow]->isSolidRender() && tileBelow != 78 && tileBelow != 79) {
+								this->setTile(rx, topY, rz, 78, 3);
+							} else if (tileBelow == 8 || tileBelow == 9) {
+								this->setTile(rx, topY - 1, rz, 79, 3);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	this->tickPendingTicks(0);
 	this->tickTiles();
 	for(int32_t v9 = 0; v9 < this->entities.size(); ++v9) {

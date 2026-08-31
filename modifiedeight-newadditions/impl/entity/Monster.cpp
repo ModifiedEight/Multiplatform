@@ -1,4 +1,5 @@
 #include <entity/Monster.hpp>
+#include <entity/Player.hpp>
 #include <level/Level.hpp>
 #include <level/LightLayer.hpp>
 #include <cmath>
@@ -70,13 +71,16 @@ bool_t Monster::doHurtTarget(Entity* a2) {
 	return a2->hurt(this, this->attackDamage);
 }
 float Monster::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
+	int tCur = this->level->getTile(x, y, z);
+	int tBelow = this->level->getTile(x, y - 1, z);
+	if (tCur == 8 || tCur == 9 || tBelow == 8 || tBelow == 9) {
+		return -100.0f;
+	}
 	return 0.5f - ((float)this->level->getRawBrightness(x, y, z) / 15.0f);
 }
 Entity* Monster::findAttackTarget() {
-	Entity* np; // r5
-
-	np = (Entity*)this->level->getNearestPlayer(this, 16.0);
-	if(!np || !this->canSee(np)) {
+	Player* np = this->level->getNearestPlayer(this, 16.0);
+	if(!np || np->abilities.instabuild || np->abilities.invulnerable || !this->canSee(np)) {
 		return 0;
 	}
 	return np;

@@ -149,19 +149,17 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::unbreakable, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_stone, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_wood, 1, 0);
-	if (Options::instance && Options::instance->newAdditions) {
-		CreativeInventoryScreen::populateItem(Tile::woodStairsDark, 1, 0);
-		CreativeInventoryScreen::populateItem(Tile::woodStairsBirch, 1, 0);
-		CreativeInventoryScreen::populateItem(Tile::woodStairsJungle, 1, 0);
-	}
 	CreativeInventoryScreen::populateItem(Tile::stairs_brick, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_sandStone, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_stoneBrickSmooth, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_netherBricks, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stairs_quartz, 1, 0);
+	if (Tile::woodStairsDark) CreativeInventoryScreen::populateItem(Tile::woodStairsDark, 1, 0);
+	if (Tile::woodStairsBirch) CreativeInventoryScreen::populateItem(Tile::woodStairsBirch, 1, 0);
+	if (Tile::woodStairsJungle) CreativeInventoryScreen::populateItem(Tile::woodStairsJungle, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 3);
-	for(int32_t v2 = 0; v2 != ((Options::instance && Options::instance->newAdditions) ? 4 : 1); ++v2) {
+	for(int32_t v2 = 0; v2 != 4; ++v2) {
 		CreativeInventoryScreen::populateItem(Tile::woodSlabHalf, 1, v2);
 	}
 	CreativeInventoryScreen::populateItem(Tile::stoneSlabHalf, 1, 4);
@@ -332,23 +330,21 @@ void CreativeInventoryScreen::populateItems() {
 	for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 		CreativeInventoryScreen::populateItem(Tile::woolCarpet, 1, i);
 	}
-	if (Options::instance && Options::instance->newAdditions) {
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			CreativeInventoryScreen::populateItem(Tile::stainedGlass, 1, i);
+			if (Tile::stainedGlass) CreativeInventoryScreen::populateItem(Tile::stainedGlass, 1, i);
 		}
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			CreativeInventoryScreen::populateItem(Tile::stainedGlassPane, 1, i);
+			if (Tile::stainedGlassPane) CreativeInventoryScreen::populateItem(Tile::stainedGlassPane, 1, i);
 		}
 		
-		CreativeInventoryScreen::populateItem(Tile::fence_spruce, 1, 0);
-		CreativeInventoryScreen::populateItem(Tile::fence_birch, 1, 0);
-		CreativeInventoryScreen::populateItem(Tile::trapdoor_spruce, 1, 0);
-		CreativeInventoryScreen::populateItem(Tile::trapdoor_birch, 1, 0);
+		if (Tile::fence_spruce) CreativeInventoryScreen::populateItem(Tile::fence_spruce, 1, 0);
+		if (Tile::fence_birch) CreativeInventoryScreen::populateItem(Tile::fence_birch, 1, 0);
+		if (Tile::trapdoor_spruce) CreativeInventoryScreen::populateItem(Tile::trapdoor_spruce, 1, 0);
+		if (Tile::trapdoor_birch) CreativeInventoryScreen::populateItem(Tile::trapdoor_birch, 1, 0);
 		
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			CreativeInventoryScreen::populateItem(Item::bed, 1, i);
+			if (Item::bed) CreativeInventoryScreen::populateItem(Item::bed, 1, i);
 		}
-	}
 }
 
 CreativeInventoryScreen::~CreativeInventoryScreen() {
@@ -386,16 +382,16 @@ void CreativeInventoryScreen::init()
 {
 	CreativeInventoryScreen::items.clear();
 	if (Item::bed) {
-		Item::bed->setCategory((Options::instance && Options::instance->newAdditions) ? 5 : 2, 1);
+		Item::bed->setCategory(5, 1);
 	}
 	for (int i = 0; i < 6; i++) {
 		CreativeInventoryScreen::filteredItems[i].clear();
 	}
 	CreativeInventoryScreen::populateItems();
-	if (this->minecraft->options.newAdditions) {
+	{
 		// 1. Planks
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
-			CreativeInventoryScreen::populateItem(Tile::coloredPlanks, 1, i);
+			if (Tile::coloredPlanks) CreativeInventoryScreen::populateItem(Tile::coloredPlanks, 1, i);
 		}
 		// 2. Stairs
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {

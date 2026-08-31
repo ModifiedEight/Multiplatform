@@ -301,18 +301,28 @@ int32_t LiquidTile::getTickDelay() {
 void LiquidTile::tick(Level*, int32_t, int32_t, int32_t, Random*) {
 }
 void LiquidTile::animateTick(Level* level, int32_t x, int32_t y, int32_t z, Random* rng) {
-	float f1;	// s17
-	float maxY; // s15
-	float f;	// r0
-
-	if(this->material == Material::water && !(rng->genrand_int32() << 26)) {
-		level->getData(x, y, z);
+	if(this->material == Material::water) {
+		if ((rng->genrand_int32() % 100) < 4) {
+			float px = (float)x + rng->nextFloat();
+			float py = (float)y + rng->nextFloat();
+			float pz = (float)z + rng->nextFloat();
+			level->addParticle(PT_BUBBLE, px, py, pz, 0.0, 0.04, 0.0, 0);
+		}
+		if ((rng->genrand_int32() % 300) == 0 && Material::air == level->getMaterial(x, y + 1, z)) {
+			level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "liquid.water", 0.15f + rng->nextFloat() * 0.1f, 1.0f);
+		}
 	}
-	if(this->material == Material::lava && Material::air == level->getMaterial(x, y + 1, z) && !level->isSolidRenderTile(x, y + 1, z) && !(rng->genrand_int32() % 0x64)) {
-		f1 = (float)x + rng->nextFloat();
-		maxY = this->maxY;
-		f = rng->nextFloat();
-		level->addParticle(PT_LAVA, f1, (float)y + maxY, (float)z + f, 0.0, 0.0, 0.0, 0);
+	if(this->material == Material::lava && Material::air == level->getMaterial(x, y + 1, z) && !level->isSolidRenderTile(x, y + 1, z)) {
+		if ((rng->genrand_int32() % 100) == 0) {
+			float f1 = (float)x + rng->nextFloat();
+			float maxY = this->maxY;
+			float f = rng->nextFloat();
+			level->addParticle(PT_LAVA, f1, (float)y + maxY, (float)z + f, 0.0, 0.0, 0.0, 0);
+			level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "liquid.lavapop", 0.2f + rng->nextFloat() * 0.2f, 0.9f + rng->nextFloat() * 0.15f);
+		}
+		if ((rng->genrand_int32() % 200) == 0) {
+			level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "liquid.lava", 0.2f + rng->nextFloat() * 0.2f, 0.9f + rng->nextFloat() * 0.15f);
+		}
 	}
 }
 void LiquidTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t, int32_t, int32_t, int32_t) {
@@ -348,12 +358,14 @@ int32_t LiquidTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z
 	if (this->material == Material::water) {
 		if (level) {
 			Biome* b = level->getBiome(x, z);
-			if (b == Biome::swampland) return 0x617B5D;
-			if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks) return 0x3D57D6;
+			if (b == Biome::swampland) return 0x4C6559;
+			if (b == Biome::taiga || b == Biome::icePeaks) return 0x3D57D6;
+			if (b == Biome::tundra || b == Biome::iceDesert) return 0x3938C9;
 			if (b == Biome::desert || b == Biome::savanna) return 0x32A5FF;
 			if (b == Biome::jungle || b == Biome::rainForest) return 0x1B89DF;
+			if (b == Biome::mountain) return 0x44AFF5;
 		}
-		return 0x3F76E4;
+		return 0x44AFF5;
 	}
 	return 0xFFFFFF;
 }

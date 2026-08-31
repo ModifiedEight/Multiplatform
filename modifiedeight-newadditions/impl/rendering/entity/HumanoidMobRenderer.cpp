@@ -14,9 +14,8 @@ HumanoidMobRenderer::HumanoidMobRenderer(HumanoidModel* a2, float a3)
 void HumanoidMobRenderer::renderHand() {
 	this->hmodel->field_0 = 0.0;
 	this->hmodel->setupAnim(0.0, 0.0, 0.0, 0.0, 0.0, 0.0625);
-	glEnableClientState(0x8078u);
-	this->hmodel->rightArmModel.render(0.0625);
-	glDisableClientState(0x8078u);
+	glEnable(GL_TEXTURE_2D);
+	this->hmodel->rightArmModel.render(0.0625f);
 }
 
 HumanoidMobRenderer::~HumanoidMobRenderer() {
@@ -56,36 +55,27 @@ void HumanoidMobRenderer::additionalRendering(Mob* a2, float a3) {
 			}
 		}
 		if(v6->itemClass == Item::bow) {
-			glTranslatef(0.2, 0.125, -0.3875);
-			glRotatef(-180.0, 1.0, 0.0, 0.0);
-			glRotatef(10.0, 0.0, 1.0, 0.0);
-			glScalef(0.625, 0.625, 0.625);
-			v10 = -100.0;
+			glTranslatef(0.2f, 0.125f, -0.3875f);
+			glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
+			glRotatef(10.0f, 0.0f, 1.0f, 0.0f);
+			glScalef(0.625f, 0.625f, 0.625f);
+			glRotatef(-100.0f, 1.0f, 0.0f, 0.0f);
+			glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 		} else {
-			// itemClass is null for a stack whose id nothing local could
-			// represent - id 0 still calls itself valid - and a remote player
-			// may well be holding one of those on a Java server.
 			if(!v6->itemClass || !v6->itemClass->isHandEquipped()) {
-				glTranslatef(0.25, 0.1875, -0.1875);
-				glScalef(0.375, 0.375, 0.375);
-				glRotatef(60.0, 0.0, 0.0, 1.0);
-				glRotatef(-90.0, 1.0, 0.0, 0.0);
-				v11 = 20.0;
-				v13 = 1.0;
-				v12 = 0.0;
-				goto LABEL_10;
+				glTranslatef(0.20f, 0.22f, -0.10f);
+				glScalef(0.45f, 0.45f, 0.45f);
+				glRotatef(60.0f, 0.0f, 0.0f, 1.0f);
+				glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(20.0f, 0.0f, 0.0f, 1.0f);
+			} else {
+				glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+				glTranslatef(0.08f, 0.25f, 0.0f);
+				glScalef(0.625f, 0.625f, 0.625f);
+				glRotatef(80.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 			}
-			glRotatef(180.0, 0.0, 1.0, 0.0);
-			glTranslatef(0.1, 0.265, 0.0);
-			glScalef(0.625, 0.625, 0.625);
-			v10 = 80.0;
 		}
-		glRotatef(v10, 1.0, 0.0, 0.0);
-		v11 = 45.0;
-		v12 = 1.0;
-		v13 = 0.0;
-LABEL_10:
-		glRotatef(v11, 0.0, v12, v13);
 LABEL_11:
 		EntityRenderer::entityRenderDispatcher->itemInHandRenderer->renderItem(a2, v6);
 		glPopMatrix();

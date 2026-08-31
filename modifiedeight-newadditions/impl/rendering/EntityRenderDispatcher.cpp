@@ -27,6 +27,35 @@
 #include <rendering/entity/PaintingRenderer.hpp>
 #include <rendering/entity/FallingTileRenderer.hpp>
 #include <rendering/entity/MinecartRenderer.hpp>
+#include <rendering/entity/SquidRenderer.hpp>
+#include <rendering/model/SquidModel.hpp>
+#include <rendering/entity/FishRenderer.hpp>
+#include <rendering/model/CodModel.hpp>
+#include <rendering/model/SalmonModel.hpp>
+#include <rendering/model/PufferfishModel.hpp>
+#include <rendering/model/TropicalFishModel.hpp>
+#include <rendering/entity/FishingHookRenderer.hpp>
+#include <rendering/entity/SlimeRenderer.hpp>
+#include <rendering/model/SlimeModel.hpp>
+#include <rendering/entity/WolfRenderer.hpp>
+#include <rendering/model/WolfModel.hpp>
+#include <rendering/entity/PolarBearRenderer.hpp>
+#include <rendering/model/PolarBearModel.hpp>
+#include <rendering/entity/FoxRenderer.hpp>
+#include <rendering/entity/TurtleRenderer.hpp>
+#include <rendering/model/TurtleModel.hpp>
+#include <rendering/entity/GiantRenderer.hpp>
+#include <rendering/entity/VillagerRenderer.hpp>
+#include <rendering/entity/ZombieVillagerRenderer.hpp>
+#include <rendering/entity/ItemFrameRenderer.hpp>
+#include <rendering/entity/ArmorStandRenderer.hpp>
+#include <rendering/model/ArmorStandModel.hpp>
+#include <rendering/entity/TurtleRenderer.hpp>
+#include <rendering/entity/GiantRenderer.hpp>
+#include <rendering/model/FoxModel.hpp>
+#include <rendering/model/TurtleModel.hpp>
+#include <rendering/entity/FrogRenderer.hpp>
+#include <rendering/model/FrogModel.hpp>
 
 EntityRenderDispatcher* EntityRenderDispatcher::instance = 0;
 float EntityRenderDispatcher::xOff = 0, EntityRenderDispatcher::yOff = 0, EntityRenderDispatcher::zOff = 0;
@@ -50,14 +79,31 @@ EntityRenderDispatcher::EntityRenderDispatcher() {
 	this->assign(PAINTING, new PaintingRenderer());
 	this->assign(FALLINGTILE, new FallingTileRenderer());
 	this->assign(MINECART, new MinecartRenderer());
+	this->assign(SQUID, new SquidRenderer(new SquidModel(), 0.7f));
+	this->assign(COD, new FishRenderer(new CodModel(), "mob/cod.png", 0.3f));
+	this->assign(SALMON, new FishRenderer(new SalmonModel(), "mob/salmon.png", 0.4f));
+	this->assign(PUFFERFISH, new FishRenderer(new PufferfishModel(), "mob/pufferfish.png", 0.35f));
+	this->assign(TROPICAL_FISH, new FishRenderer(new TropicalFishModel(), "mob/tropical_a.png", 0.35f));
+	this->assign(FISHING_HOOK, new FishingHookRenderer());
+	this->assign(SLIME, new SlimeRenderer(new SlimeModel(), 0.3f));
+	this->assign(WOLF, new WolfRenderer(new WolfModel(), 0.5f));
+	this->assign(POLAR_BEAR, new PolarBearRenderer(new PolarBearModel(), 0.9f));
+	this->assign(FOX, new FoxRenderer(new FoxModel(), 0.4f));
+	this->assign(TURTLE, new TurtleRenderer(new TurtleModel(), 0.7f));
+	this->assign(GIANT, new GiantRenderer(new ZombieModel(), 3.0f));
+	this->assign(VILLAGER, new VillagerRenderer(new VillagerModel(), 0.5f));
+	this->assign(ZOMBIE_VILLAGER, new ZombieVillagerRenderer(new ZombieVillagerModel(), 0.5f));
+	this->assign(ITEM_FRAME, new ItemFrameRenderer());
+	this->assign(ARMOR_STAND, new ArmorStandRenderer(new ArmorStandModel(), 0.5f));
+	this->assign(FROG, new FrogRenderer(new FrogModel(), 0.3f));
 	for(auto&& p: this->renderers) {
-		p->init(this);
+		if (p) p->init(this);
 	}
 }
 void EntityRenderDispatcher::assign(EntityRendererId a2, EntityRenderer* a3) {
 	int32_t v4 = 0;
 	while(this->renderers[v4].get() != a3) {
-		if(++v4 == 22) {
+		if(++v4 == EntityRendererId::LENGTH) {
 			this->renderers[a2] = std::shared_ptr<EntityRenderer>(a3);
 			return;
 		}

@@ -245,150 +245,77 @@ void Entity::setOnFire(int32_t seconds) {
 	}
 }
 float Entity::setupLighting(bool_t a2, float a3) {
-	float v6; // r0
-	float v7; // s16
-	int32_t v8; // r8
-	float x; // s20
-	float y; // s19
-	float z; // s18
-	float field_78; // s14
-	float g; // r1
-	float b; // r2
-	float v16; // s13
-	float v17; // s14
-	float v18; // s15
-	float v19; // s14
-	float v20; // s13
-	float v21; // s21
-	float v22; // s15
-	float v23; // r0
-	float v24; // r1
-	float v25; // r2
-	float r; // r0
-	float v27; // r1
-	float v28; // r2
-	float a;
+	float bright = this->getBrightness(a3);
+	if (this->isOnFire()) bright = 1.0f;
+	float clampedBright = bright;
+	if (clampedBright > 1.0f) clampedBright = 1.0f;
+	if (clampedBright < 0.04f) clampedBright = 0.04f;
 
-	v6 = this->getBrightness(a3);
-	v7 = v6;
-	if(v6 > 1.0) {
-		v7 = 1.0;
-	} else if(v6 <= 0.35) {
-		v7 = 0.35;
-	}
-	if(a2) {
-		v8 = this->isSkyLit();
-
-		Vec3 result = v8 ? this->level->getSunlightDirection(a3) : Vec3(0.5, 1.0, 0.5).normalized(); // [sp+14h] [bp-9Ch] BYREF
-		x = result.x;
-		y = result.y;
-		z = result.z;
-		if(this->isOnFire()) {
-			v7 = 1.0;
-			x = Vec3::NEG_UNIT_Y.x;
-			y = Vec3::NEG_UNIT_Y.y;
-			z = Vec3::NEG_UNIT_Y.z;
-		} else if(!v8) {
-			v7 = v7 * 1.3;
+	if (a2) {
+		int32_t isSky = this->isSkyLit();
+		Vec3 result = isSky ? this->level->getSunlightDirection(a3) : Vec3(0.5f, 1.0f, 0.5f).normalized();
+		if (this->isOnFire()) {
+			result = Vec3::NEG_UNIT_Y;
 		}
-		field_78 = this->field_78;
-		Vec3 ret = (field_78 == 0.0 && this->field_7C == 0.0 && this->field_80 == 0.0) ? Vec3(x, y, z) : Vec3(field_78 + (float)((float)(x - field_78) * 0.1), this->field_7C + (float)((float)(y - this->field_7C) * 0.1), this->field_80 + (float)((float)(z - this->field_80) * 0.1)); // [sp+70h] [bp-40h] BYREF
-		Vec3 v30 = ret.normalized();
 
-		this->field_78 = v30.x;
-		this->field_7C = v30.y;
-		this->field_80 = v30.z;
-		float params[4]; // [sp+20h] [bp-90h] BYREF
-		memset(params, 0, sizeof(params));
-		params[0] = this->field_78;
-		params[1] = this->field_7C;
-		params[2] = this->field_80;
-		glLightfv(0x4000u, 0x1203u, params);
-
-		Color4 col2(v7, v7, v7, 1.0); // [sp+30h] [bp-80h] BYREF
-		Color4 v34(0, 0, 0, 0); //memset(&v34, 0, sizeof(v34));
-
-		if(v8) {
-			Color4 _ret = this->level->getSkyColor(this, a3);
-			Color4 col = Color4::lerp(_ret, col2, 0.5);
-			Color4 v36 = this->level->getSunriseColor(a3);
-			_ret = Color4::lerp(col, v36, v36.a);
-			v34.a = 1.0;
-			v34.g = v7 * _ret.g;
-			v34.b = v7 * _ret.b;
-			v34.r = _ret.r * v7;
-		}
-		v34.r = v34.r + col2.r;
-		v34.g = v34.g + col2.g;
-		v34.b = v34.b + col2.b;
-		v34.a = v34.a + col2.a;
-		if(this->field_84.r == 0.0 && this->field_84.g == 0.0 && this->field_84.b == 0.0 && this->field_84.a == 0.0) {
-			r = v34.r;
-			v27 = v34.g;
-			v28 = v34.b;
-			a = v34.a;
+		if (this->field_78 == 0.0f && this->field_7C == 0.0f && this->field_80 == 0.0f) {
+			this->field_78 = result.x;
+			this->field_7C = result.y;
+			this->field_80 = result.z;
 		} else {
-			Color4 v30 = Color4::lerp(this->field_84, v34, 0.1);
-			r = v30.r;
-			v27 = v30.g;
-			v28 = v30.b;
-			a = v30.a;
+			this->field_78 += (result.x - this->field_78) * 0.1f;
+			this->field_7C += (result.y - this->field_7C) * 0.1f;
+			this->field_80 += (result.z - this->field_80) * 0.1f;
 		}
-		this->field_84.r = r;
-		this->field_84.g = v27;
-		this->field_84.b = v28;
-		this->field_84.a = a;
-		v16 = (float)(v7 * this->field_84.r) + (float)(v7 * this->field_84.r);
-		v17 = (float)(v7 * this->field_84.g) + (float)(v7 * this->field_84.g);
-		v18 = (float)(v7 * this->field_84.b) + (float)(v7 * this->field_84.b);
-		if(v16 > 1.0) {
-			v16 = 1.0;
-		} else if(v16 <= 0.0) {
-			v16 = 0.0;
+		Vec3 normDir = Vec3(this->field_78, this->field_7C, this->field_80).normalized();
+		float posParams[4] = { normDir.x, normDir.y, normDir.z, 0.0f };
+		glLightfv(0x4000u, 0x1203u, posParams);
+
+		float diff = clampedBright * 0.65f;
+		float amb = clampedBright * 0.40f;
+
+		Color4 skyCol(1.0f, 1.0f, 1.0f, 1.0f);
+		if (isSky && this->level) {
+			Color4 sc = this->level->getSkyColor(this, a3);
+			Color4 sr = this->level->getSunriseColor(a3);
+			skyCol = Color4::lerp(sc, sr, sr.a);
 		}
-		float _ret[4];
-		_ret[0] = v16;
-		if ( v17 > 1.0 )
-		{
-			v17 = 1.0;
-		}
-		else if ( v17 <= 0.0 )
-		{
-			v17 = 0.0;
-		}
-		_ret[1] = v17;
-		if ( v18 > 1.0 )
-		{
-			v18 = 1.0;
-		}
-		else if ( v18 <= 0.0 )
-		{
-			v18 = 0.0;
-		}
-		_ret[2] = v18;
-		_ret[3] = 1.0;
-		glLightfv(0x4000u, 0x1201u, _ret);
-		v19 = this->field_84.g;
-		v20 = this->field_84.r;
-		_ret[3] = 1.0;
-		v21 = (float)(v7 + v7) + 0.5;
-		v22 = v21 * this->field_84.b;
-		_ret[1] = v21 * v19;
-		_ret[2] = v22;
-		_ret[0] = v20 * v21;
-		glLightfv(0x4000u, 0x1200u, _ret);
-		v23 = 1.0;
-		v24 = 1.0;
-		v25 = 1.0;
+
+		float diffParams[4] = {
+			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.r)),
+			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.g)),
+			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.b)),
+			1.0f
+		};
+		glLightfv(0x4000u, 0x1201u, diffParams);
+
+		float ambParams[4] = {
+			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.r)),
+			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.g)),
+			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.b)),
+			1.0f
+		};
+		glLightfv(0x4000u, 0x1200u, ambParams);
+
+		glEnable(0x4000u);
+		glEnable(0x0B50u);
+		return clampedBright;
+	} else {
+		float diff = clampedBright * 0.6f;
+		float amb = clampedBright * 0.4f;
+		float posParams[4] = { 0.2f, 1.0f, -0.7f, 0.0f };
+		glLightfv(0x4000u, 0x1203u, posParams);
+
+		float diffParams[4] = { diff, diff, diff, 1.0f };
+		glLightfv(0x4000u, 0x1201u, diffParams);
+
+		float ambParams[4] = { amb, amb, amb, 1.0f };
+		glLightfv(0x4000u, 0x1200u, ambParams);
+
+		glEnable(0x4000u);
+		glEnable(0x0B50u);
+		return clampedBright;
 	}
-	else
-	{
-		v23 = v7;
-		v24 = v7;
-		v25 = v7;
-	}
-	glColor4f(v23, v24, v25, 1.0);
-	return v7;
 }
 
 Entity::~Entity() {

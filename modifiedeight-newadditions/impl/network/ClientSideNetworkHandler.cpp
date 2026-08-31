@@ -432,6 +432,12 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& a2, struct Level
 	if(this->level) {
 		if(a3->evid == 9800) {
 			this->minecraft->player->setAllPlayersSleeping();
+		} else if(a3->evid == 9810) {
+			extern int g_morningFogTicks;
+			this->level->weatherType = a3->x;
+			this->level->rainLevel = (float)a3->y / 1000.0f;
+			g_morningFogTicks = a3->z;
+			this->level->weatherTicks = a3->data;
 		} else {
 			this->minecraft->level->levelEvent(0, a3->evid, a3->x, a3->y, a3->z, a3->data);
 		}

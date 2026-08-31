@@ -5,6 +5,9 @@
 #include <math/Mth.hpp>
 #include <rendering/EntityRenderDispatcher.hpp>
 #include <rendering/model/Model.hpp>
+#include <rendering/model/ModelPart.hpp>
+#include <rendering/model/Cube.hpp>
+#include <rendering/Tesselator.hpp>
 #include <rendering/states/DisableState.hpp>
 int8_t MobRenderer::menuMode = 0;
 

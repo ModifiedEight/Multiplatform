@@ -68,42 +68,37 @@ static std::string _dword_D6E083C8_armorTextures[] = {
 
 void PlayerRenderer::renderName(Entity *a2_, float a3) {
   Player *a2 = (Player *)a2_;
-  Mob *cameraEntity;
-  float v7;
-  float v8;
-  float v9;
-  Font *font;
-  int32_t v11;
-  float v12;
-
-  cameraEntity = EntityRenderer::entityRenderDispatcher->cameraEntity;
+  if (!a2 || a2->isLocalPlayer() || a2->username.empty()) return;
+  Mob *cameraEntity = EntityRenderer::entityRenderDispatcher->cameraEntity;
   if (a2 != cameraEntity && a2->distanceToSqr(cameraEntity) <= 1024.0) {
-    v7 =
+    float v7 =
         (float)(a2->prevPosX + (float)((float)(a2->posX - a2->prevPosX) * a3)) -
         EntityRenderDispatcher::xOff;
-    v8 =
+    float v8 =
         (float)(a2->prevPosY + (float)((float)(a2->posY - a2->prevPosY) * a3)) -
         EntityRenderDispatcher::yOff;
-    v9 =
+    float v9 =
         (float)(a2->prevPosZ + (float)((float)(a2->posZ - a2->prevPosZ) * a3)) -
         EntityRenderDispatcher::zOff;
-    font = this->getFont();
+    Font *font = this->getFont();
     glPushMatrix();
-    glTranslatef(v7 + 0.0, v8 + 1.0, v9);
+    glTranslatef(v7 + 0.0, v8 + a2->entityHeight + 0.5f, v9);
     glRotatef(-EntityRenderer::entityRenderDispatcher->field_14, 0.0, 1.0, 0.0);
     glRotatef(EntityRenderer::entityRenderDispatcher->field_18, 1.0, 0.0, 0.0);
     glScalef(-0.026667, -0.026667, 0.026667);
     glDisable(0xDE1u);
     Tesselator::instance.begin(4);
-    v11 = font->width(a2->username);
+    int32_t v11 = font->width(a2->username);
     Tesselator::instance.color((float)0.0, 0.0, 0.0, 0.25);
     Tesselator::instance.vertex((float)-(float)(v11 / 2) - 1.0, -1.0, 0.0);
     Tesselator::instance.vertex((float)-(float)(v11 / 2) - 1.0, 8.0, 0.0);
     Tesselator::instance.vertex((float)(v11 / 2) + 1.0, 8.0, 0.0);
+    Tesselator::instance.vertex((float)-(float)(v11 / 2) - 1.0, -1.0, 0.0);
+    Tesselator::instance.vertex((float)(v11 / 2) + 1.0, 8.0, 0.0);
     Tesselator::instance.vertex((float)(v11 / 2) + 1.0, -1.0, 0.0);
     Tesselator::instance.draw(1);
     glEnable(0xDE1u);
-    v12 = (float)font->width(a2->username) * -0.5;
+    float v12 = (float)font->width(a2->username) * -0.5;
     font->draw(a2->username, v12, 0.0, 553648127);
     font->draw(a2->username, v12, 0.0, -1);
     glPopMatrix();
@@ -138,7 +133,9 @@ int32_t PlayerRenderer::prepareArmor(Mob *a2_, int32_t armour, float a4) {
   hmodel2->leftLegModel.field_1D = v10;
   this->setArmor(hmodel2);
   hmodel2->field_4 = a2->isRiding();
+  hmodel2->field_31A = a2->isSneaking();
   hmodel2->isSwimming = isPlayerSwimming(a2);
+  hmodel2->field_0 = this->getAttackAnim(a2, a4);
   return 1;
 }
 #include <Minecraft.hpp>

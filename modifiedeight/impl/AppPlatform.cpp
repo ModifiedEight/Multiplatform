@@ -775,14 +775,20 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
   FILE *f = fopen(path.c_str(), "rb");
   if (!f) {
     std::string noAssets = path;
-    if (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
+    while (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
+    std::string noImages = noAssets;
+    while (noImages.rfind("images/", 0) == 0) noImages = noImages.substr(7);
 
     const char* prefixes[] = {
       "platforms/android/app/src/newadditions/assets/",
       "platforms/android/app/src/classic/assets/",
+      "modifiedeight-newadditions/assets/",
+      "modifiedeight/assets/",
       "assets/",
       "../../platforms/android/app/src/newadditions/assets/",
       "../../platforms/android/app/src/classic/assets/",
+      "../../modifiedeight-newadditions/assets/",
+      "../../modifiedeight/assets/",
       "../../assets/",
       "platforms/android/app/src/newadditions/",
       "platforms/android/app/src/classic/",
@@ -792,13 +798,19 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
       "build/modifiedeight/build/assets/",
       "build/modifiedeight-newadditions/build/",
       "build/modifiedeight/build/",
-      "../../"
+      "../../",
+      ""
     };
 
     for (const char* p : prefixes) {
       std::string full = std::string(p) + noAssets;
       f = fopen(full.c_str(), "rb");
       if (f) break;
+      if (noImages != noAssets) {
+        full = std::string(p) + noImages;
+        f = fopen(full.c_str(), "rb");
+        if (f) break;
+      }
       if (noAssets != path) {
         full = std::string(p) + path;
         f = fopen(full.c_str(), "rb");

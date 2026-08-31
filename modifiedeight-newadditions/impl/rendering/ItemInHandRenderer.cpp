@@ -1,5 +1,6 @@
 #include <rendering/ItemInHandRenderer.hpp>
 #include <Minecraft.hpp>
+#include <entity/player/gamemode/GameMode.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <inventory/Inventory.hpp>
 #include <item/Item.hpp>
@@ -12,6 +13,8 @@
 #include <rendering/Textures.hpp>
 #include <rendering/entity/HumanoidMobRenderer.hpp>
 #include <rendering/entity/PlayerRenderer.hpp>
+#include <rendering/model/HumanoidModel.hpp>
+#include <tile/material/Material.hpp>
 #include <rendering/states/DisableState.hpp>
 #include <rendering/states/EnableState.hpp>
 #include <tile/Tile.hpp>
@@ -62,22 +65,22 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 			v7->field_4 = Tesselator::instance.end();
 			v7->field_2C = "terrain-atlas.tga";
 			v7->field_30 = 0;
-			v7->field_0 = a3.getId();
 			int v24 = a3.tileClass->getRenderLayer();
+			bool_t isLight = (a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0) || a3.getId() == 50 || a3.getId() == 89 || a3.getId() == 91 || a3.getId() == 327;
 			if(v24 != 1) {
 				if(!a3.tileClass->goodGraphics) {
 					v7->field_31 = 0;
-					v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
+					v7->field_32 = isLight;
 					return v7;
 				}
 				if(v24 != 3) {
 					v7->field_31 = 0;
-					v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
+					v7->field_32 = isLight;
 					return v7;
 				}
 			}
 			v7->field_31 = 1;
-			v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
+			v7->field_32 = isLight;
 			return v7;
 		}
 	}
@@ -141,11 +144,153 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 
 	TextureTesselator textes(td, (int)v16, (int)v19, v17, v20, Vec3(0, 0, 0), Color4::BLACK, colorTint);
 	v7->field_4 = textes.tesselate();
-
-	v7->field_32 = a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0;
+	v7->field_32 = (a3.itemClass ? a3.itemClass->isEmissive(a3.getAuxValue()) : 0) || a3.getId() == 50 || a3.getId() == 89 || a3.getId() == 91 || a3.getId() == 327;
 	return v7;
 }
+void ItemInHandRenderer::renderFirstPersonLegs(float a2) {
+	if (!this->minecraft->player) return;
+	Player* p = this->minecraft->player;
+	if (p->isSleeping() || p->isRiding() || p->isInWater() || p->isUnderLiquid(Material::water)) return;
+
+	float pitch = p->prevPitch + (p->pitch - p->prevPitch) * a2;
+	if (pitch < 18.0f) return;
+
+	EntityRenderer* r = EntityRenderDispatcher::getInstance()->getRenderer(p);
+	if (!r) return;
+	HumanoidModel* hm = ((HumanoidMobRenderer*)r)->hmodel;
+	if (!hm) return;
+
+	float walkSpeed = sqrtf(p->motionX * p->motionX + p->motionZ * p->motionZ);
+	bool isMoving = walkSpeed > 0.015f || p->moveForward != 0.0f || p->moveStrafe != 0.0f || (p->abilities.flying && !p->onGround);
+
+	bool isSprinting = this->minecraft->player && this->minecraft->player->isSprinting;
+	static float s_firstPersonLegTick = 0.0f;
+	if (isMoving) {
+		s_firstPersonLegTick += (isSprinting ? 0.30f : 0.20f);
+	}
+
+	float legSwing = isMoving ? sinf(s_firstPersonLegTick) * (isSprinting ? 0.75f : 0.55f) : 0.0f;
+	if (p->abilities.flying && !p->onGround) {
+		legSwing = sinf(s_firstPersonLegTick * 0.6f) * 0.35f;
+	}
+
+	glPushMatrix();
+	PlayerRenderer::updateSkin(p);
+	this->minecraft->texturesPtr->loadAndBindTexture(!p->skin.empty() ? p->skin : "mob/char.png");
+
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glRotatef(-pitch, 1.0f, 0.0f, 0.0f);
+	glTranslatef(0.0f, -1.35f, 0.2f);
+	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(0.85f, 0.85f, 0.85f);
+
+	// Right leg
+	glPushMatrix();
+	glTranslatef(0.125f, 0.0f, 0.0f);
+	glRotatef(legSwing * 40.0f, 1.0f, 0.0f, 0.0f);
+	hm->rightLegModel.xRotAngle = 0.0f;
+	hm->rightLegModel.yRotAngle = 0.0f;
+	hm->rightLegModel.zRotAngle = 0.0f;
+	hm->rightLegModel.render(0.0625f);
+	glPopMatrix();
+
+	// Left leg
+	glPushMatrix();
+	glTranslatef(-0.125f, 0.0f, 0.0f);
+	glRotatef(-legSwing * 40.0f, 1.0f, 0.0f, 0.0f);
+	hm->leftLegModel.xRotAngle = 0.0f;
+	hm->leftLegModel.yRotAngle = 0.0f;
+	hm->leftLegModel.zRotAngle = 0.0f;
+	hm->leftLegModel.render(0.0625f);
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
+void ItemInHandRenderer::renderSwimmingArms(float a2) {
+	if (!this->minecraft->player) return;
+	Player* p = this->minecraft->player;
+
+	EntityRenderer* r = EntityRenderDispatcher::getInstance()->getRenderer(p);
+	if (!r) return;
+	HumanoidModel* hm = ((HumanoidMobRenderer*)r)->hmodel;
+	if (!hm) return;
+
+	bool isSprinting = this->minecraft->player && this->minecraft->player->isSprinting;
+	static float s_swimPaddle = 0.0f;
+	s_swimPaddle += (isSprinting ? 0.22f : 0.15f);
+
+	float strokeL = sinf(s_swimPaddle);
+	float strokeR = sinf(s_swimPaddle + 3.14159265f);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	if (this->field_4.itemClass) {
+		// Render held item in right hand with subtle paddle motion
+		glPushMatrix();
+		glTranslatef(0.56f, -0.52f + strokeR * 0.08f, -0.72f);
+		glRotatef(45.0f - strokeR * 10.0f, 0.0f, 1.0f, 0.0f);
+		glScalef(0.4f, 0.4f, 0.4f);
+		this->renderItem(p, &this->field_4);
+		glPopMatrix();
+	} else {
+		// Right arm paddling
+		glPushMatrix();
+		PlayerRenderer::updateSkin(p);
+		this->minecraft->texturesPtr->loadAndBindTexture(!p->skin.empty() ? p->skin : "mob/char.png");
+		glTranslatef(0.64f, -0.6f + strokeR * 0.15f, -0.72f + cosf(s_swimPaddle + 3.14159265f) * 0.15f);
+		glRotatef(45.0f - strokeR * 25.0f, 0.0f, 1.0f, 0.0f);
+		glRotatef(20.0f, 0.0f, 0.0f, 1.0f);
+		glTranslatef(-1.0f, 3.6f, 3.5f);
+		glRotatef(120.0f, 0.0f, 0.0f, 1.0f);
+		glRotatef(200.0f, 1.0f, 0.0f, 0.0f);
+		glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);
+		glScalef(1.0f, 1.0f, 1.0f);
+		glTranslatef(5.6f, 0.0f, 0.0f);
+		hm->rightArmModel.xRotAngle = 0.0f;
+		hm->rightArmModel.yRotAngle = 0.0f;
+		hm->rightArmModel.zRotAngle = 0.0f;
+		hm->rightArmModel.render(0.0625f);
+		glPopMatrix();
+	}
+
+	// Left arm paddling
+	glPushMatrix();
+	PlayerRenderer::updateSkin(p);
+	this->minecraft->texturesPtr->loadAndBindTexture(!p->skin.empty() ? p->skin : "mob/char.png");
+	glTranslatef(-0.64f, -0.6f + strokeL * 0.15f, -0.72f + cosf(s_swimPaddle) * 0.15f);
+	glRotatef(-45.0f + strokeL * 25.0f, 0.0f, 1.0f, 0.0f);
+	glRotatef(-20.0f, 0.0f, 0.0f, 1.0f);
+	glTranslatef(1.0f, 3.6f, 3.5f);
+	glRotatef(120.0f, 0.0f, 0.0f, 1.0f);
+	glRotatef(200.0f, 1.0f, 0.0f, 0.0f);
+	glRotatef(135.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(1.0f, 1.0f, 1.0f);
+	glTranslatef(-5.6f, 0.0f, 0.0f);
+	hm->leftArmModel.xRotAngle = 0.0f;
+	hm->leftArmModel.yRotAngle = 0.0f;
+	hm->leftArmModel.zRotAngle = 0.0f;
+	hm->leftArmModel.render(0.0625f);
+	glPopMatrix();
+}
+
 void ItemInHandRenderer::render(float a2) {
+	if (!this->minecraft->options.thirdPerson && this->minecraft->player) {
+		Player* p = this->minecraft->player;
+		if (p->isInWater() || p->isUnderLiquid(Material::water)) {
+			float hSpeed = sqrtf(p->motionX * p->motionX + p->motionZ * p->motionZ);
+			bool isMovingInWater = (p->moveForward != 0.0f || p->moveStrafe != 0.0f || p->isJumping) && (hSpeed > 0.01f || fabsf(p->motionY) > 0.01f);
+			if (isMovingInWater) {
+				this->renderSwimmingArms(a2);
+				return;
+			}
+		}
+	}
 	Mob* player;			  // r4
 	float v6;				  // s23
 	int v7;					  // r0
@@ -183,8 +328,13 @@ void ItemInHandRenderer::render(float a2) {
 	glPushMatrix();
 	player = (Mob*)this->minecraft->player;
 	v6 = this->field_20 + (float)((float)(this->field_1C - this->field_20) * a2);
+	static int32_t s_digAnimTick = 0;
 	if(!this->field_4.itemClass) {
 		v28 = this->minecraft->player->getAttackAnim(a2);
+		if(v28 <= 0.001f && this->minecraft->gameMode && this->minecraft->gameMode->field_8 > 0.0f) {
+			s_digAnimTick++;
+			v28 = fmodf((float)s_digAnimTick + a2, 8.0f) / 8.0f;
+		}
 		v29 = v28;
 		v30 = sqrt(v28);
 		v31 = Mth::sin((float)(v28 * v28) * 3.1416);
@@ -205,9 +355,14 @@ void ItemInHandRenderer::render(float a2) {
 		glRotatef(-135.0, 0.0, 1.0, 0.0);
 		glScalef(1.0, 1.0, 1.0);
 		glTranslatef(5.6, 0.0, 0.0);
+		if (this->minecraft->player) {
+			this->minecraft->player->setupLighting(this->minecraft->options.graphics, a2);
+		}
 		renderer = EntityRenderDispatcher::getInstance()->getRenderer(this->minecraft->player);
 		glScalef(1.0, 1.0, 1.0);
-		((HumanoidMobRenderer*)renderer)->renderHand();
+		if (renderer) {
+			((HumanoidMobRenderer*)renderer)->renderHand();
+		}
 		goto LABEL_28;
 	}
 	v7 = this->minecraft->player->getUseItemDuration();
@@ -216,6 +371,10 @@ void ItemInHandRenderer::render(float a2) {
 		if(v7 <= 0) {
 LABEL_29:
 			v39 = player->getAttackAnim(a2);
+			if(v39 <= 0.001f && this->minecraft->gameMode && this->minecraft->gameMode->field_8 > 0.0f) {
+				s_digAnimTick++;
+				v39 = fmodf((float)s_digAnimTick + a2, 8.0f) / 8.0f;
+			}
 			goto LABEL_7;
 		}
 	} else if(v7 <= 0 || !this->field_4.getUseAnimation()) {
@@ -295,6 +454,17 @@ LABEL_22:
 		v27 = sinf(TimeS + TimeS);
 		glTranslatef(0.0, v27 * 0.011, 0.0);
 		glRotatef((float)((float)(v27 * 0.011) * 360.0) * 0.075, 1.0, 0.0, 0.0);
+	}
+	{
+		int heldId = this->field_4.getId();
+		if (heldId == 50 || heldId == 89 || heldId == 91 || heldId == 327) {
+			GLfloat lpos[] = { 0.2f, 0.2f, -0.4f, 1.0f };
+			GLfloat ldiff[] = { 1.2f, heldId == 89 ? 1.15f : 0.95f, heldId == 89 ? 0.95f : 0.6f, 1.0f };
+			GLfloat lamb[] = { 0.8f, heldId == 89 ? 0.75f : 0.65f, heldId == 89 ? 0.65f : 0.4f, 1.0f };
+			glLightfv(0x4000, GL_POSITION, lpos);
+			glLightfv(0x4000, GL_DIFFUSE, ldiff);
+			glLightfv(0x4000, GL_AMBIENT, lamb);
+		}
 	}
 	this->renderItem(player, &this->field_4);
 LABEL_28:

@@ -178,6 +178,9 @@ struct Tile{
 	static Tile* coalBlock;
 	static Tile* beetroot;
 	static Tile* stonecutterBench;
+	static Tile* slimeBlock;
+	static Tile* sweetBerryBush;
+	static Tile* musicPlayer;
 	static Tile* glowingObsidian;
 	static Tile* netherReactor;
 	static Tile* info_updateGame1;

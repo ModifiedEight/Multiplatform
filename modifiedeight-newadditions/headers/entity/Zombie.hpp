@@ -23,4 +23,6 @@ struct Zombie: Monster
 	virtual std::string getDeathSound();
 	virtual bool_t useNewAi();
 	virtual int32_t getAttackDamage(Entity*);
+	virtual Entity* findAttackTarget();
+	virtual bool_t doHurtTarget(Entity*);
 };

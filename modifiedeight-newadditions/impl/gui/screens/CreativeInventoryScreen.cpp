@@ -132,7 +132,7 @@ void CreativeInventoryScreen::populateFilteredItems() {
 			CreativeInventoryScreen::filteredItems[f54-1].emplace_back(it);
 		}
 		if (Options::instance && Options::instance->newAdditions) {
-			if (it.tileClass && (it.tileClass == Tile::vine || it.tileClass == Tile::doublePlant || it.tileClass == Tile::flowerPaeonia || it.tileClass == Tile::flowerDaisy || it.tileClass == Tile::flowerHoustonia || it.tileClass == Tile::flowerOrchid || it.tileClass == Tile::flowerAllium || it.tileClass == Tile::seagrass)) {
+			if (it.tileClass && (it.tileClass == Tile::vine || it.tileClass == Tile::doublePlant || it.tileClass == Tile::flowerPaeonia || it.tileClass == Tile::flowerDaisy || it.tileClass == Tile::flowerHoustonia || it.tileClass == Tile::flowerOrchid || it.tileClass == Tile::flowerAllium || it.tileClass == Tile::seagrass || it.tileClass == Tile::sweetBerryBush)) {
 				if (f54 != 2) {
 					CreativeInventoryScreen::filteredItems[1].emplace_back(it);
 				}
@@ -223,6 +223,7 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::emeraldBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::lapisBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::coalBlock, 1, 0);
+	if (Tile::slimeBlock) CreativeInventoryScreen::populateItem(Tile::slimeBlock, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::obsidian, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::soulSand, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::ice, 1, 0);
@@ -267,7 +268,21 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Tile::stonecutterBench, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::chest, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::furnace, 1, 0);
-	CreativeInventoryScreen::populateItem(Item::camera, 1, 0);
+	if (Tile::musicPlayer) CreativeInventoryScreen::populateItem(Tile::musicPlayer, 1, 0);
+	if (Options::instance && Options::instance->extendedInventory) {
+		if (Item::camera) CreativeInventoryScreen::populateItem(Item::camera, 1, 0);
+		if (Tile::glowingObsidian) CreativeInventoryScreen::populateItem(Tile::glowingObsidian, 1, 0);
+		if (Tile::netherReactor) {
+			CreativeInventoryScreen::populateItem(Tile::netherReactor, 1, 1);
+			CreativeInventoryScreen::populateItem(Tile::netherReactor, 1, 2);
+		}
+		if (Tile::water) CreativeInventoryScreen::populateItem(Tile::water, 1, 0);
+		if (Tile::calmWater) CreativeInventoryScreen::populateItem(Tile::calmWater, 1, 0);
+		if (Tile::lava) CreativeInventoryScreen::populateItem(Tile::lava, 1, 0);
+		if (Tile::calmLava) CreativeInventoryScreen::populateItem(Tile::calmLava, 1, 0);
+		if (Tile::fire) CreativeInventoryScreen::populateItem(Tile::fire, 1, 0);
+		if (Tile::invisible_bedrock) CreativeInventoryScreen::populateItem(Tile::invisible_bedrock, 1, 0);
+	}
 	if (!(Options::instance && Options::instance->newAdditions)) {
 		CreativeInventoryScreen::populateItem(Item::bed, 1, 14);
 	}
@@ -289,6 +304,7 @@ void CreativeInventoryScreen::populateItems() {
 		CreativeInventoryScreen::populateItem(Tile::vine, 1, 0);
 		CreativeInventoryScreen::populateItem(Tile::waterLily, 1, 0);
 		CreativeInventoryScreen::populateItem(Tile::seagrass, 1, 0);
+		if (Tile::sweetBerryBush) CreativeInventoryScreen::populateItem(Tile::sweetBerryBush, 1, 0);
 	}
 	CreativeInventoryScreen::populateItem(Tile::mushroom1, 1, 0);
 	CreativeInventoryScreen::populateItem(Tile::mushroom2, 1, 0);
@@ -313,6 +329,14 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Item::seeds_beetroot, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::carrot, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::potato, 1, 0);
+	if (Item::bread) CreativeInventoryScreen::populateItem(Item::bread, 1, 0);
+	if (Item::sweetBerries) CreativeInventoryScreen::populateItem(Item::sweetBerries, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::fish_raw, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::fish_cooked, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::salmon_raw, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::salmon_cooked, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::clownfish, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::pufferfish, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::paper, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::hoe_wood, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::hoe_stone, 1, 0);
@@ -394,15 +418,31 @@ void CreativeInventoryScreen::populateItems() {
 	CreativeInventoryScreen::populateItem(Item::clock, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::compass, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::minecart, 1, 0);
+	CreativeInventoryScreen::populateItem(Item::fishingRod, 1, 0);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 10);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 11);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 12);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 13);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 14);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 17);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 26);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 27);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 28);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 29);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 30);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 32);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 33);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 34);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 35);
 	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 36);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 37);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 38);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 39);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 40);
+	CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 120);
+	if (Options::instance && Options::instance->extendedInventory) {
+		CreativeInventoryScreen::populateItem(Item::mobPlacer, 1, 53);
+	}
 	for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 		CreativeInventoryScreen::populateItem(Tile::cloth, 1, i);
 	}
@@ -421,6 +461,9 @@ void CreativeInventoryScreen::populateItems() {
 		CreativeInventoryScreen::populateItem(Tile::fence_birch, 1, 0);
 		CreativeInventoryScreen::populateItem(Tile::trapdoor_spruce, 1, 0);
 		CreativeInventoryScreen::populateItem(Tile::trapdoor_birch, 1, 0);
+		CreativeInventoryScreen::populateItem(Tile::slimeBlock, 1, 0);
+		CreativeInventoryScreen::populateItem(Item::slimeBall, 1, 0);
+		CreativeInventoryScreen::populateItem(Item::bone, 1, 0);
 		
 		for(int i: {0, 8, 7, 0xF, 0xC, 0xE, 1, 4, 5, 0xD, 9, 3, 0xB, 0xA, 2, 6}) {
 			CreativeInventoryScreen::populateItem(Item::bed, 1, i);

@@ -58,9 +58,23 @@ bool_t TouchInputHolder::allowPicking() {
 		if(v4 >= 0 && v4 >= 11) {
 			v4 = 11;
 		}
-		v8 = Multitouch::_pointers[v4].getY();
-		v9 = (float)v6;
-		v10 = v8;
+		int v8 = Multitouch::_pointers[v4].getY();
+		float v9 = (float)v6;
+		int v10 = v8;
+
+		if (this->moveInput.sneakButton && this->moveInput.sneakButton->isInside(v7, (float)v10)) {
+			++v2;
+			continue;
+		}
+		if (this->moveInput.jumpButton && this->moveInput.jumpButton->isInside(v7, (float)v10)) {
+			++v2;
+			continue;
+		}
+		if (this->moveInput.touchAreaModel.getPointerId(v6, v8, v4) > 0) {
+			++v2;
+			continue;
+		}
+
 		if(v3->isInside(v9, (float)v8)) {
 			this->mouseX = v7;
 			this->mouseY = (float)v10;

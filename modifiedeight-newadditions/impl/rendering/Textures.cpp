@@ -168,6 +168,9 @@ int32_t Textures::smoothBlend(int32_t a, int32_t b){
 }
 static char_t byte_D6E06B78[0x1000];
 
+extern int g_terrainAtlasWidth;
+extern int g_terrainAtlasHeight;
+
 void Textures::tick(bool_t a2) {
 	for(int32_t i = 0; i < this->dynamicTextures.size(); ++i) {
 		if(this->dynamicTextures[i]->isEnabled()) {
@@ -175,13 +178,15 @@ void Textures::tick(bool_t a2) {
 		}
 	}
 	if(a2) {
+		int32_t atlasW = g_terrainAtlasWidth > 0 ? g_terrainAtlasWidth : 1024;
+		int32_t atlasH = g_terrainAtlasHeight > 0 ? g_terrainAtlasHeight : 1024;
 		for(int32_t i = 0; i < this->dynamicTextures.size(); ++i) {
 			DynamicTexture* v7 = this->dynamicTextures[i];
 			if(!v7->isEnabled()) continue;
 			v7->bindTexture(this);
 			if(v7->field_18 == 1) {
-				int32_t subX = (int32_t)floorf(v7->uv.minX * (float)v7->uv.width);
-				int32_t subY = (int32_t)floorf(v7->uv.minY * (float)v7->uv.height);
+				int32_t subX = (int32_t)roundf(v7->uv.minX * (float)atlasW);
+				int32_t subY = (int32_t)roundf(v7->uv.minY * (float)atlasH);
 				glTexSubImage2D(GL_TEXTURE_2D, 0, subX, subY, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, v7->data);
 			} else if(v7->field_18 == 2) {
 				uint8_t* data = v7->data;
@@ -194,14 +199,13 @@ void Textures::tick(bool_t a2) {
 					v11 = ((int16_t)v11 + 64) & 0x3FF;
 				}
 				while ( v10 < &byte_D6E06B78[0x1000] );
-				int32_t subX = (int32_t)floorf(v7->uv.minX * (float)v7->uv.width);
-				int32_t subY = (int32_t)floorf(v7->uv.minY * (float)v7->uv.height);
+				int32_t subX = (int32_t)roundf(v7->uv.minX * (float)atlasW);
+				int32_t subY = (int32_t)roundf(v7->uv.minY * (float)atlasH);
 				glTexSubImage2D(GL_TEXTURE_2D, 0, subX, subY, 32, 32, GL_RGBA, GL_UNSIGNED_BYTE, byte_D6E06B78);
 			}
 		}
 
 	}
-	//TODO dynamic texture ticking
 }
 
 Textures::~Textures(){

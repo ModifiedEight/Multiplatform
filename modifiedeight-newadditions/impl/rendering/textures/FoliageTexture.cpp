@@ -75,26 +75,27 @@ void FoliageTexture::tick() {
 	memset(this->data, 0, 1024);
 
 	if (this->isLeaf) {
+		float windX = sinf(time * 0.9f) * 0.7f;
 		for (int y = 0; y < 16; ++y) {
-			int shiftX = (int)roundf(sinf(time * 1.6f + (float)y * 0.45f) * 1.8f + sinf(time * 0.8f) * 0.8f);
-			int shiftY = (int)roundf(cosf(time * 1.3f + (float)y * 0.35f) * 1.2f);
+			float rowSway = sinf(time * 0.85f + (float)y * 0.35f) * this->amplitude * 0.6f;
+			int shiftX = (int)roundf(windX + rowSway);
 			for (int x = 0; x < 16; ++x) {
-				int srcX = (x - shiftX) & 15;
-				int srcY = (y - shiftY) & 15;
-				int srcIdx = (srcY * 16 + srcX) * 4;
+				int srcX = x - shiftX;
 				int dstIdx = (y * 16 + x) * 4;
-				float wave = sinf(time * 1.2f + (float)x * 0.4f + (float)y * 0.4f);
-				float bright = 1.0f + wave * 0.12f;
-				int r = (int)((float)this->originalPixels[srcIdx + 0] * bright);
-				int g = (int)((float)this->originalPixels[srcIdx + 1] * bright);
-				int b = (int)((float)this->originalPixels[srcIdx + 2] * bright);
-				if (r > 255) r = 255;
-				if (g > 255) g = 255;
-				if (b > 255) b = 255;
-				this->data[dstIdx + 0] = (uint8_t)r;
-				this->data[dstIdx + 1] = (uint8_t)g;
-				this->data[dstIdx + 2] = (uint8_t)b;
-				this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
+				if (srcX >= 0 && srcX < 16) {
+					int srcIdx = (y * 16 + srcX) * 4;
+					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
+					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
+					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
+					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
+				} else {
+					int clampedX = (srcX < 0) ? 0 : 15;
+					int srcIdx = (y * 16 + clampedX) * 4;
+					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
+					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
+					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
+					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
+				}
 			}
 		}
 	} else if (this->isReeds) {

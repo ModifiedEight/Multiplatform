@@ -90,6 +90,18 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 	}
 	return 1;
 }
+TextureUVCoordinateSet* TileItem::getIcon(int32_t data, int32_t a3, bool_t inHand) {
+	if (this->blockID >= 0 && this->blockID < 256 && Tile::tiles[this->blockID]) {
+		TextureUVCoordinateSet* tex = Tile::tiles[this->blockID]->getCarriedTexture(2, data);
+		if (!tex || (tex->minX == 0.0f && tex->maxX == 0.0f && tex->minY == 0.0f && tex->maxY == 0.0f)) {
+			tex = Tile::tiles[this->blockID]->getTexture(2, data);
+		}
+		if (tex && (tex->minX != 0.0f || tex->maxX != 0.0f || tex->minY != 0.0f || tex->maxY != 0.0f)) {
+			return tex;
+		}
+	}
+	return Item::getIcon(data, a3, inHand);
+}
 std::string TileItem::getDescriptionId() {
 	return Tile::tiles[this->blockID]->getDescriptionId();
 }

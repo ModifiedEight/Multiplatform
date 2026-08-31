@@ -1,5 +1,7 @@
 #include <level/gen/feature/VillageFeature.hpp>
 #include <level/Level.hpp>
+#include <entity/Villager.hpp>
+#include <level/MobSpawner.hpp>
 #include <level/LightLayer.hpp>
 #include <level/chunk/LevelChunk.hpp>
 #include <level/biome/Biome.hpp>
@@ -174,6 +176,12 @@ static int32_t rotateDoorData(int32_t data, int32_t rotation) {
 	return (newDir & 3) | (open & 4);
 }
 
+static int32_t rotateBedData(int32_t data, int32_t rotation) {
+	int32_t head = data & 8;
+	int32_t dir = (data + rotation) & 3;
+	return head | dir;
+}
+
 static void fillHouseLoot(Level* level, Random* random, int32_t x, int32_t y, int32_t z) {
 	ChestTileEntity* te = (ChestTileEntity*)level->getTileEntity(x, y, z);
 	if (!te) {
@@ -294,6 +302,8 @@ void VillageFeature::placeRotated(Level* level, int32_t originX, int32_t originY
 			data = rotateFurnaceData(data, rotation);
 		} else if (blockId == (Tile::door_wood ? Tile::door_wood->blockID : 64) || (Tile::door_spruce && blockId == Tile::door_spruce->blockID) || (Tile::door_birch && blockId == Tile::door_birch->blockID) || (Tile::door_iron && blockId == Tile::door_iron->blockID)) {
 			data = rotateDoorData(data, rotation);
+		} else if (Tile::bed && (blockId == Tile::bed->blockID || (blockId >= 200 && blockId <= 215))) {
+			data = rotateBedData(data, rotation);
 		}
 		this->placeBlock(level, wx, wy, wz, blockId, data);
 		if (blockId == Tile::torch->blockID) {
@@ -487,6 +497,24 @@ void VillageFeature::placeSmallHouse(Level* level, Random* random, int32_t x, in
 			this->placeRotated(level, x, y, z, lx, 5, 3, sizeX, sizeZ, mat.stairId, 3, rotation);
 			this->placeRotated(level, x, y, z, lx, 6, 2, sizeX, sizeZ, mat.slabId, mat.slabMeta, rotation);
 		}
+	}
+
+	if (Tile::bed) {
+		this->placeRotated(level, x, y, z, 3, 1, 2, sizeX, sizeZ, Tile::bed->blockID, 0, rotation);
+		this->placeRotated(level, x, y, z, 3, 1, 3, sizeX, sizeZ, Tile::bed->blockID, 8, rotation);
+	}
+
+	if (!level->isClientMaybe) {
+		Villager* v = new Villager(level);
+		int32_t vrx = 2, vrz = 2;
+		if (rotation == 1) { vrx = sizeZ - 2; vrz = 2; }
+		else if (rotation == 2) { vrx = sizeX - 2; vrz = sizeZ - 2; }
+		else if (rotation == 3) { vrx = 2; vrz = sizeX - 2; }
+		v->houseX = x + vrx; v->houseY = y + 1; v->houseZ = z + vrz;
+		v->hasBed = 1;
+		v->moveTo((float)(x + vrx) + 0.5f, (float)(y + 1), (float)(z + vrz) + 0.5f, 0.0f, 0.0f);
+		MobSpawner::finalizeMobSettings(v, level, 0.0, 0.0, 0.0);
+		level->addEntity(v);
 	}
 
 	if (mat.hasSnow) {

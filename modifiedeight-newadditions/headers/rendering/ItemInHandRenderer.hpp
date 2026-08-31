@@ -25,6 +25,8 @@ struct ItemInHandRenderer: AppPlatform::Listener
 	RenderCall* rebuildItem(struct Mob*, ItemInstance&);
 	void render(float);
 	void renderFire(float);
+	void renderFirstPersonLegs(float);
+	void renderSwimmingArms(float);
 	void renderItem(struct Mob*, ItemInstance*);
 	void renderScreenEffect(float);
 	void renderTex(float, const TextureUVCoordinateSet&);

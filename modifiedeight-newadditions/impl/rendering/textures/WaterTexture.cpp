@@ -2,6 +2,7 @@
 #include <tile/Tile.hpp>
 #include <math/Mth.hpp>
 #include <Options.hpp>
+#include <math.h>
 
 bool_t WaterTexture::isEnabled() {
 	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateWater) : 1;
@@ -31,65 +32,46 @@ WaterTexture::~WaterTexture() {
 	if(this->field_3C) delete[] this->field_3C;
 }
 void WaterTexture::tick() {
-	int32_t i;	  // r2
-	int32_t v3;	  // r1
-	float v4;	  // s15
-	int32_t v5;	  // r6
-	int32_t v6;	  // r1
-	int32_t j;	  // r3
-	int32_t v8;	  // r5
-	float* v9;	  // r3
-	int32_t m;	  // r6
-	int32_t k;	  // r7
-	float* v12;	  // r2
-	uint32_t v13; // r3
-	float v14;	  // s15
-	float v15;	  // s15
-
-	for(i = 0; i != 256; i += 16) {
-		for(j = 0; j != 16; ++j) {
-			v3 = j - 1;
-			v4 = 0.0;
+	for(int32_t i = 0; i != 256; i += 16) {
+		for(int32_t j = 0; j != 16; ++j) {
+			int32_t v3 = j - 1;
+			float v4 = 0.0f;
 			while(v3 != j + 2) {
-				v5 = (v3++ & 0xF) + i;
+				int32_t v5 = (v3++ & 0xF) + i;
 				v4 = v4 + this->field_30[v5];
 			}
-			v6 = j + i;
-			this->field_34[v6] = (float)(v4 / 3.3) + (float)(this->field_38[v6] * 0.8);
+			int32_t v6 = j + i;
+			this->field_34[v6] = (float)(v4 / 3.3f) + (float)(this->field_38[v6] * 0.8f);
 		}
 	}
-	for(k = 0; k != 256; k += 16) {
-		for(m = 0; m != 16; ++m) {
-			v8 = m * 4 + k * 4;
-			this->field_38[m + k] = this->field_38[m + k] + (float)(this->field_3C[m + k] * 0.05);
-			v9 = &this->field_38[m + k];
-			if(*v9 < 0.0) {
-				*v9 = 0.0;
+	for(int32_t k = 0; k != 256; k += 16) {
+		for(int32_t m = 0; m != 16; ++m) {
+			int32_t v8 = m * 4 + k * 4;
+			this->field_38[m + k] = this->field_38[m + k] + (float)(this->field_3C[m + k] * 0.05f);
+			if(this->field_38[m + k] < 0.0f) {
+				this->field_38[m + k] = 0.0f;
 			}
-			this->field_3C[v8 / 4] = this->field_3C[v8 / 4] - 0.1;
-			//*(float *)((char *)this->field_3C + v8) = *(float *)((char *)this->field_3C + v8) - 0.1;
+			this->field_3C[v8 / 4] = this->field_3C[v8 / 4] - 0.1f;
 			if(Mth::fastRandom() <= 0xCCCCCCC) {
-				this->field_3C[v8 / 4] = 0.5;
-				//*(float *)((char *)this->field_3C + v8) = 0.5;
+				this->field_3C[v8 / 4] = 0.5f;
 			}
 		}
 	}
-	v12 = this->field_34;
+	float* v12 = this->field_34;
 	this->field_34 = this->field_30;
-	v13 = 0;
 	this->field_30 = v12;
-	do {
-		v14 = this->field_30[v13 / 4];
-		if(v14 > 1.0) {
-			v14 = 1.0;
-		} else if(v14 < 0.0) {
-			v14 = 0.0;
-		}
-		v15 = v14 * v14;
-		this->data[v13] = (int32_t)(float)((float)(v15 * 30.0) + 60.0);
-		this->data[v13 + 1] = (int32_t)(float)((float)(v15 * 38.0) + 130.0);
-		this->data[v13 + 2] = (int32_t)(float)((float)(v15 * 28.0) + 215.0);
-		this->data[v13 + 3] = (int32_t)(float)((float)(v15 * 28.0) + 75.0);
-		v13 += 4;
-	} while(v13 != 1024);
+	for(int32_t idx = 0; idx < 256; ++idx) {
+		float v14 = this->field_30[idx];
+		if(v14 > 1.0f) v14 = 1.0f;
+		else if(v14 < 0.0f) v14 = 0.0f;
+		float v15 = v14 * v14;
+		int32_t r = (int32_t)(160.0f + v15 * 60.0f);
+		int32_t g = (int32_t)(195.0f + v15 * 50.0f);
+		int32_t b = (int32_t)(235.0f + v15 * 20.0f);
+		int32_t a = (int32_t)(140.0f + v15 * 60.0f);
+		this->data[idx * 4 + 0] = (uint8_t)r;
+		this->data[idx * 4 + 1] = (uint8_t)g;
+		this->data[idx * 4 + 2] = (uint8_t)b;
+		this->data[idx * 4 + 3] = (uint8_t)a;
+	}
 }

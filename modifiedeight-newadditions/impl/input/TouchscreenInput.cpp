@@ -185,7 +185,11 @@ void TouchscreenInput::rebuild() {
     } else {
       v13 = 107;
     }
-    sub_D6604D0C(this->jumpButton, 104, v13, 26.0);
+    if (this->options->swapJumpAndSneak) {
+      sub_D6604D0C(this->jumpButton, 104, this->field_43 ? 133 : 107, 26.0);
+    } else {
+      sub_D6604D0C(this->jumpButton, 104, v13, 26.0);
+    }
     if (!this->minecraft->currentScreen) {
       if (this->isButtonDown(106)) {
         v14 = _D6E0665C;
@@ -202,7 +206,7 @@ void TouchscreenInput::rebuild() {
         v14 = _D6E06660;
       }
       Tesselator::instance.colorABGR(v14);
-      sub_D6604D0C(this->sneakButton, 218, this->sneakingMaybe ? 82 : 64, 18.0);
+      sub_D6604D0C(this->sneakButton, 218, this->sneakingMaybe ? 64 : 82, 18.0);
     }
     if (!this->minecraft->currentScreen && this->cameraButton) {
       int vCam = this->isButtonDown(107) ? _D6E0665C : _D6E06660;

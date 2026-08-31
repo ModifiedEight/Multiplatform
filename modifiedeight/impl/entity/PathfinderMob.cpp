@@ -1,5 +1,6 @@
 #include <entity/PathfinderMob.hpp>
 #include <entity/path/Path.hpp>
+#include <entity/Player.hpp>
 #include <level/Level.hpp>
 #include <math.h>
 #include <math/Mth.hpp>
@@ -77,7 +78,7 @@ void PathfinderMob::updateAi() {
 	if(attackTarget) {
 		entity = this->level->getEntity(attackTarget);
 		target = entity;
-		if(entity && entity->isAlive()) {
+		if(entity && entity->isAlive() && (!entity->isPlayer() || (!((Player*)entity)->abilities.instabuild && !((Player*)entity)->abilities.invulnerable))) {
 			this->attackTarget = target->entityId;
 			v26 = target->distanceTo(this);
 			v27 = this->canSee(target);

@@ -51,6 +51,7 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a2, const 
 		}
 		this->levelData = 0;
 	}
+	BlockColorRegistry::clear();
 	BlockColorRegistry::load(this->anotherDataFolder);
 	CushionManager::load(this->anotherDataFolder);
 }
@@ -164,6 +165,8 @@ bool_t ExternalFileLevelStorage::writeLevelData(const std::string& a1, LevelData
 }
 
 ExternalFileLevelStorage::~ExternalFileLevelStorage() {
+	BlockColorRegistry::save(this->anotherDataFolder);
+	BlockColorRegistry::clear();
 	if(this->regionFile) {
 		delete this->regionFile;
 	}

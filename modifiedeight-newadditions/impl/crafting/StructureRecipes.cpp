@@ -4,6 +4,7 @@
 #include <tile/Tile.hpp>
 
 void StructureRecipes::addRecipes(Recipes* a1) {
+	if (Tile::slimeBlock) a1->addShapedRecipe(ItemInstance(Tile::slimeBlock), "##", "##", definition<Item*>('#', Item::slimeBall));
 	a1->addShapedRecipe(ItemInstance(Tile::chest), "###", "# #", "###", definition<Tile*>('#', Tile::wood));
 	a1->addShapedRecipe(ItemInstance(Tile::furnace), "###", "# #", "###", definition<Tile*>('#', Tile::stoneBrick));
 	a1->addShapedRecipe(ItemInstance(Tile::workBench), "##", "##", definition<Tile*>('#', Tile::wood));

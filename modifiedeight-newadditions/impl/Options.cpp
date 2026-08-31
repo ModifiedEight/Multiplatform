@@ -60,6 +60,18 @@ Options::Option Options::Option::BRIGHTNESS{1, "options.gamma", 44};
 Options::Option Options::Option::LOD_CHUNKS{0, "options.lodchunks", 45};
 Options::Option Options::Option::SWAP_JUMP_AND_SNEAK{0, "options.swapjumpandsneak", 46};
 Options::Option Options::Option::SMOOTH_CHUNKS{0, "options.smoothchunks", 47};
+Options::Option Options::Option::REALISM_SMOOTH_LIGHTING{0, "options.realism.smoothlighting", 48};
+Options::Option Options::Option::REALISM_TORCH_LIGHTING{0, "options.realism.torchlighting", 49};
+Options::Option Options::Option::REALISM_COLORED_LIGHT{0, "options.realism.coloredlight", 50};
+Options::Option Options::Option::REALISM_DYNAMIC_LIGHTS{0, "options.realism.dynamiclights", 51};
+Options::Option Options::Option::REALISM_CAVE_LIGHTING{0, "options.realism.cavelighting", 52};
+Options::Option Options::Option::REALISM_SOFT_SHADOWS{0, "options.realism.softshadows", 53};
+Options::Option Options::Option::REALISM_SSAO{0, "options.realism.ssao", 54};
+Options::Option Options::Option::REALISM_SCREEN_SPACE_LIGHTING{0, "options.realism.ssl", 55};
+Options::Option Options::Option::REALISM_BLOOM{0, "options.realism.bloom", 56};
+Options::Option Options::Option::EXTENDED_INVENTORY{0, "options.extendedinventory", 57};
+Options::Option Options::Option::MORNING_FOG{0, "options.morningfog", 58};
+Options::Option Options::Option::SUN_GLOW{0, "options.sunglow", 59};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
 std::vector<int32_t> Options::RENDERDISTANCE_LEVELS = {3, 2, 1, 0, -1, -2, -3};
 std::vector<int32_t> Options::CHAT_COLOR_LEVELS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -155,8 +167,14 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->lodChunks);
 						} else if(v13[i] == OptionStrings::Graphics_SmoothChunks || v13[i] == "options.smoothchunks") {
 							this->readBool(v13[i + 1], this->smoothChunks);
+						} else if(v13[i] == "options.morningfog") {
+							this->readBool(v13[i + 1], this->morningFog);
+						} else if(v13[i] == "options.sunglow") {
+							this->readBool(v13[i + 1], this->sunGlow);
 						} else if(v13[i] == "options.swapjumpandsneak") {
 							this->readBool(v13[i + 1], this->swapJumpAndSneak);
+						} else if(v13[i] == "options.extendedinventory") {
+							this->readBool(v13[i + 1], this->extendedInventory);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -300,6 +318,36 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->swapJumpAndSneak ^= 1u;
 	} else if(a2 == &Options::Option::SMOOTH_CHUNKS || (a2 && (a2->field_8 == 47 || a2->name == "options.smoothchunks"))) {
 		this->smoothChunks ^= 1u;
+	} else if(a2 == &Options::Option::MORNING_FOG || (a2 && a2->name == "options.morningfog")) {
+		this->morningFog ^= 1u;
+	} else if(a2 == &Options::Option::SUN_GLOW || (a2 && a2->name == "options.sunglow")) {
+		this->sunGlow ^= 1u;
+	} else if(a2 == &Options::Option::REALISM_SMOOTH_LIGHTING || (a2 && a2->name == "options.realism.smoothlighting")) {
+		this->realismSmoothLighting ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_TORCH_LIGHTING || (a2 && a2->name == "options.realism.torchlighting")) {
+		this->realismTorchLighting ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_COLORED_LIGHT || (a2 && a2->name == "options.realism.coloredlight")) {
+		this->realismColoredLight ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_DYNAMIC_LIGHTS || (a2 && a2->name == "options.realism.dynamiclights")) {
+		this->realismDynamicLights ^= 1u;
+	} else if(a2 == &Options::Option::REALISM_CAVE_LIGHTING || (a2 && a2->name == "options.realism.cavelighting")) {
+		this->realismCaveLighting ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_SOFT_SHADOWS || (a2 && a2->name == "options.realism.softshadows")) {
+		this->realismSoftShadows ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_SSAO || (a2 && a2->name == "options.realism.ssao")) {
+		this->realismSSAO ^= 1u;
+		if(this->minecraft && this->minecraft->levelRenderer) this->minecraft->levelRenderer->allChanged();
+	} else if(a2 == &Options::Option::REALISM_SCREEN_SPACE_LIGHTING || (a2 && a2->name == "options.realism.ssl")) {
+		this->realismSSL ^= 1u;
+	} else if(a2 == &Options::Option::REALISM_BLOOM || (a2 && a2->name == "options.realism.bloom")) {
+		this->realismBloom ^= 1u;
+	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
+		this->extendedInventory ^= 1u;
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
@@ -409,7 +457,10 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
 	this->addOptionToSaveOutput(v4, "options.lodchunks", this->lodChunks);
 	this->addOptionToSaveOutput(v4, "options.smoothchunks", this->smoothChunks);
+	this->addOptionToSaveOutput(v4, "options.morningfog", this->morningFog);
+	this->addOptionToSaveOutput(v4, "options.sunglow", this->sunGlow);
 	this->addOptionToSaveOutput(v4, "options.swapjumpandsneak", this->swapJumpAndSneak);
+	this->addOptionToSaveOutput(v4, "options.extendedinventory", this->extendedInventory);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
@@ -506,7 +557,19 @@ void Options::initDefaultValues(void) {
 	this->animateFire = 1;
 	this->lodChunks = 0;
 	this->smoothChunks = 1;
+	this->morningFog = 1;
+	this->sunGlow = 1;
 	this->swapJumpAndSneak = 0;
+	this->realismSmoothLighting = 1;
+	this->realismTorchLighting = 1;
+	this->realismColoredLight = 1;
+	this->realismDynamicLights = 1;
+	this->realismCaveLighting = 1;
+	this->realismSoftShadows = 1;
+	this->realismSSAO = 1;
+	this->realismSSL = 1;
+	this->realismBloom = 1;
+	this->extendedInventory = 0;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->panoramaAngle = 0;
@@ -810,6 +873,10 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->lodChunks;
 	} else if(a2 == &Options::Option::SMOOTH_CHUNKS || (a2 && (a2->field_8 == 47 || a2->name == "options.smoothchunks"))) {
 		return this->smoothChunks;
+	} else if(a2 == &Options::Option::MORNING_FOG || (a2 && a2->name == "options.morningfog")) {
+		return this->morningFog;
+	} else if(a2 == &Options::Option::SUN_GLOW || (a2 && a2->name == "options.sunglow")) {
+		return this->sunGlow;
 	} else if(a2 == &Options::Option::SWAP_JUMP_AND_SNEAK) {
 		return this->swapJumpAndSneak;
 	} else if(a2 == &Options::Option::ANIMATE_TEXTURES || (a2 && a2->name == "options.animatetextures")) {
@@ -820,6 +887,26 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->animateLava;
 	} else if(a2 == &Options::Option::ANIMATE_FIRE || (a2 && (a2->field_8 == 43 || a2->name == "options.animatefire"))) {
 		return this->animateFire;
+	} else if(a2 == &Options::Option::REALISM_SMOOTH_LIGHTING || (a2 && a2->name == "options.realism.smoothlighting")) {
+		return this->realismSmoothLighting;
+	} else if(a2 == &Options::Option::REALISM_TORCH_LIGHTING || (a2 && a2->name == "options.realism.torchlighting")) {
+		return this->realismTorchLighting;
+	} else if(a2 == &Options::Option::REALISM_COLORED_LIGHT || (a2 && a2->name == "options.realism.coloredlight")) {
+		return this->realismColoredLight;
+	} else if(a2 == &Options::Option::REALISM_DYNAMIC_LIGHTS || (a2 && a2->name == "options.realism.dynamiclights")) {
+		return this->realismDynamicLights;
+	} else if(a2 == &Options::Option::REALISM_CAVE_LIGHTING || (a2 && a2->name == "options.realism.cavelighting")) {
+		return this->realismCaveLighting;
+	} else if(a2 == &Options::Option::REALISM_SOFT_SHADOWS || (a2 && a2->name == "options.realism.softshadows")) {
+		return this->realismSoftShadows;
+	} else if(a2 == &Options::Option::REALISM_SSAO || (a2 && a2->name == "options.realism.ssao")) {
+		return this->realismSSAO;
+	} else if(a2 == &Options::Option::REALISM_SCREEN_SPACE_LIGHTING || (a2 && a2->name == "options.realism.ssl")) {
+		return this->realismSSL;
+	} else if(a2 == &Options::Option::REALISM_BLOOM || (a2 && a2->name == "options.realism.bloom")) {
+		return this->realismBloom;
+	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
+		return this->extendedInventory;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {
 		return this->graphics;

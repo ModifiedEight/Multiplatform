@@ -82,9 +82,16 @@ static void performPickBlock(Minecraft *mc) {
     } else if (Tile::door_iron && tile == Tile::door_iron) {
       pickId = Item::door_iron ? Item::door_iron->itemID : 330;
       pickData = 0;
-    } else if (Tile::bed && tile == Tile::bed) {
+    } else if (Tile::bed &&
+               (tile == Tile::bed || tile->getRenderShape() == 14)) {
       pickId = Item::bed ? Item::bed->itemID : 355;
       pickData = 0;
+      for (int i = 0; i < 16; i++) {
+        if (Tile::coloredBeds[i] && tile == Tile::coloredBeds[i]) {
+          pickData = i;
+          break;
+        }
+      }
     } else if (Tile::reeds && tile == Tile::reeds) {
       pickId = Item::reeds ? Item::reeds->itemID : 338;
       pickData = 0;
@@ -220,7 +227,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.4.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.5.1pre1", 0);
 
   {
     int w, h, ch;
@@ -434,7 +441,8 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
     mc->screenChooser.setScreen(CHAT_SCREEN);
     return;
   }
-  if ((key == SDLK_SLASH || key == '/' || key == 47 || scancode == 61 || scancode == 53) &&
+  if ((key == SDLK_SLASH || key == '/' || key == 47 || scancode == 61 ||
+       scancode == 53) &&
       mc->mouseGrabbed) {
     mc->screenChooser.setScreen(CHAT_SCREEN);
     mc->setTextboxText("/");
@@ -560,7 +568,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.4.1",
+              details, "icon", "ModifiedEight New Additions 1.6.5.1pre1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

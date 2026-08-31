@@ -49,17 +49,29 @@ bool_t TopSnowTile::isSolidRender() {
 	return 0;
 }
 bool_t TopSnowTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
-	int32_t yb; // r6
-	int32_t id; // r0
-	Material* mat; // r0
-
-	yb = y - 1;
-	id = level->getTile(x, y - 1, z);
-	if(!id || !Tile::tiles[id]->isSolidRender()) {
+	int32_t id = level->getTile(x, y - 1, z);
+	if(!id) {
 		return 0;
 	}
-	mat = level->getMaterial(x, yb, z);
-	return mat->blocksMotion();
+	Tile* t = Tile::tiles[id];
+	if (!t) return 0;
+	if (t->isSolidRender()) return 1;
+	if (id == 44 || id == 126 || (id >= 180 && id <= 210)) return 1;
+	if (t->getRenderShape() == 10 || t->getRenderShape() == 40) return 1;
+	Material* mat = level->getMaterial(x, y - 1, z);
+	return mat && mat->blocksMotion();
+}
+
+void TopSnowTile::updateShape(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	int32_t bTile = level->getTile(x, y - 1, z);
+	int32_t bData = level->getData(x, y - 1, z);
+	if (bTile == 44 || bTile == 126 || (bTile >= 180 && bTile <= 210)) {
+		if ((bData & 8) == 0) {
+			this->setShape(0.0f, -0.5f, 0.0f, 1.0f, -0.375f, 1.0f);
+			return;
+		}
+	}
+	this->setShape(0.0f, 0.0f, 0.0f, 1.0f, 0.125f, 1.0f);
 }
 void TopSnowTile::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* random) {
 	int32_t v11; // r0

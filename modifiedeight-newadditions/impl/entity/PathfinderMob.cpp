@@ -1,5 +1,6 @@
 #include <entity/PathfinderMob.hpp>
 #include <entity/path/Path.hpp>
+#include <entity/Player.hpp>
 #include <level/Level.hpp>
 #include <math.h>
 #include <math/Mth.hpp>
@@ -77,7 +78,7 @@ void PathfinderMob::updateAi() {
 	if(attackTarget) {
 		entity = this->level->getEntity(attackTarget);
 		target = entity;
-		if(entity && entity->isAlive()) {
+		if(entity && entity->isAlive() && (!entity->isPlayer() || (!((Player*)entity)->abilities.instabuild && !((Player*)entity)->abilities.invulnerable))) {
 			this->attackTarget = target->entityId;
 			v26 = target->distanceTo(this);
 			v27 = this->canSee(target);
@@ -206,8 +207,15 @@ void PathfinderMob::setAttackTarget(Entity* entity) {
 		this->attackTarget = 0;
 	}
 }
-float PathfinderMob::getWalkTargetValue(int32_t, int32_t, int32_t) {
-	return 0.0;
+float PathfinderMob::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
+	if (this->level) {
+		int tCur = this->level->getTile(x, y, z);
+		int tBelow = this->level->getTile(x, y - 1, z);
+		if (tCur == 8 || tCur == 9 || tBelow == 8 || tBelow == 9) {
+			return -100.0f;
+		}
+	}
+	return 0.0f;
 }
 Entity* PathfinderMob::findAttackTarget() {
 	return 0;

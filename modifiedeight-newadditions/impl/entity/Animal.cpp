@@ -176,10 +176,15 @@ bool_t Animal::removeWhenFarAway() {
 	return 0;
 }
 float Animal::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
-	if(this->level->getTile(x, y - 1, z) == Tile::grass->blockID) {
-		return 10.0;
+	int tCur = this->level->getTile(x, y, z);
+	int tBelow = this->level->getTile(x, y - 1, z);
+	if (tCur == 8 || tCur == 9 || tBelow == 8 || tBelow == 9) {
+		return -100.0f;
+	}
+	if(tBelow == Tile::grass->blockID) {
+		return 10.0f;
 	} else {
-		return this->level->getBrightness(x, y, z) - 0.5;
+		return this->level->getBrightness(x, y, z) - 0.5f;
 	}
 }
 Entity* Animal::findAttackTarget() {

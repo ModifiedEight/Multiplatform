@@ -62,6 +62,9 @@
 #include <tile/GrassPathTile.hpp>
 #include <tile/GrassTile.hpp>
 #include <tile/GravelTile.hpp>
+#include <tile/SlimeBlockTile.hpp>
+#include <tile/SweetBerryBushTile.hpp>
+#include <tile/MusicPlayerTile.hpp>
 #include <tile/HayBlockTile.hpp>
 #include <tile/HeavyTile.hpp>
 #include <tile/IceTile.hpp>
@@ -297,6 +300,9 @@ Tile *Tile::woolCarpet;
 Tile *Tile::coalBlock;
 Tile *Tile::beetroot;
 Tile *Tile::stonecutterBench;
+Tile *Tile::slimeBlock;
+Tile *Tile::sweetBerryBush;
+Tile *Tile::musicPlayer;
 Tile *Tile::glowingObsidian;
 Tile *Tile::netherReactor;
 Tile *Tile::info_updateGame1;
@@ -746,14 +752,16 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->setCategory(5, 1)
           ->setDescriptionId("trapdoor_birch");
 
+  static const int colored_bed_ids[16] = {26, 23, 25, 28, 29, 33, 34, 36, 52, 55, 75, 76, 220, 90, 93, 94};
   for (int i = 0; i < 16; i++) {
-    Tile::coloredBeds[i] = (new ColoredBedTile(201 + i, i))
+    Tile::coloredBeds[i] = (new ColoredBedTile(colored_bed_ids[i], i))
                                ->init()
                                ->setDestroyTime(0.2)
                                ->setSoundType(Tile::SOUND_WOOD)
                                ->setCategory(5, 1)
                                ->setDescriptionId("bed");
   }
+  Tile::bed = Tile::coloredBeds[14];
 
   Tile::bookshelf = (new BookshelfTile(47, "bookshelf", Material::wood))
                         ->init()
@@ -1325,6 +1333,25 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                                ->setSoundType(Tile::SOUND_STONE)
                                ->setCategory(2, 1)
                                ->setDescriptionId("stonecutter");
+  Tile::slimeBlock = (new SlimeBlockTile(165, "slime"))
+                         ->init()
+                         ->setDestroyTime(0.0)
+                         ->setSoundType(Tile::SOUND_GRASS)
+                         ->setCategory(2, 1)
+                         ->setDescriptionId("slimeBlock");
+  Tile::sweetBerryBush = (new SweetBerryBushTile(201, "sweetBerryBush"))
+                             ->init()
+                             ->setDestroyTime(0.0)
+                             ->setSoundType(Tile::SOUND_GRASS)
+                             ->setCategory(2, 1)
+                             ->setDescriptionId("sweetBerryBush");
+  Tile::musicPlayer = (new MusicPlayerTile(84))
+                          ->init()
+                          ->setDestroyTime(2.0)
+                          ->setExplodeable(30.0)
+                          ->setSoundType(Tile::SOUND_WOOD)
+                          ->setCategory(2, 1)
+                          ->setDescriptionId("musicPlayer");
   Tile::glowingObsidian = (new ObsidianTile(246, "glowing_obsidian", 1))
                               ->init()
                               ->setDestroyTime(10.0)

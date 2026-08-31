@@ -43,6 +43,7 @@ struct Player : Mob{
 	bool_t sleeping;
 	int8_t field_D4E;
 	bool_t isDestroying;
+	struct FishingHook* fishing;
 
 	Player(Level*, bool_t);
 	void _init();

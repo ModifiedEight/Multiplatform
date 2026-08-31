@@ -8,6 +8,7 @@
 #include <inventory/Inventory.hpp>
 #include <item/ArmorItem.hpp>
 #include <item/Item.hpp>
+#include <sound/SoundEngine.hpp>
 #include <math.h>
 #include <math/Mth.hpp>
 #include <rendering/EntityRenderDispatcher.hpp>
@@ -413,6 +414,16 @@ void ArmorScreen::buttonClicked(Button* a2) {
 bool_t ArmorScreen::addItem(const Touch::InventoryPane* a2, int32_t a3) {
 	const ItemInstance* v5 = this->field_1E0[a3];
 	if(ItemInstance::isArmorItem(v5)) {
+		ArmorItem* arm = (ArmorItem*)v5->itemClass;
+		const char* sound = "armor.equip_generic";
+		if (arm->armorMaterial == &ArmorItem::CLOTH) sound = "armor.equip_leather";
+		else if (arm->armorMaterial == &ArmorItem::CHAIN) sound = "armor.equip_chain";
+		else if (arm->armorMaterial == &ArmorItem::IRON) sound = "armor.equip_iron";
+		else if (arm->armorMaterial == &ArmorItem::GOLD) sound = "armor.equip_gold";
+		else if (arm->armorMaterial == &ArmorItem::DIAMOND) sound = "armor.equip_diamond";
+		if (this->minecraft && this->minecraft->soundEngine) {
+			this->minecraft->soundEngine->playUI(sound, 1.0f, 1.0f);
+		}
 		if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
 			this->player->setArmor(((ArmorItem*)v5->itemClass)->field_48, v5);
 			return 1;

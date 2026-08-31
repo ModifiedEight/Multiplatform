@@ -124,6 +124,12 @@ void ServerSideNetworkHandler::onReady_ClientGeneration(const RakNet::RakNetGUID
 		SetTimePacket(this->level->getTime(), (uint32_t)this->level->levelData.stopTime >> 31).write(&stream);
 		this->rakPeer->Send(&stream, PacketPriority::HIGH_PRIORITY, PacketReliability::RELIABLE_ORDERED, 0, RakNet::AddressOrGUID(a2), 0, 0);
 
+		stream.Reset();
+		extern int g_morningFogTicks;
+		LevelEventPacket wPk(9810, (int16_t)this->level->weatherType, (int16_t)(this->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, this->level->weatherTicks);
+		wPk.write(&stream);
+		this->rakPeer->Send(&stream, PacketPriority::HIGH_PRIORITY, PacketReliability::RELIABLE_ORDERED, 0, RakNet::AddressOrGUID(a2), 0, 0);
+
 		for(int32_t v8 = 0; v8 < this->level->playersMaybe.size(); ++v8) {
 			Player* v9 = this->level->playersMaybe[v8];
 			stream.Reset();
@@ -711,7 +717,7 @@ Packet* ServerSideNetworkHandler::getAddPacketFromEntity(Entity* a2) {
 			return 0;
 		} else if(a2->isItemEntity()) {
 			return new AddItemEntityPacket((ItemEntity*)a2);
-		} else if(a2->isHangingEntity()) {
+		} else if(a2->getEntityTypeId() == 83) {
 			return new AddPaintingPacket((Painting*)a2);
 		} else {
 			int32_t id = a2->getEntityTypeId();

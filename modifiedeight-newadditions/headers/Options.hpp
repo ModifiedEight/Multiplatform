@@ -58,6 +58,18 @@ struct Options{
 		static Options::Option LOD_CHUNKS;
 		static Options::Option SWAP_JUMP_AND_SNEAK;
 		static Options::Option SMOOTH_CHUNKS;
+		static Options::Option MORNING_FOG;
+		static Options::Option SUN_GLOW;
+		static Options::Option REALISM_SMOOTH_LIGHTING;
+		static Options::Option REALISM_TORCH_LIGHTING;
+		static Options::Option REALISM_COLORED_LIGHT;
+		static Options::Option REALISM_DYNAMIC_LIGHTS;
+		static Options::Option REALISM_CAVE_LIGHTING;
+		static Options::Option REALISM_SOFT_SHADOWS;
+		static Options::Option REALISM_SSAO;
+		static Options::Option REALISM_SCREEN_SPACE_LIGHTING;
+		static Options::Option REALISM_BLOOM;
+		static Options::Option EXTENDED_INVENTORY;
 	};
 
 	static Options* instance;
@@ -137,6 +149,18 @@ struct Options{
 	bool_t lodChunks;
 	bool_t swapJumpAndSneak;
 	bool_t smoothChunks;
+	bool_t morningFog;
+	bool_t sunGlow;
+	bool_t realismSmoothLighting;
+	bool_t realismTorchLighting;
+	bool_t realismColoredLight;
+	bool_t realismDynamicLights;
+	bool_t realismCaveLighting;
+	bool_t realismSoftShadows;
+	bool_t realismSSAO;
+	bool_t realismSSL;
+	bool_t realismBloom;
+	bool_t extendedInventory;
 	char_t field_109;
 	char_t field_10A;
 	char_t field_10B;

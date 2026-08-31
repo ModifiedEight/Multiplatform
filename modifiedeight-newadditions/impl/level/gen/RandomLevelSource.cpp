@@ -769,6 +769,24 @@ void RandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, int3
 		SpringFeature f(Tile::lava->blockID);
 		f.place(this->level, a8, (v108 & 0xF) + chunkXStart + 8, v109 % (v136 % (v138 % 0x70u + 8) + 8), chunkZStart + (v110 & 0xF) + 8);
 	}
+	if (Tile::sweetBerryBush && (biomeAtChunk == Biome::taiga || biomeAtChunk == Biome::tundra || biomeAtChunk == Biome::icePeaks)) {
+		if ((a8->genrand_int32() % 5) == 0) {
+			int32_t bx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t bz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			for (int l = 0; l < 8; ++l) {
+				int32_t px = bx + (a8->genrand_int32() % 7) - (a8->genrand_int32() % 7);
+				int32_t pz = bz + (a8->genrand_int32() % 7) - (a8->genrand_int32() % 7);
+				int32_t py = this->level->getHeightmap(px, pz);
+				if (py > 0 && py < 127 && (this->level->isEmptyTile(px, py, pz) || this->level->getTile(px, py, pz) == Tile::topSnow->blockID)) {
+					int32_t below = this->level->getTile(px, py - 1, pz);
+					if (below == Tile::grass->blockID || below == Tile::dirt->blockID) {
+						int32_t stage = 1 + (a8->genrand_int32() % 3);
+						this->level->setTileAndData(px, py, pz, Tile::sweetBerryBush->blockID, stage, 2);
+					}
+				}
+			}
+		}
+	}
 	if(this->field_72CC) {
 		MobSpawner::postProcessSpawnMobs(this->level, biomeAtChunk, chunkXStart + 8, chunkZStart + 8, 16, 16, a8);
 	}

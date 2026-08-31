@@ -16,7 +16,7 @@
 #include <util/Util.hpp>
 #include <utils.h>
 
-static bool CreateWorldScreen_useAdvancedGen = false;
+static bool CreateWorldScreen_useAdvancedGen = true;
 
 CreateWorldScreen::CreateWorldScreen(CreateWorldScreenType a2,
                                      const MCOServerListItem &a3)

@@ -38,6 +38,7 @@
 #include <rendering/GameRenderer.hpp>
 #include <rendering/ItemInHandRenderer.hpp>
 #include <rendering/LevelRenderer.hpp>
+#include <sound/MusicPlayerManager.hpp>
 #include <rendering/ParticleEngine.hpp>
 #include <rendering/PerfRenderer.hpp>
 #include <rendering/Textures.hpp>
@@ -327,11 +328,7 @@ void Minecraft::handleBuildAction(struct BuildActionIntention* a2) {
 			InteractPacket v23_(v17, v18, 1);
 			this->rakNetInstance->send(v23_);
 			this->gameMode->interact((Player*)this->player, (Entity*)this->selectedObject.entity);
-LABEL_26:
-			if(!v15) {
-				return;
-			}
-			goto LABEL_27;
+			return;
 		}
 		if(hitType) {
 LABEL_27:
@@ -528,6 +525,7 @@ void Minecraft::leaveGame(bool_t a2, bool_t a3) {
 			this->level->saveLevelData();
 		}
 		this->rakNetInstance->disconnect();
+		MusicPlayerManager::instance.stopImmediate();
 		this->viewEntityMaybe = 0;
 		this->levelRenderer->setLevel(0);
 		this->particleEngine->setLevel(0);

@@ -23,6 +23,9 @@
 #include <rendering/states/EnableClientState.hpp>
 #include <rendering/states/EnableState.hpp>
 #include <tile/Tile.hpp>
+
+extern int g_morningFogTicks;
+static float s_smoothFog = 0.0f;
 #include <tile/material/Material.hpp>
 #include <unigl.h>
 
@@ -103,28 +106,34 @@ void GameRenderer::bobHurt(float a2) {
 	}
 }
 void GameRenderer::bobView(float a2) {
-	Player* viewEntityMaybe; // r3
-	float v5;				 // s16
-	float v6;				 // s17
-	GLfloat v7;				 // s19
-	float v8;				 // s18
-	float v9;				 // r0
-	float v10;				 // r0
-	float v11;				 // r0
+	if (!this->minecraft->options.viewBobbing) return;
+	if (this->minecraft->viewEntityMaybe && this->minecraft->viewEntityMaybe->isPlayer()) {
+		Player* p = (Player*)this->minecraft->viewEntityMaybe;
+		float bobAmount = p->field_C74 + (p->field_C78 - p->field_C74) * a2;
+		float bobPhase = -(p->field_BC + (p->field_BC - p->field_B8) * a2) * 3.14159265f;
+		float tilt = p->field_158 + (p->field_15C - p->field_158) * a2;
 
-	if(this->minecraft->viewEntityMaybe->isPlayer()) {
-		viewEntityMaybe = (Player*)this->minecraft->viewEntityMaybe;
-		v5 = viewEntityMaybe->field_C74 + (float)((float)(viewEntityMaybe->field_C78 - viewEntityMaybe->field_C74) * a2);
-		v6 = -(float)((float)(viewEntityMaybe->field_BC + (float)((float)(viewEntityMaybe->field_BC - viewEntityMaybe->field_B8) * a2)) * 3.1416);
-		v7 = viewEntityMaybe->field_158 + (float)((float)(viewEntityMaybe->field_15C - viewEntityMaybe->field_158) * a2);
-		v8 = Mth::sin(v6);
-		v9 = Mth::cos(v6);
-		glTranslatef((float)(v8 * v5) * 0.5, -fabsf(v9 * v5), 0.0);
-		v10 = Mth::sin(v6);
-		glRotatef((float)(v10 * v5) * 3.0, 0.0, 0.0, 1.0);
-		v11 = Mth::cos(v6 - 0.2);
-		glRotatef(fabsf(v11 * v5) * 5.0, 1.0, 0.0, 0.0);
-		glRotatef(v7, 1.0, 0.0, 0.0);
+		float sinP = sinf(bobPhase);
+		float cosP = cosf(bobPhase);
+
+		bool isSprinting = (this->minecraft->player && this->minecraft->player->isSprinting);
+		float mult = isSprinting ? 1.15f : 1.0f;
+
+		glTranslatef(sinP * bobAmount * 0.25f * mult, -fabsf(cosP * bobAmount) * 0.35f * mult, 0.0f);
+		glRotatef(sinP * bobAmount * 1.5f * mult, 0.0f, 0.0f, 1.0f);
+		glRotatef(fabsf(cosf(bobPhase) * bobAmount) * 2.0f * mult, 1.0f, 0.0f, 0.0f);
+		glRotatef(tilt, 1.0f, 0.0f, 0.0f);
+
+		float yawDiff = p->yaw - p->prevYaw;
+		while (yawDiff < -180.0f) yawDiff += 360.0f;
+		while (yawDiff >= 180.0f) yawDiff -= 360.0f;
+
+		static float s_turnRoll = 0.0f;
+		float targetRoll = -yawDiff * 0.04f + p->moveStrafe * 0.35f;
+		if (targetRoll > 0.8f) targetRoll = 0.8f;
+		if (targetRoll < -0.8f) targetRoll = -0.8f;
+		s_turnRoll += (targetRoll - s_turnRoll) * 0.08f;
+		glRotatef(s_turnRoll, 0.0f, 0.0f, 1.0f);
 	}
 }
 float GameRenderer::getFov(float a2, bool_t a3) {
@@ -142,6 +151,18 @@ float GameRenderer::getFov(float a2, bool_t a3) {
 	viewEntityMaybe = minecraft->viewEntityMaybe;
 	if(a3) {
 		v4 = (float)(this->field_5C + (float)((float)(this->field_58 - this->field_5C) * a2)) * minecraft->options.fov;
+	}
+	static float s_smoothFovModifier = 1.0f;
+	if (this->minecraft->player) {
+		float target = 1.0f;
+		if (this->minecraft->player->isSprinting) {
+			target *= 1.04f;
+		}
+		if (this->minecraft->player->abilities.flying) {
+			target *= 1.03f;
+		}
+		s_smoothFovModifier += (target - s_smoothFovModifier) * 0.08f;
+		v4 *= s_smoothFovModifier;
 	}
 	if(viewEntityMaybe->isUnderLiquid(Material::water)) {
 		v4 = v4 * 0.98f;
@@ -196,6 +217,8 @@ void GameRenderer::moveCameraToPlayer(float a2) {
 	float v44;			  // r0
 	Minecraft* minecraft; // r3
 	Minecraft* v46;		  // r3
+	float rayYaw = 0.0f;
+	float rayPitch = 0.0f;
 
 	viewEntityMaybe = this->minecraft->viewEntityMaybe;
 	posX = viewEntityMaybe->posX;
@@ -233,12 +256,18 @@ LABEL_9:
 		v30 = prevZ + (float)((float)(posZ - prevZ) * a2);
 		v31 = prevX + (float)((float)(posX - prevX) * a2);
 		pitch = viewEntityMaybe->pitch;
-		v33 = (float)(pitch / 180.0) * 3.1416;
+		rayYaw = yaw;
+		rayPitch = pitch;
+		if (this->minecraft->options.thirdPerson == 2) {
+			rayYaw += 180.0f;
+			rayPitch = -rayPitch;
+		}
+		v33 = (float)(rayPitch / 180.0) * 3.1416;
 		v34 = v28 - v11;
-		v35 = Mth::sin((float)(yaw / 180.0) * 3.1416);
+		v35 = Mth::sin((float)(rayYaw / 180.0) * 3.1416);
 		v36 = Mth::cos(v33);
 		v37 = (float)-(float)(v35 * v36) * v23;
-		v38 = (float)(Mth::cos((float)(yaw / 180.0) * 3.1416) * v36) * v23;
+		v38 = (float)(Mth::cos((float)(rayYaw / 180.0) * 3.1416) * v36) * v23;
 		v39 = -(float)(Mth::sin(v33) * v23);
 		do {
 			v40 = (float)(2 * (v24 & 1) - 1) * 0.1;
@@ -254,6 +283,9 @@ LABEL_9:
 			}
 			++v24;
 		} while(v24 != 8);
+		if (this->field_154 < 0.2f) {
+			this->field_154 = 0.2f;
+		}
 		glRotatef(viewEntityMaybe->pitch - pitch, 1.0, 0.0, 0.0);
 		glRotatef(viewEntityMaybe->yaw - yaw, 0.0, 1.0, 0.0);
 		glTranslatef(0.0, 0.0, -this->field_154);
@@ -674,9 +706,6 @@ void GameRenderer::renderItemInHand(float a2, int32_t a3) {
 			}
 		}
 	}
-	if(this->minecraft->options.viewBobbing) {
-		this->bobView(a2);
-	}
 }
 #include <rendering/Tesselator.hpp>
 extern MeshBuffer cube;
@@ -768,23 +797,22 @@ void GameRenderer::renderLevel(float a2) {
 	this->minecraft->levelRenderer->renderNameTags(a2);
 	if(this->field_4C == 1.0) {
 		if(viewEntityMaybe->isPlayer()) {
-			if(!this->minecraft->currentScreen && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
-				if(!this->minecraft->options.thirdPerson) {
+			if(!this->minecraft->currentScreen && !this->minecraft->options.thirdPerson && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
 #ifndef PCTWEAKS
-					if(this->minecraft->useTouchscreen()) {
+				if(this->minecraft->useTouchscreen()) {
 #endif
-						levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+					levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 #ifndef PCTWEAKS
-					} else {
-						levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
-					}
-#endif
+				} else {
+					levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 				}
+#endif
 				levelRenderer->renderHit((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 			}
 		}
 	}
 	particleEngine->render(viewEntityMaybe, a2);
+	this->minecraft->levelRenderer->renderRainSnow(a2);
 
 	if(this->field_4C == 1.0) {
 		this->renderItemInHand(a2, 0);
@@ -940,6 +968,48 @@ LABEL_6:
 	v26 = (float)((float)(sunIntensity * v31.a) * v31.g) + (float)(v24 * this->field_84.g);
 	this->field_74 = Color4((float)((float)(sunIntensity * v31.a) * v31.r) + (float)(v24 * this->field_84.r), v26, (float)((float)(sunIntensity * v31.a) * v31.b) + (float)(v24 * v23), (float)(v31.a * (float)(sunIntensity * v31.a)) + (float)(v24 * this->field_84.a));
 	this->field_74.a = 1.0;
+
+extern int g_morningFogTicks;
+
+	if (level) {
+		float targetFog = 0.0f;
+		if (this->minecraft->options.morningFog) {
+			if (g_morningFogTicks > 0) {
+				targetFog = (float)g_morningFogTicks / 2400.0f;
+			} else {
+				int32_t t = level->getTime() % 24000;
+				if (t >= 22500) targetFog = (float)(t - 22500) / 1500.0f;
+				else if (t < 2000) targetFog = 1.0f;
+				else if (t < 5000) targetFog = 1.0f - (float)(t - 2000) / 3000.0f;
+			}
+		}
+		float rainFog = level->rainLevel;
+		if (rainFog > targetFog) targetFog = rainFog;
+		s_smoothFog += (targetFog - s_smoothFog) * 0.02f;
+		if (s_smoothFog < 0.0f) s_smoothFog = 0.0f;
+		if (s_smoothFog > 1.0f) s_smoothFog = 1.0f;
+
+		if (s_smoothFog > 0.0f) {
+			float hazeR = 0.84f, hazeG = 0.80f, hazeB = 0.74f;
+			this->field_84.r = this->field_84.r * (1.0f - s_smoothFog * 0.65f) + hazeR * (s_smoothFog * 0.65f);
+			this->field_84.g = this->field_84.g * (1.0f - s_smoothFog * 0.60f) + hazeG * (s_smoothFog * 0.60f);
+			this->field_84.b = this->field_84.b * (1.0f - s_smoothFog * 0.55f) + hazeB * (s_smoothFog * 0.55f);
+			this->field_74.r = this->field_74.r * (1.0f - s_smoothFog * 0.65f) + hazeR * (s_smoothFog * 0.65f);
+			this->field_74.g = this->field_74.g * (1.0f - s_smoothFog * 0.60f) + hazeG * (s_smoothFog * 0.60f);
+			this->field_74.b = this->field_74.b * (1.0f - s_smoothFog * 0.55f) + hazeB * (s_smoothFog * 0.55f);
+		}
+
+		if (level->rainLevel > 0.0f) {
+			float darken = 1.0f - level->rainLevel * (level->weatherType == 2 ? 0.65f : 0.45f);
+			this->field_84.r *= darken;
+			this->field_84.g *= darken;
+			this->field_84.b *= (darken * 1.05f > 1.0f ? 1.0f : darken * 1.05f);
+			this->field_74.r *= darken;
+			this->field_74.g *= darken;
+			this->field_74.b *= darken;
+		}
+	}
+
 	glClearColor(this->field_74.r, this->field_74.g, this->field_74.b, this->field_74.a);
 }
 void GameRenderer::setupFog(int32_t a2) {
@@ -1002,9 +1072,18 @@ void GameRenderer::setupFog(int32_t a2) {
 #else
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 #endif
-	glFogf(GL_FOG_START, this->field_8 * 0.35f);
-	glFogf(GL_FOG_END, this->field_8 * 0.90f);
+
+	float fogStart = this->field_8 * (0.35f * (1.0f - s_smoothFog));
+	float baseEnd = this->field_8 * 0.90f;
+	float minEnd = this->field_8 * 0.35f;
+	if (minEnd < 24.0f) minEnd = 24.0f;
+	float fogEnd = baseEnd * (1.0f - s_smoothFog) + minEnd * s_smoothFog;
+	if (fogEnd < fogStart + 10.0f) fogEnd = fogStart + 10.0f;
+
+	glFogf(GL_FOG_START, fogStart);
+	glFogf(GL_FOG_END, fogEnd);
 	this->field_150 = 0;
+
 	if(a2 < 0) {
 		glFogf(GL_FOG_START, 0.0);
 		glFogf(GL_FOG_END, this->field_8);
