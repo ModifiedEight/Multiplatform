@@ -9,6 +9,7 @@
 #include <AppPlatform.hpp>
 #include <_AssetFile.hpp>
 #include <cstring>
+#include <cstdlib>
 
 extern "C" int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
 

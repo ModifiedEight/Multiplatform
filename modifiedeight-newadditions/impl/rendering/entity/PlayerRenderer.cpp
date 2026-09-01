@@ -13,6 +13,7 @@
 #include <rendering/model/HumanoidModel.hpp>
 #include <stb_image.h>
 #include <string.h>
+#include <stdlib.h>
 #include <thread>
 #include <tile/Tile.hpp>
 #include <tile/material/Material.hpp>
