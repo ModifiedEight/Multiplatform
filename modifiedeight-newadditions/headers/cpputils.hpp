@@ -33,3 +33,91 @@ int FUNC_MKDIR(const char*);
 bool createFolderIfNotExists(const char*);
 bool createTree(const char*, const char**, int);
 int getRawTimeS();
+
+#include <cstdio>
+
+inline std::string to_string(int v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%d", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned int v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%u", v);
+	return std::string(buf);
+}
+inline std::string to_string(long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%ld", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%lu", v);
+	return std::string(buf);
+}
+inline std::string to_string(long long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%lld", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned long long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%llu", v);
+	return std::string(buf);
+}
+inline std::string to_string(float v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%f", v);
+	return std::string(buf);
+}
+inline std::string to_string(double v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%f", v);
+	return std::string(buf);
+}
+
+#if defined(ANDROID)
+namespace std {
+inline std::string to_string(int v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%d", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned int v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%u", v);
+	return std::string(buf);
+}
+inline std::string to_string(long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%ld", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%lu", v);
+	return std::string(buf);
+}
+inline std::string to_string(long long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%lld", v);
+	return std::string(buf);
+}
+inline std::string to_string(unsigned long long v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%llu", v);
+	return std::string(buf);
+}
+inline std::string to_string(float v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%f", v);
+	return std::string(buf);
+}
+inline std::string to_string(double v) {
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%f", v);
+	return std::string(buf);
+}
+}
+#endif
