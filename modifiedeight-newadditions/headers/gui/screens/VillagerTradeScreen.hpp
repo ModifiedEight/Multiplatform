@@ -25,4 +25,5 @@ struct VillagerTradeScreen : Screen {
 	virtual void buttonClicked(Button*);
 	virtual void mouseClicked(int32_t, int32_t, int32_t);
 	virtual void keyPressed(int32_t);
+	virtual bool_t backPressed(Minecraft*, bool_t);
 };

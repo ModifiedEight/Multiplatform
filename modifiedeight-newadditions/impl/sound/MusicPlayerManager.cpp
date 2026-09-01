@@ -22,66 +22,30 @@ MusicPlayerManager::MusicPlayerManager()
 void MusicPlayerManager::loadTracks() {
 	this->tracks.clear();
 
-	std::string paths[] = {
-		"music_data/tracks.json",
-		"../music_data/tracks.json",
-		"assets/../music_data/tracks.json",
-		"assets/music_data/tracks.json",
-		"music_data/music.json",
-		"assets/music_data/music.json"
+	struct EmbeddedTrackInfo {
+		const char* name;
+		const unsigned char* data;
+		const unsigned char* end;
 	};
-
-	std::string jsonContent;
-	for (const auto& p : paths) {
-		std::ifstream infile(p);
-		if (infile.is_open()) {
-			std::string str((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
-			if (!str.empty()) {
-				jsonContent = str;
-				break;
-			}
-		}
-	}
-
-	if (jsonContent.empty() && AppPlatform::_singleton) {
-		AssetFile f = AppPlatform::_singleton->readAssetFile("music_data/tracks.json");
-		if (f.bytes && f.length > 0) {
-			jsonContent = std::string((char*)f.bytes, f.length);
-			delete[] f.bytes;
-		}
-	}
-
-	if (!jsonContent.empty()) {
-		Json::Value root;
-		Json::Reader reader;
-		if (reader.parse(jsonContent, root) && root.isArray()) {
-			for (unsigned int i = 0; i < root.size(); ++i) {
-				const Json::Value& item = root[i];
-				if (item.isObject() && item.isMember("name") && item.isMember("file")) {
-					CustomMusicTrack t;
-					t.name = item["name"].asString();
-					t.file = item["file"].asString();
-					this->tracks.push_back(t);
-				}
-			}
-		}
-	}
-
-	if (this->tracks.empty()) {
-		const char* defaultNames[] = {
-			"Minecraft", "Subwoofer Lullaby", "Living Mice", "Haggstrom",
-			"Danny", "Key", "Oxygene", "Equinoxe", "Mice on Venus", "Door", "Moog City 2"
-		};
-		const char* defaultFiles[] = {
-			"music/minecraft.aac", "music/subwoofer_lullaby.aac", "music/living_mice.aac", "music/haggstrom.aac",
-			"music/danny.aac", "music/key.aac", "music/oxygene.aac", "music/equinoxe.aac", "music/mice_on_venus.aac", "music/door.aac", "music/moog_city_2.aac"
-		};
-		for (size_t i = 0; i < 11; ++i) {
-			CustomMusicTrack t;
-			t.name = defaultNames[i];
-			t.file = defaultFiles[i];
-			this->tracks.push_back(t);
-		}
+	static const EmbeddedTrackInfo embedded[] = {
+		{"Minecraft", music_minecraft_start, music_minecraft_end},
+		{"Subwoofer Lullaby", music_subwoofer_lullaby_start, music_subwoofer_lullaby_end},
+		{"Living Mice", music_living_mice_start, music_living_mice_end},
+		{"Haggstrom", music_haggstrom_start, music_haggstrom_end},
+		{"Danny", music_danny_start, music_danny_end},
+		{"Mice on Venus", music_mice_on_venus_start, music_mice_on_venus_end},
+		{"Key", music_key_start, music_key_end},
+		{"Oxygene", music_oxygene_start, music_oxygene_end},
+		{"Equinoxe", music_equinoxe_start, music_equinoxe_end},
+		{"Door", music_door_start, music_door_end},
+		{"Moog City 2", music_moog_city_2_start, music_moog_city_2_end}
+	};
+	for (size_t i = 0; i < sizeof(embedded) / sizeof(embedded[0]); ++i) {
+		CustomMusicTrack t;
+		t.name = embedded[i].name;
+		t.data = embedded[i].data;
+		t.size = (size_t)(embedded[i].end - embedded[i].data);
+		this->tracks.push_back(t);
 	}
 }
 
@@ -107,45 +71,8 @@ void MusicPlayerManager::playTrack(int32_t trackIndex, int32_t x, int32_t y, int
 		return;
 	}
 
-	this->loadedFileBytes.clear();
 	const CustomMusicTrack& t = this->tracks[trackIndex];
-
-	std::string tryPaths[] = {
-		std::string("music_data/") + t.file,
-		std::string("../music_data/") + t.file,
-		std::string("assets/../music_data/") + t.file,
-		std::string("assets/music_data/") + t.file,
-		std::string("assets/") + t.file,
-		std::string("modifiedeight-newadditions/assets/") + t.file,
-		t.file
-	};
-
-	for (const auto& p : tryPaths) {
-		std::ifstream infile(p, std::ios::binary);
-		if (infile.is_open()) {
-			infile.seekg(0, std::ios::end);
-			size_t sz = infile.tellg();
-			infile.seekg(0, std::ios::beg);
-			if (sz > 0) {
-				this->loadedFileBytes.resize(sz);
-				infile.read((char*)this->loadedFileBytes.data(), sz);
-				break;
-			}
-		}
-	}
-
-	if (this->loadedFileBytes.empty() && AppPlatform::_singleton) {
-		AssetFile f = AppPlatform::_singleton->readAssetFile(std::string("music_data/") + t.file);
-		if (!f.bytes || f.length == 0) {
-			f = AppPlatform::_singleton->readAssetFile(t.file);
-		}
-		if (f.bytes && f.length > 0) {
-			this->loadedFileBytes.assign((uint8_t*)f.bytes, (uint8_t*)f.bytes + f.length);
-			delete[] f.bytes;
-		}
-	}
-
-	if (this->loadedFileBytes.empty()) {
+	if (!t.data || t.size == 0) {
 		return;
 	}
 
@@ -154,8 +81,8 @@ void MusicPlayerManager::playTrack(int32_t trackIndex, int32_t x, int32_t y, int
 		MusicEngine::instance->pauseSeconds = 60.0f;
 		MusicTrack mt;
 		mt.name = t.name.c_str();
-		mt.data = this->loadedFileBytes.data();
-		mt.size = this->loadedFileBytes.size();
+		mt.data = t.data;
+		mt.size = t.size;
 		MusicEngine::instance->playTrack(mt);
 		MusicEngine::instance->currentMode = MUSIC_MODE_CUSTOM;
 	}

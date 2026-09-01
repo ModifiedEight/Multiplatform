@@ -132,6 +132,18 @@ void VillagerTradeScreen::buttonClicked(Button* btn) {
 }
 
 void VillagerTradeScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
+	int32_t closeX = this->guiX + GW - 18;
+	int32_t closeY = this->guiY + 4;
+	if (mx >= closeX - 4 && mx <= closeX + 16 && my >= closeY - 4 && my <= closeY + 16) {
+		this->minecraft->setScreen(0);
+		return;
+	}
+
+	if (mx < this->guiX || mx > this->guiX + GW || my < this->guiY || my > this->guiY + GH) {
+		this->minecraft->setScreen(0);
+		return;
+	}
+
 	if (this->villager) {
 		int32_t cnt = this->villager->tradeCount;
 		if (cnt <= 0) { this->villager->initTrades(); cnt = this->villager->tradeCount; }
@@ -278,8 +290,16 @@ void VillagerTradeScreen::keyPressed(int32_t key) {
 	if (key == 27 || key == 6) this->minecraft->setScreen(0);
 }
 
+bool_t VillagerTradeScreen::backPressed(Minecraft* mc, bool_t b) {
+	if (mc) mc->setScreen(0);
+	return 1;
+}
+
 static void renderSlotItem(Font* font, Textures* textures, const ItemInstance* inst, float x, float y) {
 	if (!inst || inst->isNull() || inst->count <= 0) return;
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	ItemRenderer::renderGuiItemNew(textures, (ItemInstance*)inst, 0, x, y, 1.0f, 1.0f, 1.0f);
 	if (inst->count > 1) {
 		char buf[16];
@@ -296,7 +316,12 @@ void VillagerTradeScreen::render(int32_t mx, int32_t my, float f) {
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	this->blit((float)this->guiX, (float)this->guiY, 0, 0, 176.0f, 166.0f, 176, 166);
 
-	this->blit((float)(this->guiX + 57), (float)(this->guiY + 50), 7, 7, 24.0f, 24.0f, 24, 24);
+	int32_t closeX = this->guiX + GW - 18;
+	int32_t closeY = this->guiY + 4;
+	bool closeHov = (mx >= closeX - 2 && mx <= closeX + 14 && my >= closeY - 2 && my <= closeY + 14);
+	this->fill(closeX, closeY, closeX + 12, closeY + 12, closeHov ? 0xFF9E3A3A : 0xFF4A4A4A);
+	this->fill(closeX, closeY, closeX + 12, closeY + 1, closeHov ? 0xFFCF5C5C : 0xFF6A6A6A);
+	this->font->draw("x", closeX + 3, closeY + 2, closeHov ? 0xFFFFFF : 0xCCCCCC);
 
 	this->font->draw("Villager", this->guiX + 8, this->guiY + 6, 0x404040);
 	this->font->draw("Inventory", this->guiX + 8, this->guiY + 72, 0x404040);
@@ -326,8 +351,10 @@ void VillagerTradeScreen::render(int32_t mx, int32_t my, float f) {
 
 		this->minecraft->texturesPtr->loadAndBindTexture("gui/container/villager.png");
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		this->blit((float)prevX, (float)prevY, prevU, 21, 11.0f, 15.0f, 11, 15);
-		this->blit((float)nextX, (float)nextY, nextU, 2, 11.0f, 15.0f, 11, 15);
+		this->blit((float)nextX, (float)nextY, nextU, 0, 11.0f, 15.0f, 11, 15);
 
 		ItemInstance inInst(tr.inputId, tr.inputCount, tr.inputMeta);
 		ItemInstance outInst(tr.outputId, tr.outputCount, tr.outputMeta);

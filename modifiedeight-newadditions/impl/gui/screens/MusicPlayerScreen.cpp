@@ -238,8 +238,9 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 		this->fill(x0 + 10, iy, x0 + 10 + itemW, iy + 1, border);
 		this->fill(x0 + 10, iy + itemH - 3, x0 + 10 + itemW, iy + itemH - 2, 0xFF151515);
 
-		std::string trackNum = std::to_string(tIdx + 1) + ". ";
-		std::string trackLabel = trackNum + tracks[tIdx].name;
+		char tNumBuf[16];
+		snprintf(tNumBuf, sizeof(tNumBuf), "%d. ", tIdx + 1);
+		std::string trackLabel = std::string(tNumBuf) + tracks[tIdx].name;
 		uint32_t textCol = active ? 0x66FF66 : (hov ? 0xFFFFAA : 0xDDDDDD);
 		this->font->drawShadow(trackLabel, x0 + 15, iy + 5, textCol);
 	}

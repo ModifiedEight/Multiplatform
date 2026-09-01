@@ -8,6 +8,8 @@ struct Minecraft;
 struct CustomMusicTrack {
 	std::string name;
 	std::string file;
+	const unsigned char* data;
+	size_t size;
 };
 
 enum PlaybackMode {

@@ -181,6 +181,9 @@ std::string AppPlatform_sdl::getImagePath(const std::string &name, bool_t t) {
 }
 
 AssetFile AppPlatform_sdl::readAssetFile(const std::string &path) {
+  if (path.rfind("assets/", 0) == 0) {
+    return AppPlatform::readAssetFile(path);
+  }
   return AppPlatform::readAssetFile("assets/" + path);
 }
 

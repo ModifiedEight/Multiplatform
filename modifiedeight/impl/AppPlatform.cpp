@@ -779,25 +779,31 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
     std::string noImages = noAssets;
     while (noImages.rfind("images/", 0) == 0) noImages = noImages.substr(7);
 
+    std::string filename = path;
+    size_t lastSlash = filename.find_last_of("/\\");
+    if (lastSlash != std::string::npos) {
+      filename = filename.substr(lastSlash + 1);
+    }
+
     const char* prefixes[] = {
-      "platforms/android/app/src/newadditions/assets/",
-      "platforms/android/app/src/classic/assets/",
+      "assets/",
+      "assets/images/",
+      "assets/textures/",
+      "assets/textures/blocks/",
+      "assets/textures/items/",
+      "assets/images/mob/",
+      "assets/images/gui/",
+      "assets/mob/",
+      "assets/gui/",
+      "images/",
+      "textures/",
       "modifiedeight-newadditions/assets/",
       "modifiedeight/assets/",
-      "assets/",
-      "../../platforms/android/app/src/newadditions/assets/",
-      "../../platforms/android/app/src/classic/assets/",
+      "platforms/android/app/src/newadditions/assets/",
+      "platforms/android/app/src/classic/assets/",
+      "../../assets/",
       "../../modifiedeight-newadditions/assets/",
       "../../modifiedeight/assets/",
-      "../../assets/",
-      "platforms/android/app/src/newadditions/",
-      "platforms/android/app/src/classic/",
-      "../../platforms/android/app/src/newadditions/",
-      "../../platforms/android/app/src/classic/",
-      "build/modifiedeight-newadditions/build/assets/",
-      "build/modifiedeight/build/assets/",
-      "build/modifiedeight-newadditions/build/",
-      "build/modifiedeight/build/",
       "../../",
       ""
     };
@@ -816,6 +822,9 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
         f = fopen(full.c_str(), "rb");
         if (f) break;
       }
+      full = std::string(p) + filename;
+      f = fopen(full.c_str(), "rb");
+      if (f) break;
     }
   }
   if (f) {
