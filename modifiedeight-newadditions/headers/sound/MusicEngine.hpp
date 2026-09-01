@@ -91,6 +91,8 @@ struct MusicEngine {
 	void init();
 	void destroy();
 	void stop();
+	void pauseStream();
+	void resumeStream();
 	void setVolume(float volume);
 	bool_t isTrackPlaying();
 	void playTrack(const MusicTrack& track);

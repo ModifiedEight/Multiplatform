@@ -33,6 +33,10 @@ struct MusicPlayerManager {
 	std::vector<CustomMusicTrack> tracks;
 	std::vector<PlayingJukebox> activePlayers;
 	bool isPlaying;
+	bool isPaused;
+	float pauseFade;
+	bool isPausing;
+	bool isResuming;
 	int32_t currentTrackIndex;
 	int32_t blockX, blockY, blockZ;
 	float volumeFade;
@@ -46,6 +50,9 @@ struct MusicPlayerManager {
 	void loadTracks();
 	void playTrack(int32_t trackIndex, int32_t x, int32_t y, int32_t z);
 	void stop();
+	void pause();
+	void resume();
+	void togglePause();
 	void stopAt(int32_t x, int32_t y, int32_t z);
 	void stopImmediate();
 	void onTrackFinished();

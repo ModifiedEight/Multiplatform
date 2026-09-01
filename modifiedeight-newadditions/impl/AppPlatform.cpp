@@ -10,6 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <m8_icon.h>
 #include <stb_image.h>
+#include <unordered_map>
+#include <unordered_set>
+#include <mutex>
 
 AppPlatform::Listener::~Listener() {}
 
@@ -772,59 +775,65 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
   if (packFile.bytes && packFile.length > 0) {
     return packFile;
   }
-  FILE *f = fopen(path.c_str(), "rb");
-  if (!f) {
-    std::string noAssets = path;
-    while (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
-    std::string noImages = noAssets;
-    while (noImages.rfind("images/", 0) == 0) noImages = noImages.substr(7);
+  FILE *f = nullptr;
+  {
+    static std::unordered_map<std::string, std::string> s_resolvedPaths;
+    static std::unordered_set<std::string> s_missingPaths;
+    static std::mutex s_assetMutex;
 
-    std::string filename = path;
-    size_t lastSlash = filename.find_last_of("/\\");
-    if (lastSlash != std::string::npos) {
-      filename = filename.substr(lastSlash + 1);
+    std::string cachedResolved;
+    {
+      std::lock_guard<std::mutex> lock(s_assetMutex);
+      if (s_missingPaths.count(path)) {
+        return AssetFile(0, -1);
+      }
+      auto it = s_resolvedPaths.find(path);
+      if (it != s_resolvedPaths.end()) {
+        cachedResolved = it->second;
+      }
     }
 
-    const char* prefixes[] = {
-      "assets/",
-      "assets/images/",
-      "assets/textures/",
-      "assets/textures/blocks/",
-      "assets/textures/items/",
-      "assets/images/mob/",
-      "assets/images/gui/",
-      "assets/mob/",
-      "assets/gui/",
-      "images/",
-      "textures/",
-      "modifiedeight-newadditions/assets/",
-      "modifiedeight/assets/",
-      "platforms/android/app/src/newadditions/assets/",
-      "platforms/android/app/src/classic/assets/",
-      "../../assets/",
-      "../../modifiedeight-newadditions/assets/",
-      "../../modifiedeight/assets/",
-      "../../",
-      ""
-    };
+    if (!cachedResolved.empty()) {
+      f = fopen(cachedResolved.c_str(), "rb");
+      if (!f) {
+        std::lock_guard<std::mutex> lock(s_assetMutex);
+        s_resolvedPaths.erase(path);
+      }
+    }
 
-    for (const char* p : prefixes) {
-      std::string full = std::string(p) + noAssets;
-      f = fopen(full.c_str(), "rb");
-      if (f) break;
-      if (noImages != noAssets) {
-        full = std::string(p) + noImages;
+    if (!f) {
+      std::string noAssets = path;
+      while (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
+
+      const char* prefixes[] = {
+        "assets/",
+        "platforms/android/app/src/newadditions/assets/",
+        "platforms/android/app/src/classic/assets/",
+        "modifiedeight-newadditions/assets/",
+        "modifiedeight/assets/",
+        "../../assets/",
+        ""
+      };
+
+      std::string foundPath;
+      for (const char* p : prefixes) {
+        std::string full = std::string(p) + noAssets;
         f = fopen(full.c_str(), "rb");
-        if (f) break;
+        if (f) { foundPath = full; break; }
+
+        if (noAssets != path) {
+          full = std::string(p) + path;
+          f = fopen(full.c_str(), "rb");
+          if (f) { foundPath = full; break; }
+        }
       }
-      if (noAssets != path) {
-        full = std::string(p) + path;
-        f = fopen(full.c_str(), "rb");
-        if (f) break;
+
+      std::lock_guard<std::mutex> lock(s_assetMutex);
+      if (f && !foundPath.empty()) {
+        s_resolvedPaths[path] = foundPath;
+      } else {
+        s_missingPaths.insert(path);
       }
-      full = std::string(p) + filename;
-      f = fopen(full.c_str(), "rb");
-      if (f) break;
     }
   }
   if (f) {

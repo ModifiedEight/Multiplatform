@@ -11,10 +11,13 @@
 #include <fstream>
 #include <iostream>
 
+#include <dirent.h>
+
 MusicPlayerManager MusicPlayerManager::instance;
 
 MusicPlayerManager::MusicPlayerManager()
-	: isPlaying(false), currentTrackIndex(-1), blockX(0), blockY(0), blockZ(0),
+	: isPlaying(false), isPaused(false), pauseFade(1.0f), isPausing(false), isResuming(false),
+	  currentTrackIndex(-1), blockX(0), blockY(0), blockZ(0),
 	  volumeFade(0.0f), isFadingOut(false), nextTrackIndex(-1), nextX(0), nextY(0), nextZ(0),
 	  playbackMode(PLAYBACK_SEQUENTIAL) {
 }
@@ -43,9 +46,91 @@ void MusicPlayerManager::loadTracks() {
 	for (size_t i = 0; i < sizeof(embedded) / sizeof(embedded[0]); ++i) {
 		CustomMusicTrack t;
 		t.name = embedded[i].name;
+		t.file = "";
 		t.data = embedded[i].data;
 		t.size = (size_t)(embedded[i].end - embedded[i].data);
 		this->tracks.push_back(t);
+	}
+
+	std::string paths[] = {
+		"music_data/tracks.json",
+		"../music_data/tracks.json",
+		"assets/../music_data/tracks.json",
+		"assets/music_data/tracks.json",
+		"music_data/music.json",
+		"assets/music_data/music.json"
+	};
+
+	std::string jsonContent;
+	for (const auto& p : paths) {
+		std::ifstream infile(p);
+		if (infile.is_open()) {
+			std::string str((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+			if (!str.empty()) {
+				jsonContent = str;
+				break;
+			}
+		}
+	}
+
+	if (jsonContent.empty() && AppPlatform::_singleton) {
+		AssetFile f = AppPlatform::_singleton->readAssetFile("music_data/tracks.json");
+		if (f.bytes && f.length > 0) {
+			jsonContent = std::string((char*)f.bytes, f.length);
+			delete[] f.bytes;
+		}
+	}
+
+	if (!jsonContent.empty()) {
+		Json::Value root;
+		Json::Reader reader;
+		if (reader.parse(jsonContent, root) && root.isArray()) {
+			for (unsigned int i = 0; i < root.size(); ++i) {
+				const Json::Value& item = root[i];
+				if (item.isObject() && item.isMember("name") && item.isMember("file")) {
+					CustomMusicTrack t;
+					t.name = item["name"].asString();
+					t.file = item["file"].asString();
+					t.data = nullptr;
+					t.size = 0;
+					bool exists = false;
+					for (const auto& existing : this->tracks) {
+						if (existing.name == t.name && existing.file == t.file) { exists = true; break; }
+					}
+					if (!exists) this->tracks.push_back(t);
+				}
+			}
+		}
+	}
+
+	const char* scanDirs[] = {"music_data", "assets/../music_data", "../music_data", "assets/music_data"};
+	for (const char* d : scanDirs) {
+		DIR* dir = opendir(d);
+		if (dir) {
+			struct dirent* ent;
+			while ((ent = readdir(dir)) != nullptr) {
+				std::string fname = ent->d_name;
+				if (fname.size() > 4) {
+					std::string ext = fname.substr(fname.size() - 4);
+					if (ext == ".aac" || ext == ".ogg" || ext == ".wav" || ext == ".mp3") {
+						std::string baseName = fname.substr(0, fname.size() - 4);
+						bool already = false;
+						for (const auto& tr : this->tracks) {
+							if (tr.file == fname || tr.name == baseName) { already = true; break; }
+						}
+						if (!already) {
+							CustomMusicTrack t;
+							t.name = baseName;
+							t.file = fname;
+							t.data = nullptr;
+							t.size = 0;
+							this->tracks.push_back(t);
+						}
+					}
+				}
+			}
+			closedir(dir);
+		}
 	}
 }
 
@@ -55,36 +140,6 @@ void MusicPlayerManager::playTrack(int32_t trackIndex, int32_t x, int32_t y, int
 	}
 	if (trackIndex < 0 || trackIndex >= (int32_t)this->tracks.size()) {
 		return;
-	}
-
-	if (this->isPlaying && this->currentTrackIndex != trackIndex && this->volumeFade > 0.1f) {
-		this->isFadingOut = true;
-		this->nextTrackIndex = trackIndex;
-		this->nextX = x;
-		this->nextY = y;
-		this->nextZ = z;
-		for (auto& pj : this->activePlayers) {
-			if (pj.blockX == x && pj.blockY == y && pj.blockZ == z) {
-				pj.isFadingOut = true;
-			}
-		}
-		return;
-	}
-
-	const CustomMusicTrack& t = this->tracks[trackIndex];
-	if (!t.data || t.size == 0) {
-		return;
-	}
-
-	if (MusicEngine::instance) {
-		MusicEngine::instance->currentMode = MUSIC_MODE_CUSTOM;
-		MusicEngine::instance->pauseSeconds = 60.0f;
-		MusicTrack mt;
-		mt.name = t.name.c_str();
-		mt.data = t.data;
-		mt.size = t.size;
-		MusicEngine::instance->playTrack(mt);
-		MusicEngine::instance->currentMode = MUSIC_MODE_CUSTOM;
 	}
 
 	bool found = false;
@@ -110,7 +165,69 @@ void MusicPlayerManager::playTrack(int32_t trackIndex, int32_t x, int32_t y, int
 		this->activePlayers.push_back(pj);
 	}
 
+	const CustomMusicTrack& t = this->tracks[trackIndex];
+	const unsigned char* playData = t.data;
+	size_t playSize = t.size;
+
+	if (!playData || playSize == 0) {
+		this->loadedFileBytes.clear();
+		std::string tryPaths[] = {
+			std::string("music_data/") + t.file,
+			std::string("../music_data/") + t.file,
+			std::string("assets/../music_data/") + t.file,
+			std::string("assets/music_data/") + t.file,
+			std::string("assets/") + t.file,
+			t.file
+		};
+
+		for (const auto& p : tryPaths) {
+			std::ifstream infile(p, std::ios::binary);
+			if (infile.is_open()) {
+				infile.seekg(0, std::ios::end);
+				size_t sz = infile.tellg();
+				infile.seekg(0, std::ios::beg);
+				if (sz > 0) {
+					this->loadedFileBytes.resize(sz);
+					infile.read((char*)this->loadedFileBytes.data(), sz);
+					break;
+				}
+			}
+		}
+
+		if (this->loadedFileBytes.empty() && AppPlatform::_singleton) {
+			AssetFile f = AppPlatform::_singleton->readAssetFile(std::string("music_data/") + t.file);
+			if (!f.bytes || f.length <= 0) {
+				f = AppPlatform::_singleton->readAssetFile(t.file);
+			}
+			if (f.bytes && f.length > 0) {
+				this->loadedFileBytes.assign((uint8_t*)f.bytes, (uint8_t*)f.bytes + f.length);
+				delete[] f.bytes;
+			}
+		}
+
+		if (this->loadedFileBytes.empty()) {
+			return;
+		}
+		playData = this->loadedFileBytes.data();
+		playSize = this->loadedFileBytes.size();
+	}
+
+	if (MusicEngine::instance) {
+		MusicEngine::instance->currentMode = MUSIC_MODE_CUSTOM;
+		MusicEngine::instance->pauseSeconds = 60.0f;
+		MusicTrack mt;
+		mt.name = t.name.c_str();
+		mt.data = playData;
+		mt.size = playSize;
+		MusicEngine::instance->playTrack(mt);
+		MusicEngine::instance->currentMode = MUSIC_MODE_CUSTOM;
+	}
+
 	this->isPlaying = true;
+	this->isPaused = false;
+	this->pauseFade = 1.0f;
+	this->isPausing = false;
+	this->isResuming = false;
 	this->currentTrackIndex = trackIndex;
 	this->blockX = x;
 	this->blockY = y;
@@ -118,6 +235,32 @@ void MusicPlayerManager::playTrack(int32_t trackIndex, int32_t x, int32_t y, int
 	this->volumeFade = 0.0f;
 	this->isFadingOut = false;
 	this->nextTrackIndex = -1;
+}
+
+void MusicPlayerManager::pause() {
+	if (this->isPlaying && !this->isPaused && !this->isPausing) {
+		this->isPausing = true;
+		this->isResuming = false;
+	}
+}
+
+void MusicPlayerManager::resume() {
+	if (this->isPlaying && (this->isPaused || this->isPausing)) {
+		if (MusicEngine::instance) {
+			MusicEngine::instance->resumeStream();
+		}
+		this->isPaused = false;
+		this->isPausing = false;
+		this->isResuming = true;
+	}
+}
+
+void MusicPlayerManager::togglePause() {
+	if (this->isPaused || this->isPausing) {
+		this->resume();
+	} else if (this->isPlaying) {
+		this->pause();
+	}
 }
 
 void MusicPlayerManager::stop() {
@@ -143,6 +286,10 @@ void MusicPlayerManager::stopAt(int32_t x, int32_t y, int32_t z) {
 
 void MusicPlayerManager::stopImmediate() {
 	this->isPlaying = false;
+	this->isPaused = false;
+	this->isPausing = false;
+	this->isResuming = false;
+	this->pauseFade = 1.0f;
 	this->isFadingOut = false;
 	this->volumeFade = 0.0f;
 	this->currentTrackIndex = -1;
@@ -197,6 +344,10 @@ void MusicPlayerManager::playPrevTrack() {
 
 void MusicPlayerManager::onTrackFinished() {
 	this->isPlaying = false;
+	this->isPaused = false;
+	this->isPausing = false;
+	this->isResuming = false;
+	this->pauseFade = 1.0f;
 	this->volumeFade = 0.0f;
 	if (this->playbackMode != PLAYBACK_SINGLE && !this->tracks.empty()) {
 		this->playNextTrack();
@@ -240,6 +391,24 @@ void MusicPlayerManager::update(Minecraft* mc) {
 		return;
 	}
 
+	if (this->isPausing) {
+		this->pauseFade -= 0.08f;
+		if (this->pauseFade <= 0.0f) {
+			this->pauseFade = 0.0f;
+			this->isPausing = false;
+			this->isPaused = true;
+			if (MusicEngine::instance) {
+				MusicEngine::instance->pauseStream();
+			}
+		}
+	} else if (this->isResuming) {
+		this->pauseFade += 0.08f;
+		if (this->pauseFade >= 1.0f) {
+			this->pauseFade = 1.0f;
+			this->isResuming = false;
+		}
+	}
+
 	float maxBlendedVol = 0.0f;
 	static int s_particleTick = 0;
 	++s_particleTick;
@@ -259,7 +428,7 @@ void MusicPlayerManager::update(Minecraft* mc) {
 				this->activePlayers.erase(this->activePlayers.begin() + i);
 				continue;
 			}
-		} else if (pj.volumeFade < 1.0f) {
+		} else if (pj.volumeFade < 1.0f && !this->isPaused) {
 			pj.volumeFade += 0.04f;
 			if (pj.volumeFade > 1.0f) pj.volumeFade = 1.0f;
 		}
@@ -284,7 +453,7 @@ void MusicPlayerManager::update(Minecraft* mc) {
 			maxBlendedVol = vol;
 		}
 
-		if ((s_particleTick % 16) == 0 && mc->level && spatial > 0.1f) {
+		if ((s_particleTick % 16) == 0 && mc->level && spatial > 0.1f && !this->isPaused) {
 			mc->level->addParticle(PT_SMOKE, (float)pj.blockX + 0.5f, (float)pj.blockY + 1.2f, (float)pj.blockZ + 0.5f, 0.0, 0.04, 0.0, 0);
 		}
 		++i;
@@ -305,7 +474,7 @@ void MusicPlayerManager::update(Minecraft* mc) {
 			}
 			return;
 		}
-	} else if (this->volumeFade < 1.0f) {
+	} else if (this->volumeFade < 1.0f && !this->isPaused) {
 		this->volumeFade += 0.04f;
 		if (this->volumeFade > 1.0f) this->volumeFade = 1.0f;
 	}
@@ -321,7 +490,7 @@ void MusicPlayerManager::update(Minecraft* mc) {
 	}
 
 	float masterVol = mc->options.musicVolume;
-	float finalVol = maxBlendedVol * this->volumeFade * masterVol;
+	float finalVol = maxBlendedVol * this->volumeFade * this->pauseFade * masterVol;
 	if (MusicEngine::instance) {
 		MusicEngine::instance->setVolume(finalVol);
 	}

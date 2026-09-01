@@ -161,6 +161,38 @@ void MusicEngine::stop() {
 	this->isPlaying = false;
 }
 
+void MusicEngine::pauseStream() {
+#if HAS_OPENAL
+	if (this->isInitialized && this->musicSource != 0) {
+		alSourcePause(this->musicSource);
+	}
+#elif HAS_WINMM
+	if (this->hWaveOut) {
+		waveOutPause(this->hWaveOut);
+	}
+#elif HAS_OPENSLES
+	if (this->slPlayItf) {
+		(*this->slPlayItf)->SetPlayState(this->slPlayItf, SL_PLAYSTATE_PAUSED);
+	}
+#endif
+}
+
+void MusicEngine::resumeStream() {
+#if HAS_OPENAL
+	if (this->isInitialized && this->musicSource != 0) {
+		alSourcePlay(this->musicSource);
+	}
+#elif HAS_WINMM
+	if (this->hWaveOut) {
+		waveOutRestart(this->hWaveOut);
+	}
+#elif HAS_OPENSLES
+	if (this->slPlayItf) {
+		(*this->slPlayItf)->SetPlayState(this->slPlayItf, SL_PLAYSTATE_PLAYING);
+	}
+#endif
+}
+
 void MusicEngine::setVolume(float volume) {
 	this->currentVolume = (volume < 0.0f) ? 0.0f : ((volume > 1.0f) ? 1.0f : volume);
 #if HAS_OPENAL

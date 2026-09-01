@@ -39,6 +39,9 @@ jobs:
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           make -j8
           ccache -s || true
+          mkdir -p modifiedeight/build/assets modifiedeight-newadditions/build/assets
+          cp -r ../platforms/android/app/src/classic/assets/* modifiedeight/build/assets/ 2>/dev/null || true
+          cp -r ../platforms/android/app/src/newadditions/assets/* modifiedeight-newadditions/build/assets/ 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -46,7 +49,9 @@ jobs:
           name: build-linux
           path: |
             build/modifiedeight/build/modifiedeight
+            build/modifiedeight/build/assets
             build/modifiedeight-newadditions/build/modifiedeight-newadditions
+            build/modifiedeight-newadditions/build/assets
 
   build-windows:
     runs-on: ubuntu-latest
@@ -109,6 +114,8 @@ jobs:
           cp /usr/lib/gcc/x86_64-w64-mingw32/*-win32/libgcc_s_seh-1.dll . 2>/dev/null || true
           cp /usr/lib/gcc/x86_64-w64-mingw32/*-posix/libgcc_s_seh-1.dll . 2>/dev/null || true
           cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll . 2>/dev/null || true
+          mkdir -p assets
+          cp -r ../platforms/android/app/src/newadditions/assets/* assets/ 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -120,6 +127,7 @@ jobs:
             build/SDL.dll
             build/zlib1.dll
             build/*.dll
+            build/assets
 
   build-ios:
     runs-on: ubuntu-24.04

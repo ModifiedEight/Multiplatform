@@ -70,23 +70,24 @@ void MusicPlayerScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
 	}
 
 	int32_t ctrlY = this->dialogY + 33;
-	int32_t modeW = 76;
+	int32_t modeW = 68;
 	int32_t modeX = this->dialogX + 10;
 	if (mx >= modeX && mx <= modeX + modeW && my >= ctrlY && my <= ctrlY + 16) {
 		MusicPlayerManager::instance.cyclePlaybackMode();
 		return;
 	}
 
-	int32_t prevX = modeX + modeW + 6;
-	if (mx >= prevX && mx <= prevX + 22 && my >= ctrlY && my <= ctrlY + 16) {
+	int32_t prevX = modeX + modeW + 4;
+	if (mx >= prevX && mx <= prevX + 20 && my >= ctrlY && my <= ctrlY + 16) {
 		MusicPlayerManager::instance.playPrevTrack();
 		return;
 	}
 
-	int32_t stopX = prevX + 26;
-	if (mx >= stopX && mx <= stopX + 38 && my >= ctrlY && my <= ctrlY + 16) {
+	int32_t playPauseX = prevX + 24;
+	int32_t playPauseW = 54;
+	if (mx >= playPauseX && mx <= playPauseX + playPauseW && my >= ctrlY && my <= ctrlY + 16) {
 		if (MusicPlayerManager::instance.isPlayingAt(this->blockX, this->blockY, this->blockZ)) {
-			MusicPlayerManager::instance.stop();
+			MusicPlayerManager::instance.togglePause();
 		} else if (!tracks.empty()) {
 			int idx = (MusicPlayerManager::instance.currentTrackIndex >= 0) ? MusicPlayerManager::instance.currentTrackIndex : 0;
 			MusicPlayerManager::instance.playTrack(idx, this->blockX, this->blockY, this->blockZ);
@@ -94,8 +95,17 @@ void MusicPlayerScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
 		return;
 	}
 
-	int32_t nextX = stopX + 42;
-	if (mx >= nextX && mx <= nextX + 22 && my >= ctrlY && my <= ctrlY + 16) {
+	int32_t stopX = playPauseX + playPauseW + 4;
+	int32_t stopW = 38;
+	if (mx >= stopX && mx <= stopX + stopW && my >= ctrlY && my <= ctrlY + 16) {
+		if (MusicPlayerManager::instance.isPlayingAt(this->blockX, this->blockY, this->blockZ)) {
+			MusicPlayerManager::instance.stopAt(this->blockX, this->blockY, this->blockZ);
+		}
+		return;
+	}
+
+	int32_t nextX = stopX + stopW + 4;
+	if (mx >= nextX && mx <= nextX + 20 && my >= ctrlY && my <= ctrlY + 16) {
 		MusicPlayerManager::instance.playNextTrack();
 		return;
 	}
@@ -168,11 +178,17 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 	this->font->drawShadow("x", closeX + (14 - xw) / 2, closeY + 3, 0xFFFFFFFF);
 
 	bool isThisPlaying = MusicPlayerManager::instance.isPlayingAt(this->blockX, this->blockY, this->blockZ);
+	bool isPaused = MusicPlayerManager::instance.isPaused;
 	std::string statusText;
 	uint32_t statusCol = 0xAAAAAA;
 	if (isThisPlaying) {
-		statusText = "> " + MusicPlayerManager::instance.getCurrentTrackName();
-		statusCol = 0x55FF55;
+		if (isPaused) {
+			statusText = "|| " + MusicPlayerManager::instance.getCurrentTrackName() + " (Paused)";
+			statusCol = 0xFFAA33;
+		} else {
+			statusText = "> " + MusicPlayerManager::instance.getCurrentTrackName();
+			statusCol = 0x55FF55;
+		}
 	} else {
 		statusText = "Select a track to play";
 		statusCol = 0xAAAAAA;
@@ -180,7 +196,7 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 	this->font->drawShadow(statusText, x0 + 10, y0 + 20, statusCol);
 
 	int32_t ctrlY = y0 + 33;
-	int32_t modeW = 76;
+	int32_t modeW = 68;
 	int32_t modeX = x0 + 10;
 	bool modeHov = (mx >= modeX && mx <= modeX + modeW && my >= ctrlY && my <= ctrlY + 16);
 	this->fill(modeX, ctrlY, modeX + modeW, ctrlY + 16, modeHov ? 0xFF404050 : 0xFF2A2A35);
@@ -189,29 +205,57 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 	int32_t mw = this->font->width(modeStr);
 	this->font->drawShadow(modeStr, modeX + (modeW - mw) / 2, ctrlY + 4, 0xFFDDDDFF);
 
-	int32_t prevX = modeX + modeW + 6;
-	bool prevHov = (mx >= prevX && mx <= prevX + 22 && my >= ctrlY && my <= ctrlY + 16);
-	this->fill(prevX, ctrlY, prevX + 22, ctrlY + 16, prevHov ? 0xFF4A4A4A : 0xFF2F2F2F);
-	this->fill(prevX, ctrlY, prevX + 22, ctrlY + 1, prevHov ? 0xFF666666 : 0xFF444444);
+	int32_t prevX = modeX + modeW + 4;
+	bool prevHov = (mx >= prevX && mx <= prevX + 20 && my >= ctrlY && my <= ctrlY + 16);
+	this->fill(prevX, ctrlY, prevX + 20, ctrlY + 16, prevHov ? 0xFF4A4A4A : 0xFF2F2F2F);
+	this->fill(prevX, ctrlY, prevX + 20, ctrlY + 1, prevHov ? 0xFF666666 : 0xFF444444);
 	int32_t pw = this->font->width("<<");
-	this->font->drawShadow("<<", prevX + (22 - pw) / 2, ctrlY + 4, 0xFFFFFFFF);
+	this->font->drawShadow("<<", prevX + (20 - pw) / 2, ctrlY + 4, 0xFFFFFFFF);
 
-	int32_t stopX = prevX + 26;
-	bool stopHov = (mx >= stopX && mx <= stopX + 38 && my >= ctrlY && my <= ctrlY + 16);
-	uint32_t stopBg = isThisPlaying ? (stopHov ? 0xFF7A2020 : 0xFF501818) : (stopHov ? 0xFF206030 : 0xFF184422);
-	uint32_t stopTop = isThisPlaying ? (stopHov ? 0xFFA03030 : 0xFF702020) : (stopHov ? 0xFF308840 : 0xFF226030);
-	this->fill(stopX, ctrlY, stopX + 38, ctrlY + 16, stopBg);
-	this->fill(stopX, ctrlY, stopX + 38, ctrlY + 1, stopTop);
-	std::string stopStr = isThisPlaying ? "Stop" : "Play";
-	int32_t sw = this->font->width(stopStr);
-	this->font->drawShadow(stopStr, stopX + (38 - sw) / 2, ctrlY + 4, 0xFFFFFFFF);
+	int32_t playPauseX = prevX + 24;
+	int32_t playPauseW = 54;
+	bool ppHov = (mx >= playPauseX && mx <= playPauseX + playPauseW && my >= ctrlY && my <= ctrlY + 16);
+	std::string ppStr;
+	uint32_t ppBg, ppTop, ppTextCol;
+	if (isThisPlaying) {
+		if (isPaused) {
+			ppStr = "Resume";
+			ppBg = ppHov ? 0xFF206030 : 0xFF184422;
+			ppTop = ppHov ? 0xFF308840 : 0xFF226030;
+			ppTextCol = 0xFF88FF88;
+		} else {
+			ppStr = "Pause";
+			ppBg = ppHov ? 0xFF554420 : 0xFF3A3015;
+			ppTop = ppHov ? 0xFF776030 : 0xFF4E4020;
+			ppTextCol = 0xFFFFFF88;
+		}
+	} else {
+		ppStr = "Play";
+		ppBg = ppHov ? 0xFF206030 : 0xFF184422;
+		ppTop = ppHov ? 0xFF308840 : 0xFF226030;
+		ppTextCol = 0xFFFFFFFF;
+	}
+	this->fill(playPauseX, ctrlY, playPauseX + playPauseW, ctrlY + 16, ppBg);
+	this->fill(playPauseX, ctrlY, playPauseX + playPauseW, ctrlY + 1, ppTop);
+	int32_t ppw = this->font->width(ppStr);
+	this->font->drawShadow(ppStr, playPauseX + (playPauseW - ppw) / 2, ctrlY + 4, ppTextCol);
 
-	int32_t nextX = stopX + 42;
-	bool nextHov = (mx >= nextX && mx <= nextX + 22 && my >= ctrlY && my <= ctrlY + 16);
-	this->fill(nextX, ctrlY, nextX + 22, ctrlY + 16, nextHov ? 0xFF4A4A4A : 0xFF2F2F2F);
-	this->fill(nextX, ctrlY, nextX + 22, ctrlY + 1, nextHov ? 0xFF666666 : 0xFF444444);
+	int32_t stopX = playPauseX + playPauseW + 4;
+	int32_t stopW = 38;
+	bool stopHov = (mx >= stopX && mx <= stopX + stopW && my >= ctrlY && my <= ctrlY + 16);
+	uint32_t stopBg = isThisPlaying ? (stopHov ? 0xFF7A2020 : 0xFF501818) : (stopHov ? 0xFF383838 : 0xFF282828);
+	uint32_t stopTop = isThisPlaying ? (stopHov ? 0xFFA03030 : 0xFF702020) : (stopHov ? 0xFF505050 : 0xFF3A3A3A);
+	this->fill(stopX, ctrlY, stopX + stopW, ctrlY + 16, stopBg);
+	this->fill(stopX, ctrlY, stopX + stopW, ctrlY + 1, stopTop);
+	int32_t sw = this->font->width("Stop");
+	this->font->drawShadow("Stop", stopX + (stopW - sw) / 2, ctrlY + 4, isThisPlaying ? 0xFFFFFFFF : 0xFF888888);
+
+	int32_t nextX = stopX + stopW + 4;
+	bool nextHov = (mx >= nextX && mx <= nextX + 20 && my >= ctrlY && my <= ctrlY + 16);
+	this->fill(nextX, ctrlY, nextX + 20, ctrlY + 16, nextHov ? 0xFF4A4A4A : 0xFF2F2F2F);
+	this->fill(nextX, ctrlY, nextX + 20, ctrlY + 1, nextHov ? 0xFF666666 : 0xFF444444);
 	int32_t nw = this->font->width(">>");
-	this->font->drawShadow(">>", nextX + (22 - nw) / 2, ctrlY + 4, 0xFFFFFFFF);
+	this->font->drawShadow(">>", nextX + (20 - nw) / 2, ctrlY + 4, 0xFFFFFFFF);
 
 	int32_t listY = y0 + 54;
 	int32_t listH = this->dialogH - 54 - 26;

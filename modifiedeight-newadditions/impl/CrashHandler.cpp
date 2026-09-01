@@ -32,7 +32,7 @@ static void writeCrashReport(const char *sigName, void *addr) {
   ss << "====================================================\n";
   ss << "                    CRASH REPORT                    \n";
   ss << "====================================================\n";
-  ss << "Client Version: ModifiedEight New Additions 1.6.5.1pre1\n";
+  ss << "Client Version: ModifiedEight New Additions 1.6.5.1pre2\n";
   ss << "Time: " << timeBuf << "\n";
   ss << "Signal: " << sigName << "\n";
   if (addr) {
@@ -80,9 +80,10 @@ static void writeCrashReport(const char *sigName, void *addr) {
 }
 
 #ifdef _WIN32
-static LONG WINAPI windowsExceptionFilter(EXCEPTION_POINTERS* ep) {
+static LONG WINAPI windowsExceptionFilter(EXCEPTION_POINTERS *ep) {
   char buf[64];
-  snprintf(buf, sizeof(buf), "Exception Code 0x%08lX", ep->ExceptionRecord->ExceptionCode);
+  snprintf(buf, sizeof(buf), "Exception Code 0x%08lX",
+           ep->ExceptionRecord->ExceptionCode);
   writeCrashReport(buf, ep->ExceptionRecord->ExceptionAddress);
   return EXCEPTION_EXECUTE_HANDLER;
 }
