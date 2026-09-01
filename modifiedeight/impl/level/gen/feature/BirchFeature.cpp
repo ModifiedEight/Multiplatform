@@ -85,7 +85,7 @@ bool_t BirchFeature::place(Level* level, Random* random, int32_t x, int32_t y, i
 				if(v19 - z < 0) {
 					v20 = z - v19;
 				}
-				if(v20 != v24 || (random->genrand_int32() & 1) != 0 && k != v27) {
+				if(v20 != v24 || (((random->genrand_int32() & 1) != 0) && k != v27)) {
 LABEL_53:
 					if(!Tile::solid[level->getTile(m, k, v19)]) {
 						this->placeBlock(level, m, k, v19, Tile::leaves->blockID, 2);

@@ -452,7 +452,7 @@ LABEL_58:
 		v38 = Tile::tiles[v43];
 		if((!a6 || !v38 || v38->getAABB(this, startX.i, startY.i, v23.i)) && v43 > 0) {
 			if(v38->mayPick(v44, a5)) {
-				if(this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4 || (startX.i >= 0 && v23.i >= 0 && startX.i <= 255 && v23.i <= 255)) {
+				if((this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4) || (startX.i >= 0 && v23.i >= 0 && startX.i <= 255 && v23.i <= 255)) {
 					HitResult v49 = v38->clip(this, startX.i, startY.i, v23.i, sx, end);
 					if(v49.hitType != 2) {
 						swclip.stop();
@@ -462,6 +462,10 @@ LABEL_58:
 			}
 		}
 	}
+	swclip.stop();
+	HitResult miss;
+	miss.hitType = 2;
+	return miss;
 }
 bool_t Level::containsAnyLiquid(const struct AABB& aabb) {
 	float minX;	 // s19
