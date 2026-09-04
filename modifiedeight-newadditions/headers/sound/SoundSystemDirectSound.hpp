@@ -1,7 +1,10 @@
 #pragma once
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <_types.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <mmsystem.h>
 #include <dsound.h>
+#include <_types.h>
 #include <sound/SoundSystem.hpp>
 
 struct SoundSystemDirectSound: public SoundSystem

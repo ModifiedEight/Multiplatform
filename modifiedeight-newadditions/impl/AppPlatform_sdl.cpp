@@ -1,4 +1,5 @@
 #ifndef ANDROID
+#include <cmath>
 #include <AppPlatform_sdl.hpp>
 #include <DiscordRPC.hpp>
 #include <NinecraftApp.hpp>

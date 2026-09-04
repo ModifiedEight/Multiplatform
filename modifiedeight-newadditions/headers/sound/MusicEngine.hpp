@@ -8,6 +8,7 @@
 #define HAS_OPENAL 0
 #define HAS_WINMM 1
 #define HAS_OPENSLES 0
+#include <winsock2.h>
 #include <windows.h>
 #include <mmsystem.h>
 typedef unsigned int ALuint;
