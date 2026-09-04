@@ -14,7 +14,12 @@
 #include <unordered_set>
 #include <mutex>
 #include <vector>
+#if defined(_WIN32) || defined(WIN32)
+#include <winsock2.h>
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 
 AppPlatform::Listener::~Listener() {}
 
@@ -812,6 +817,18 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
       if (!s_exeDirChecked) {
         s_exeDirChecked = true;
         char buf[1024];
+#if defined(_WIN32) || defined(WIN32)
+        DWORD len = GetModuleFileNameA(NULL, buf, sizeof(buf) - 1);
+        if (len > 0) {
+          buf[len] = '\0';
+          std::string fullPath(buf);
+          for (char &c : fullPath) { if (c == '\\') c = '/'; }
+          size_t pos = fullPath.find_last_of('/');
+          if (pos != std::string::npos) {
+            s_exeDir = fullPath.substr(0, pos + 1);
+          }
+        }
+#else
         ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
         if (len > 0) {
           buf[len] = '\0';
@@ -821,6 +838,7 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
             s_exeDir = fullPath.substr(0, pos + 1);
           }
         }
+#endif
       }
 
       std::vector<std::string> prefixes = {
