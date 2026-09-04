@@ -73,6 +73,7 @@ struct Level : LevelSource{
 	int32_t weatherType = 0;
 	int32_t weatherTicks = 12000;
 	float rainLevel = 0.0f;
+	bool isRainFrogs = false;
 
 	Level(struct LevelStorage*, const std::string&, const LevelSettings&, bool_t, int32_t, struct Dimension*);
 	void _init(const std::string&, const LevelSettings&, int32_t, struct Dimension*);

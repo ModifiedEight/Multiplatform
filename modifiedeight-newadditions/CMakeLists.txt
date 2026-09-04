@@ -157,4 +157,20 @@ else()
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
     )
+
+    if(EXISTS "${CMAKE_SOURCE_DIR}/platforms/android/app/src/newadditions/assets")
+        add_custom_command(TARGET modifiedeight-newadditions POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/platforms/android/app/src/newadditions/assets"
+                "${CMAKE_CURRENT_BINARY_DIR}/build/assets"
+        )
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+        add_custom_command(TARGET modifiedeight-newadditions POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+                "${CMAKE_CURRENT_BINARY_DIR}/build/assets"
+        )
+    endif()
 endif()
+

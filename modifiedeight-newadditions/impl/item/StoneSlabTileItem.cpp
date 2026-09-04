@@ -9,10 +9,6 @@
 static bool isAnyHalfSlabTile(int32_t id) {
 	return (id == Tile::stoneSlabHalf->blockID ||
 	        id == Tile::woodSlabHalf->blockID ||
-	        (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
-	        (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
-	        (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
-	        (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) ||
 	        (Tile::dirtSlabHalf && id == Tile::dirtSlabHalf->blockID) ||
 	        (Tile::grassSlabHalf && id == Tile::grassSlabHalf->blockID) ||
 	        (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID));
@@ -205,23 +201,6 @@ std::string StoneSlabTileItem::getName(const ItemInstance* a3){
 	return I18n::get(this->getDescriptionId(a3) + ".name");
 }
 std::string StoneSlabTileItem::getDescriptionId(const ItemInstance* a3) {
-	int32_t id = this->blockID;
-	if (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) {
-		int meta = a3->getAuxValue() & 7;
-		return "tile.coloredBrickSlab." + DyePowderItem::COLOR_DESCS[(~meta) & 0xF];
-	}
-	if (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) {
-		int meta = (a3->getAuxValue() & 7) + 8;
-		return "tile.coloredBrickSlab." + DyePowderItem::COLOR_DESCS[(~meta) & 0xF];
-	}
-	if (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) {
-		int meta = a3->getAuxValue() & 7;
-		return "tile.coloredSlab." + DyePowderItem::COLOR_DESCS[(~meta) & 0xF];
-	}
-	if (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) {
-		int meta = (a3->getAuxValue() & 7) + 8;
-		return "tile.coloredSlab." + DyePowderItem::COLOR_DESCS[(~meta) & 0xF];
-	}
 	int32_t meta = a3->getAuxValue();
 	int32_t v6 = meta;
 	if(meta < 0) {

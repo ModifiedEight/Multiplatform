@@ -8,6 +8,9 @@ FurnaceRecipes* FurnaceRecipes::instance = 0;
 FurnaceRecipes::FurnaceRecipes() {
 	this->addFurnaceRecipe(Tile::ironOre->blockID, ItemInstance(Item::ironIngot));
 	this->addFurnaceRecipe(Tile::goldOre->blockID, ItemInstance(Item::goldIngot));
+	if (Tile::copperOre && Item::copperIngot) {
+		this->addFurnaceRecipe(Tile::copperOre->blockID, ItemInstance(Item::copperIngot));
+	}
 	this->addFurnaceRecipe(Tile::emeraldOre->blockID, ItemInstance(Item::emerald));
 	this->addFurnaceRecipe(Tile::sand->blockID, ItemInstance(Tile::glass));
 	this->addFurnaceRecipe(Item::porkChop_raw->itemID, ItemInstance(Item::porkChop_cooked));

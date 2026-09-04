@@ -4,6 +4,7 @@
 
 WallTile::WallTile(int32_t id, Tile* a3)
 	: Tile(id, a3->material) {
+	this->baseTile = a3;
 	this->setDestroyTime(a3->blockResistance / 3.0);
 	this->setSoundType(*a3->soundType);
 }
@@ -12,7 +13,7 @@ bool_t WallTile::connectsTo(LevelSource* level, int32_t x, int32_t y, int32_t z)
 	Tile* v7;	// r4
 
 	v6 = level->getTile(x, y, z);
-	if(v6 == this->blockID || v6 == Tile::fenceGate->blockID) {
+	if(v6 == this->blockID || (Tile::tiles[v6] && Tile::tiles[v6]->getRenderShape() == 32) || v6 == Tile::fenceGate->blockID) {
 		return 1;
 	}
 	v7 = Tile::tiles[v6];
@@ -34,75 +35,41 @@ int32_t WallTile::getRenderShape() {
 	return 32;
 }
 void WallTile::updateShape(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	bool_t zNeg; // r11
-	bool_t zPos; // r10
-	bool_t xNeg; // r9
-	bool_t xPos; // r0
-	float minX; // s13
-	float maxY; // s15
-	float maxX; // s11
-	float minZ; // s14
-	float maxZ; // s12
+	bool_t zNeg = this->connectsTo(level, x, y, z - 1);
+	bool_t zPos = this->connectsTo(level, x, y, z + 1);
+	bool_t xNeg = this->connectsTo(level, x - 1, y, z);
+	bool_t xPos = this->connectsTo(level, x + 1, y, z);
 
-	zNeg = this->connectsTo(level, x, y, z - 1);
-	zPos = this->connectsTo(level, x, y, z + 1);
-	xNeg = this->connectsTo(level, x - 1, y, z);
-	xPos = this->connectsTo(level, x + 1, y, z);
-	minX = 0.25;
-	maxY = 1.0;
-	maxX = 0.75;
-	if(zNeg) {
-		minZ = 0.0;
-	} else {
-		minZ = 0.25;
-	}
-	if(zPos) {
-		maxZ = 1.0;
-	} else {
-		maxZ = 0.75;
-	}
-	if(xNeg) {
-		minX = 0.0;
-	}
-	if(xPos) {
-		maxX = 1.0;
-	}
-	if(zNeg) {
-		if(zPos && !xNeg) {
-			if(!xPos) {
-				maxY = 0.8125;
-			}
-			if(!xPos) {
-				maxX = 0.6875;
-			}
-			if(!xPos) {
-				minX = 0.3125;
-			}
-		}
-	} else if(!zPos && xNeg) {
-		if(xPos) {
-			maxY = 0.8125;
-		}
-		if(xPos) {
-			maxZ = 0.6875;
-		}
-		if(xPos) {
-			minZ = 0.3125;
-		}
-	}
-	this->setShape(minX, 0.0, minZ, maxX, maxY, maxZ);
+	float minX = xNeg ? 0.0f : 0.25f;
+	float maxX = xPos ? 1.0f : 0.75f;
+	float minZ = zNeg ? 0.0f : 0.25f;
+	float maxZ = zPos ? 1.0f : 0.75f;
+
+	this->setShape(minX, 0.0f, minZ, maxX, 1.0f, maxZ);
 }
 bool_t WallTile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
 	return a6 || Tile::shouldRenderFace(level, x, y, z, 0);
 }
 TextureUVCoordinateSet* WallTile::getTexture(int32_t a2, int32_t a3) {
-	if(a3 == 1) return Tile::mossStone->getTexture(a2);
+	if(this->baseTile == Tile::stoneBrick || this->blockID == 139) {
+		if(a3 == 1 && Tile::mossStone) return Tile::mossStone->getTexture(a2);
+		return Tile::stoneBrick->getTexture(a2);
+	}
+	if(this->baseTile) {
+		return this->baseTile->getTexture(a2, a3);
+	}
 	return Tile::stoneBrick->getTexture(a2);
 }
 AABB* WallTile::getAABB(Level* level, int32_t x, int32_t y, int32_t z) {
 	this->updateShape(level, x, y, z);
-	this->maxY = 1.5;
-	return Tile::getAABB(level, x, y, z);
+	this->maxY = 1.5f;
+	AABB* ret = Tile::getAABB(level, x, y, z);
+	this->maxY = 1.0f;
+	return ret;
+}
+AABB WallTile::getTileAABB(Level* level, int32_t x, int32_t y, int32_t z) {
+	this->updateShape(level, x, y, z);
+	return Tile::getTileAABB(level, x, y, z);
 }
 bool_t WallTile::isSolidRender() {
 	return 0;

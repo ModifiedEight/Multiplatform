@@ -1,7 +1,7 @@
 #include <item/Item.hpp>
 #include <rendering/TextureAtlas.hpp>
 #include <item/StoneSlabTileItem.hpp>
-#include <tile/ColoredSlabTile.hpp>
+#include <item/BoatItem.hpp>
 #include <item/WaterLilyTileItem.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <I18n.hpp>
@@ -115,8 +115,12 @@ Item* Item::sign;
 Item* Item::door_wood;
 Item* Item::door_spruce;
 Item* Item::door_birch;
+Item* Item::door_jungle;
+Item* Item::copperDoor;
+Item* Item::copperIngot;
 Item* Item::bucket;
 Item* Item::minecart;
+Item* Item::boat;
 Item* Item::saddle;
 Item* Item::door_iron;
 Item* Item::redStone;
@@ -257,8 +261,12 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	Item::door_wood = (new DoorItem(68, Material::wood))->setIcon("door_wood", 0)->setCategory(2, 1)->setDescriptionId("doorWood");
 	Item::door_spruce = (new DoorItem(204, Material::wood))->setIcon("door_spruce", 0)->setCategory(2, 1)->setDescriptionId("doorSpruce");
 	Item::door_birch = (new DoorItem(205, Material::wood))->setIcon("door_birch", 0)->setCategory(2, 1)->setDescriptionId("doorBirch");
+	Item::door_jungle = (new DoorItem(172, Material::wood))->setIcon("jungle_door", 0)->setCategory(2, 1)->setDescriptionId("doorJungle");
+	Item::copperDoor = (new DoorItem(174, Material::metal))->setIcon("copper_door", 0)->setCategory(2, 1)->setDescriptionId("copperDoor");
+	Item::copperIngot = (new Item(173))->setIcon("copper_ingot", 0)->setCategory(4, 1)->setDescriptionId("copperIngot");
 	Item::bucket = (new BucketItem(69))->setIcon("bucket", 0)->setCategory(3, 2)->setDescriptionId("bucket");
 	Item::minecart = (new MinecartItem(72, 0))->setIcon("minecart_normal", 0)->setCategory(3, 2)->setDescriptionId("minecart");
+	Item::boat = (new BoatItem(77))->setIcon("oak_boat", 0)->setCategory(3, 2)->setDescriptionId("boat");
 	Item::saddle = (new SaddleItem(73))->setIcon("saddle", 0)->setCategory(3, 4)->setDescriptionId("saddle");
 	Item::door_iron = (new DoorItem(74, Material::metal))->setIcon("door_iron", 0)->setCategory(2, 1)->setDescriptionId("doorIron");
 	Item::redStone = (new Item(75))->setIcon("redstone_dust", 0)->setCategory(3, 8)->setDescriptionId("redstone");
@@ -308,31 +316,13 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	if (Tile::sweetBerryBush && !Item::items[Tile::sweetBerryBush->blockID]) new TileItem(Tile::sweetBerryBush->blockID - 256);
 	if (Tile::musicPlayer && !Item::items[Tile::musicPlayer->blockID]) new TileItem(Tile::musicPlayer->blockID - 256);
 	if (Tile::slimeBlock && !Item::items[Tile::slimeBlock->blockID]) new TileItem(Tile::slimeBlock->blockID - 256);
+	if (Tile::enderChest && Item::items[Tile::enderChest->blockID]) Item::items[Tile::enderChest->blockID]->setIcon("ender_chest", 0);
 	
 	if (Item::items[Tile::stainedGlass->blockID])
 		Item::items[Tile::stainedGlass->blockID]->setStackedByData(true);
 	if (Item::items[Tile::stainedGlassPane->blockID])
 		Item::items[Tile::stainedGlassPane->blockID]->setStackedByData(true);
 
-	for (int i = 0; i < 16; i++) {
-		if (Tile::coloredBrickStairs[i]) {
-			if (!Item::items[Tile::coloredBrickStairs[i]->blockID]) {
-				new TileItem(Tile::coloredBrickStairs[i]->blockID - 256);
-			}
-		}
-	}
-	if (Tile::coloredBrickSlab1) {
-		if (!Item::items[Tile::coloredBrickSlab1->blockID]) new TileItem(Tile::coloredBrickSlab1->blockID - 256);
-	}
-	if (Tile::coloredBrickSlab2) {
-		if (!Item::items[Tile::coloredBrickSlab2->blockID]) new TileItem(Tile::coloredBrickSlab2->blockID - 256);
-	}
-	if (Tile::coloredBrickSlabHalf1) {
-		if (!Item::items[Tile::coloredBrickSlabHalf1->blockID]) new ColoredSlabTile::Item(Tile::coloredBrickSlabHalf1->blockID - 256, Tile::coloredBrickSlabHalf1, Tile::coloredBrickSlabHalf1->blockID, Tile::coloredBrickSlab1->blockID);
-	}
-	if (Tile::coloredBrickSlabHalf2) {
-		if (!Item::items[Tile::coloredBrickSlabHalf2->blockID]) new ColoredSlabTile::Item(Tile::coloredBrickSlabHalf2->blockID - 256, Tile::coloredBrickSlabHalf2, Tile::coloredBrickSlabHalf2->blockID, Tile::coloredBrickSlab2->blockID);
-	}
 	if (Tile::waterLily && !Item::items[Tile::waterLily->blockID]) {
 		(new WaterLilyTileItem(Tile::waterLily->blockID - 256))->setIcon("waterlily", 0)->setCategory(2, 8)->setDescriptionId("waterlily");
 	}
@@ -353,6 +343,11 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	                       ->setCategory(3, 8)
 	                       ->setDescriptionId("armorStand");
 	Item::items[416] = Item::armorStand;
+	for (int i = 0; i < 16; i++) {
+		if (Tile::coloredBeds[i]) {
+			Item::items[Tile::coloredBeds[i]->blockID] = Item::bed;
+		}
+	}
 
 	int32_t v556 = 0;
 	do {
@@ -416,7 +411,12 @@ HitResult Item::getPlayerPOVHitResult(Level* level, struct Player* player, bool_
 	return level->clip(start, end, a5, !a5);
 }
 TextureUVCoordinateSet Item::getTextureUVCoordinateSet(const std::string& a2, int32_t a3) {
-	return *Item::_itemTextureAtlas->getTextureItem(a2)->getUV(a3);
+	if (!Item::_itemTextureAtlas) return TextureUVCoordinateSet();
+	TextureAtlasTextureItem* ti = Item::_itemTextureAtlas->getTextureItem(a2);
+	if (!ti) return TextureUVCoordinateSet();
+	TextureUVCoordinateSet* uv = ti->getUV(a3);
+	if (!uv) return TextureUVCoordinateSet();
+	return *uv;
 }
 Item* Item::setCategory(int32_t a2, int32_t a3) {
 	this->field_34 = a2;
@@ -541,89 +541,6 @@ bool_t Item::useOn(struct ItemInstance* itemInstance, struct Player* player, Lev
 		}
 		if(Tile::stainedGlassPane && tileId == Tile::stainedGlassPane->blockID) {
 			level->setTileAndData(x, y, z, Tile::thinGlass->blockID, 0, 3);
-			return 1;
-		}
-		if(Tile::coloredPlanks && tileId == Tile::coloredPlanks->blockID) {
-			level->setTileAndData(x, y, z, Tile::wood->blockID, 0, 3);
-			return 1;
-		}
-		if(Tile::coloredBricks && tileId == Tile::coloredBricks->blockID) {
-			level->setTileAndData(x, y, z, Tile::redBrick->blockID, 0, 3);
-			return 1;
-		}
-		for(int i = 0; i < 16; i++) {
-			if(Tile::coloredLogs[i] && tileId == Tile::coloredLogs[i]->blockID) {
-				level->setTileAndData(x, y, z, Tile::treeTrunk->blockID, data, 3);
-				return 1;
-			}
-			if(Tile::coloredStairs[i] && tileId == Tile::coloredStairs[i]->blockID) {
-				// Check if this was originally a brick stair (bit 4 = 0x10)
-				if (data & 0x10) {
-					level->setTileAndData(x, y, z, Tile::stairs_brick->blockID, data & ~0x10, 3);
-				} else {
-					level->setTileAndData(x, y, z, Tile::stairs_wood->blockID, data, 3);
-				}
-				return 1;
-			}
-			if(Tile::coloredBrickStairs[i] && tileId == Tile::coloredBrickStairs[i]->blockID) {
-				level->setTileAndData(x, y, z, Tile::stairs_brick->blockID, data, 3);
-				return 1;
-			}
-			if(Tile::coloredFences[i] && tileId == Tile::coloredFences[i]->blockID) {
-				level->setTileAndData(x, y, z, Tile::fence->blockID, data, 3);
-				return 1;
-			}
-		}
-		if(Tile::coloredSlab1 && tileId == Tile::coloredSlab1->blockID) {
-			// Check if this was originally a brick slab (bit 4 = 0x10)
-			if (data & 0x10) {
-				level->setTileAndData(x, y, z, Tile::stoneSlab->blockID, 4, 3);
-			} else {
-				level->setTileAndData(x, y, z, Tile::woodSlab->blockID, 0, 3);
-			}
-			return 1;
-		}
-		if(Tile::coloredSlab2 && tileId == Tile::coloredSlab2->blockID) {
-			// Check if this was originally a brick slab (bit 4 = 0x10)
-			if (data & 0x10) {
-				level->setTileAndData(x, y, z, Tile::stoneSlab->blockID, 4, 3);
-			} else {
-				level->setTileAndData(x, y, z, Tile::woodSlab->blockID, 0, 3);
-			}
-			return 1;
-		}
-		if(Tile::coloredSlabHalf1 && tileId == Tile::coloredSlabHalf1->blockID) {
-			// Check if this was originally a brick slab (bit 4 = 0x10)
-			if (data & 0x10) {
-				level->setTileAndData(x, y, z, Tile::stoneSlabHalf->blockID, 4 | (data & 8), 3);
-			} else {
-				level->setTileAndData(x, y, z, Tile::woodSlabHalf->blockID, data & 8, 3);
-			}
-			return 1;
-		}
-		if(Tile::coloredSlabHalf2 && tileId == Tile::coloredSlabHalf2->blockID) {
-			// Check if this was originally a brick slab (bit 4 = 0x10)
-			if (data & 0x10) {
-				level->setTileAndData(x, y, z, Tile::stoneSlabHalf->blockID, 4 | (data & 8), 3);
-			} else {
-				level->setTileAndData(x, y, z, Tile::woodSlabHalf->blockID, data & 8, 3);
-			}
-			return 1;
-		}
-		if(Tile::coloredBrickSlab1 && tileId == Tile::coloredBrickSlab1->blockID) {
-			level->setTileAndData(x, y, z, Tile::stoneSlab->blockID, 4, 3);
-			return 1;
-		}
-		if(Tile::coloredBrickSlab2 && tileId == Tile::coloredBrickSlab2->blockID) {
-			level->setTileAndData(x, y, z, Tile::stoneSlab->blockID, 4, 3);
-			return 1;
-		}
-		if(Tile::coloredBrickSlabHalf1 && tileId == Tile::coloredBrickSlabHalf1->blockID) {
-			level->setTileAndData(x, y, z, Tile::stoneSlabHalf->blockID, 4 | (data & 8), 3);
-			return 1;
-		}
-		if(Tile::coloredBrickSlabHalf2 && tileId == Tile::coloredBrickSlabHalf2->blockID) {
-			level->setTileAndData(x, y, z, Tile::stoneSlabHalf->blockID, 4 | (data & 8), 3);
 			return 1;
 		}
 	} else if(this == Item::shovel_wood || this == Item::shovel_stone || this == Item::shovel_iron || this == Item::shovel_emerald || this == Item::shovel_gold) {

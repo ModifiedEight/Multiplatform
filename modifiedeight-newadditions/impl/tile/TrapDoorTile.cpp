@@ -3,6 +3,8 @@
 #include <level/Level.hpp>
 #include <item/ItemInstance.hpp>
 #include <math/HitResult.hpp>
+#include <entity/Mob.hpp>
+#include <cmath>
 
 TrapDoorTile::TrapDoorTile(int32_t id, const struct Material* mat)
 	: Tile(id, mat) {
@@ -100,74 +102,14 @@ bool_t TrapDoorTile::isSolidRender() {
 	return 0;
 }
 bool_t TrapDoorTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z, uint8_t a6) {
-	int32_t v7; // r3
-	int32_t v8; // r0
-
-	v7 = z;
-	switch(a6) {
-		case 0u:
-		case 1u:
-			return 0;
-		case 2u:
-			v7 = z + 1;
-			break;
-		case 3u:
-			v7 = z - 1;
-			break;
-		case 4u:
-			++x;
-			break;
-		case 5u:
-			--x;
-			break;
-	}
-	v8 = level->getTile(x, y, v7);
-	return TrapDoorTile::attachesTo(v8);
+	return 1;
 }
 void TrapDoorTile::neighborChanged(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6, int32_t a7, int32_t a8, int32_t a9) {
-	int32_t v13; // r0
-	int32_t v14; // r3
-	int32_t v15; // r1
-	int32_t v16; // r0
-	int32_t hasNeighborSignal; // r0
-	bool_t v18; // r11
+	if(level->isClientMaybe) return;
 
-	if(!level->isClientMaybe) {
-		v13 = level->getData(x, y, z) & 3;
-		if(v13) {
-			if(v13 != 1) {
-				if(v13 == 2) {
-					v15 = x + 1;
-				} else {
-					v15 = x - 1;
-				}
-				v14 = z;
-LABEL_11:
-				v16 = level->getTile(v15, y, v14);
-				if(!TrapDoorTile::attachesTo(v16)) {
-					level->setTile(x, y, z, 0, 3);
-					this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, 0));
-				}
-				hasNeighborSignal = level->hasNeighborSignal(x, y, z);
-				v18 = hasNeighborSignal;
-				if(!hasNeighborSignal) {
-					if(a9 <= 0) {
-						if(a9) {
-							return;
-						}
-					} else if(!Tile::tiles[a9]->isSignalSource()) {
-						return;
-					}
-				}
-				this->setOpen(level, x, y, z, v18);
-				return;
-			}
-			v14 = z - 1;
-		} else {
-			v14 = z + 1;
-		}
-		v15 = x;
-		goto LABEL_11;
+	if(a9 > 0 && Tile::tiles[a9] && Tile::tiles[a9]->isSignalSource()) {
+		bool_t hasNeighborSignal = level->hasNeighborSignal(x, y, z);
+		this->setOpen(level, x, y, z, hasNeighborSignal);
 	}
 }
 HitResult TrapDoorTile::clip(Level* level, int32_t x, int32_t y, int32_t z, const Vec3& a6, const Vec3& a7) {
@@ -180,15 +122,27 @@ int32_t TrapDoorTile::getRenderLayer() {
 bool_t TrapDoorTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) {
 	int32_t v9; // r0
 
-	if(this->material != Material::metal) {
+	if(this->material != Material::metal || (Tile::copperTrapdoor && this == Tile::copperTrapdoor)) {
 		v9 = level->getData(x, y, z);
 		level->setData(x, y, z, v9 ^ 4, 2);
 		level->levelEvent(player, 1003, x, y, z, 0);
 	}
 	return 1;
 }
-int32_t TrapDoorTile::getPlacementDataValue(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6, float, float, float, Mob*, int32_t) {
+int32_t TrapDoorTile::getPlacementDataValue(Level* level, int32_t x, int32_t y, int32_t z, int32_t a6, float, float, float, Mob* mob, int32_t) {
+	if (a6 == 0 || a6 == 1) {
+		if (mob) {
+			int32_t dir = ((int32_t)floorf(((mob->yaw * 4.0f) / 360.0f) + 0.5f)) & 3;
+			if (dir == 0) return 0;
+			if (dir == 1) return 3;
+			if (dir == 2) return 1;
+			if (dir == 3) return 2;
+		}
+		return 0;
+	}
 	switch(a6) {
+		case 2:
+			return 0;
 		case 3:
 			return 1;
 		case 4:

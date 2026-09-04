@@ -181,6 +181,7 @@ bool_t GameMode::useItemOn(Player* player, Level* level, ItemInstance* a4, int32
 	if(!isSneakingWithItem) {
 		if(bid > 0 && Tile::tiles[bid]->use(level, x, y, z, player)) return 1;
 	}
+	if(CushionManager::handleUse(player, level, x, y, z, face, faceX, faceY, faceZ, sel)) return 1;
 	if(!ItemInstance::isItem(sel)) {
 		return 0;
 	}

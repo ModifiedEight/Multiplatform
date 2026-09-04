@@ -5,6 +5,7 @@
 #include <util/Random.hpp>
 
 JungleBiome::JungleBiome() : Biome() {
+	this->creatureVec.emplace_back(Biome::MobSpawnerData(12, 22, 1, 3));
 }
 
 JungleBiome::~JungleBiome() {

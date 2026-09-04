@@ -22,4 +22,6 @@ struct ItemFrame : HangingEntity {
 	virtual bool_t interactWithPlayer(Player*);
 	void setItem(const ItemInstance&);
 	void removeFramedItem();
+	ItemInstance getDisplayedItem() const;
+	int32_t getRotation() const;
 };

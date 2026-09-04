@@ -80,6 +80,10 @@ bool_t DoorItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 		v15 = Tile::door_spruce;
 	} else if(this->itemID == Item::door_birch->itemID) {
 		v15 = Tile::door_birch;
+	} else if(Item::door_jungle && this->itemID == Item::door_jungle->itemID) {
+		v15 = Tile::door_jungle;
+	} else if(Item::copperDoor && this->itemID == Item::copperDoor->itemID) {
+		v15 = Tile::copperDoor;
 	} else if(this->field_48 == Material::wood) {
 		v15 = Tile::door_wood;
 	} else {
@@ -105,6 +109,12 @@ std::string DoorItem::getName(const ItemInstance* a2) {
 	}
 	if(this->itemID == Item::door_birch->itemID) {
 		return "Birch Door";
+	}
+	if(Item::door_jungle && this->itemID == Item::door_jungle->itemID) {
+		return "Jungle Door";
+	}
+	if(Item::copperDoor && this->itemID == Item::copperDoor->itemID) {
+		return "Copper Door";
 	}
 	return Item::getName(a2);
 }

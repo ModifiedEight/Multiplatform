@@ -9,6 +9,8 @@
 #include <rendering/Textures.hpp>
 #include <sound/SoundEngine.hpp>
 #include <util/Color4.hpp>
+#include <util/Util.hpp>
+#include <utils.h>
 #include <cstring>
 
 static int _D6E06658, _D6E0665C, _D6E06660, _D6E06664, _D6E06668;
@@ -397,8 +399,15 @@ void TouchscreenInput::tick(Player *a2) {
               v7 = 11;
             }
             if (Multitouch::_wasPressed[v7]) {
-              this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
-              this->sneakingMaybe = !this->sneakingMaybe;
+              static int32_t s_lastSneakTap = 0;
+              int32_t now = getTimeMs();
+              if (now - s_lastSneakTap <= 400) {
+                this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
+                this->sneakingMaybe = !this->sneakingMaybe;
+                s_lastSneakTap = 0;
+              } else {
+                s_lastSneakTap = now;
+              }
             }
             goto LABEL_40;
           }

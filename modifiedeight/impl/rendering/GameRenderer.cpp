@@ -197,9 +197,10 @@ void GameRenderer::moveCameraToPlayer(float a2) {
 	prevX = viewEntityMaybe->prevX;
 	posY = viewEntityMaybe->posY;
 	prevY = viewEntityMaybe->prevY;
-	posZ = viewEntityMaybe->posZ;
-	prevZ = viewEntityMaybe->prevZ;
 	v11 = viewEntityMaybe->ridingHeight - 1.62;
+	if(viewEntityMaybe->isSneaking()) {
+		v11 += 0.12f;
+	}
 	glRotatef(this->field_70 + (float)((float)(this->field_6C - this->field_70) * a2), 0.0, 0.0, 1.0);
 	if(!viewEntityMaybe->isPlayer() || !viewEntityMaybe->isSleeping()) {
 		minecraft = this->minecraft;

@@ -56,6 +56,8 @@
 #include <rendering/model/TurtleModel.hpp>
 #include <rendering/entity/FrogRenderer.hpp>
 #include <rendering/model/FrogModel.hpp>
+#include <rendering/entity/OcelotRenderer.hpp>
+#include <rendering/entity/BoatRenderer.hpp>
 
 EntityRenderDispatcher* EntityRenderDispatcher::instance = 0;
 float EntityRenderDispatcher::xOff = 0, EntityRenderDispatcher::yOff = 0, EntityRenderDispatcher::zOff = 0;
@@ -96,6 +98,8 @@ EntityRenderDispatcher::EntityRenderDispatcher() {
 	this->assign(ITEM_FRAME, new ItemFrameRenderer());
 	this->assign(ARMOR_STAND, new ArmorStandRenderer(new ArmorStandModel(), 0.5f));
 	this->assign(FROG, new FrogRenderer(new FrogModel(), 0.3f));
+	this->assign(OCELOT, new OcelotRenderer(new OcelotModel(), 0.4f));
+	this->assign(BOAT, new BoatRenderer());
 	for(auto&& p: this->renderers) {
 		if (p) p->init(this);
 	}

@@ -39,10 +39,6 @@ bool_t TorchTile::isConnection(Level* level, int32_t x, int32_t y, int32_t z) {
 	int32_t v8 = level->getTile(x, y, z);
 	int32_t vMeta = level->getData(x, y, z);
 	if (v8 == Tile::stoneSlabHalf->blockID || v8 == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && v8 == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && v8 == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && v8 == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && v8 == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && v8 == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && v8 == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && v8 == Tile::rockSlabHalf->blockID)) {
@@ -53,11 +49,6 @@ bool_t TorchTile::isConnection(Level* level, int32_t x, int32_t y, int32_t z) {
 		if (te) {
 			if (te->mode == 0) return te->topTileId != 0 || te->bottomTileId != 0;
 			return (te->bottomTileId != 0 || te->topTileId != 0);
-		}
-	}
-	for (int i = 0; i < 16; i++) {
-		if (Tile::coloredFences[i] && v8 == Tile::coloredFences[i]->blockID) {
-			return 1;
 		}
 	}
 	return v8 == Tile::fence->blockID || v8 == Tile::glass->blockID || v8 == Tile::cobbleWall->blockID;

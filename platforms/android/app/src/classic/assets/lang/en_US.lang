@@ -386,6 +386,7 @@ tile.stonecutter.name=Stonecutter
 tile.carrots.name=Carrot
 tile.potatoes.name=Potato
 tile.cobbleWall.name=Cobblestone Wall
+tile.stoneWall.name=Stone Wall
 tile.hayBlock.name=Hay Bale
 tile.blockCoal.name=Block of Coal
 tile.woolCarpet.name=Carpet

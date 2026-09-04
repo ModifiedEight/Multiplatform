@@ -24,6 +24,11 @@ ArmorStandRenderer::ArmorStandRenderer(Model *model, float shadow)
 
 ArmorStandRenderer::~ArmorStandRenderer() {}
 
+static void setPartVisible(ModelPart &part, bool visible) {
+  part.field_1D = visible ? 1 : 0;
+  part.field_4C = visible ? 0 : 1;
+}
+
 void ArmorStandRenderer::render(Entity *entity, float x, float y, float z,
                                 float rot, float a6) {
   ArmorStand *stand = (ArmorStand *)entity;
@@ -38,6 +43,10 @@ void ArmorStandRenderer::render(Entity *entity, float x, float y, float z,
 
   stand->setupLighting(this->isFancy(), a6);
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glEnable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER, 0.1f);
 
   this->bindTexture("mob/armorstand.png");
 
@@ -55,15 +64,41 @@ void ArmorStandRenderer::render(Entity *entity, float x, float y, float z,
         if (texIdx >= 0 && texIdx < 10) {
           this->bindTexture(_armorStandTextures[texIdx]);
         }
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         HumanoidModel *hmodel =
             (i == 2) ? _armorStandArmor2 : _armorStandArmor1;
         if (hmodel) {
-          hmodel->headModel.field_1D = (i == 0);
-          hmodel->bodyModel.field_1D = (i == 1 || i == 2);
-          hmodel->rightArmModel.field_1D = (i == 1);
-          hmodel->leftArmModel.field_1D = (i == 1);
-          hmodel->rightLegModel.field_1D = (i == 2 || i == 3);
-          hmodel->leftLegModel.field_1D = (i == 2 || i == 3);
+          setPartVisible(hmodel->headModel, i == 0);
+          setPartVisible(hmodel->bodyModel, i == 1 || i == 2);
+          setPartVisible(hmodel->rightArmModel, i == 1);
+          setPartVisible(hmodel->leftArmModel, i == 1);
+          setPartVisible(hmodel->rightLegModel, i == 2 || i == 3);
+          setPartVisible(hmodel->leftLegModel, i == 2 || i == 3);
+
+          hmodel->headModel.xRotAngle = 0.0f;
+          hmodel->headModel.yRotAngle = 0.0f;
+          hmodel->headModel.zRotAngle = 0.0f;
+
+          hmodel->bodyModel.xRotAngle = 0.0f;
+          hmodel->bodyModel.yRotAngle = 0.0f;
+          hmodel->bodyModel.zRotAngle = 0.0f;
+
+          hmodel->rightArmModel.xRotAngle = 0.0f;
+          hmodel->rightArmModel.yRotAngle = 0.0f;
+          hmodel->rightArmModel.zRotAngle = 0.0f;
+
+          hmodel->leftArmModel.xRotAngle = 0.0f;
+          hmodel->leftArmModel.yRotAngle = 0.0f;
+          hmodel->leftArmModel.zRotAngle = 0.0f;
+
+          hmodel->rightLegModel.xRotAngle = 0.0f;
+          hmodel->rightLegModel.yRotAngle = 0.0f;
+          hmodel->rightLegModel.zRotAngle = 0.0f;
+
+          hmodel->leftLegModel.xRotAngle = 0.0f;
+          hmodel->leftLegModel.yRotAngle = 0.0f;
+          hmodel->leftLegModel.zRotAngle = 0.0f;
+
           hmodel->render(stand, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
         }
       }

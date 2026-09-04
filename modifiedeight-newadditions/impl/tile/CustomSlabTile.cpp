@@ -9,13 +9,10 @@
 static bool isAnyHalfSlabTile(int32_t id) {
 	return (id == Tile::stoneSlabHalf->blockID ||
 	        id == Tile::woodSlabHalf->blockID ||
-	        (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
-	        (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
-	        (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
-	        (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) ||
 	        (Tile::dirtSlabHalf && id == Tile::dirtSlabHalf->blockID) ||
 	        (Tile::grassSlabHalf && id == Tile::grassSlabHalf->blockID) ||
-	        (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID));
+	        (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID) ||
+	        (Tile::copperSlabHalf && id == Tile::copperSlabHalf->blockID));
 }
 
 CustomSlabTile::Item::Item(int32_t id, Tile* tile, int32_t slabHalfId, int32_t slabFullId)
@@ -225,11 +222,12 @@ bool_t CustomSlabTile::Item::useOn(ItemInstance* a2, Player* a3, Level* a4, int3
 
 static const Material* getSlabMaterial(int32_t slabType) {
 	if (slabType == 0 || slabType == 1) return Material::dirt;
+	if (slabType == 3) return Material::metal;
 	return Material::stone;
 }
 
 CustomSlabTile::CustomSlabTile(int32_t id, bool_t isFull, int32_t slabType)
-	: SlabTile(id, (slabType == 0) ? "dirt" : ((slabType == 1) ? "grass" : "stone"), isFull, getSlabMaterial(slabType)),
+	: SlabTile(id, (slabType == 0) ? "dirt" : ((slabType == 1) ? "grass" : ((slabType == 3) ? "copper_block" : "stone")), isFull, getSlabMaterial(slabType)),
 	  slabType(slabType), partnerSlabId(0) {
 	if (slabType == 0) {
 		this->setSoundType(Tile::SOUND_GRAVEL);
@@ -237,6 +235,10 @@ CustomSlabTile::CustomSlabTile(int32_t id, bool_t isFull, int32_t slabType)
 	} else if (slabType == 1) {
 		this->setSoundType(Tile::SOUND_GRASS);
 		this->setDestroyTime(0.6f);
+	} else if (slabType == 3) {
+		this->setSoundType(Tile::SOUND_METAL);
+		this->setDestroyTime(3.0f);
+		this->setExplodeable(6.0f);
 	} else {
 		this->setSoundType(Tile::SOUND_STONE);
 		this->setDestroyTime(1.5f);
@@ -256,6 +258,8 @@ TextureUVCoordinateSet* CustomSlabTile::getTexture(int32_t face, int32_t data) {
 			return Tile::grass->getTexture(2, 0);
 		}
 		return &this->textureUV;
+	} else if (this->slabType == 3) {
+		return Tile::copperBlock ? Tile::copperBlock->getTexture(face, 0) : &this->textureUV;
 	} else {
 		return Tile::rock ? Tile::rock->getTexture(face, 0) : &this->textureUV;
 	}
@@ -284,6 +288,8 @@ int32_t CustomSlabTile::getResource(int32_t data, Random* rand) {
 		return Tile::dirtSlabHalf ? Tile::dirtSlabHalf->blockID : this->blockID;
 	} else if (this->slabType == 1) {
 		return Tile::dirtSlabHalf ? Tile::dirtSlabHalf->blockID : this->blockID;
+	} else if (this->slabType == 3) {
+		return Tile::copperSlabHalf ? Tile::copperSlabHalf->blockID : this->blockID;
 	} else {
 		return Tile::rockSlabHalf ? Tile::rockSlabHalf->blockID : this->blockID;
 	}

@@ -42,10 +42,6 @@ static bool isBottomHalfSlab(LevelSource* level, int32_t x, int32_t y, int32_t z
 	int32_t id = level->getTile(x, y, z);
 	int32_t meta = level->getData(x, y, z);
 	if (id == Tile::stoneSlabHalf->blockID || id == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && id == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && id == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && id == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && id == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && id == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && id == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && id == Tile::rockSlabHalf->blockID)) {

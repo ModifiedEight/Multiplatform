@@ -173,6 +173,10 @@ float GameRenderer::getFov(float a2, bool_t a3) {
 	}
 	return (float)(v4 + this->field_64) + (float)((float)(this->field_60 - this->field_64) * a2);
 }
+
+static float s_prevSneakCam = 0.0f;
+static float s_sneakCam = 0.0f;
+
 void GameRenderer::moveCameraToPlayer(float a2) {
 	Mob* viewEntityMaybe; // r4
 	float posX;			  // s19
@@ -352,6 +356,8 @@ LABEL_17:
 		glRotatef(pPitch, 1.0, 0.0, 0.0);
 		glRotatef(pYaw, 0.0, 1.0, 0.0);
 	}
+	float smoothSneak = s_prevSneakCam + (s_sneakCam - s_prevSneakCam) * a2;
+	v11 += smoothSneak;
 	glTranslatef(0.0, v11, 0.0);
 }
 void GameRenderer::pick(float a2) {
@@ -1116,6 +1122,10 @@ void GameRenderer::setupGuiScreen(bool_t a2) {
 }
 static int32_t _D67AD634 = -1;
 void GameRenderer::tick(int32_t a2, int32_t a3) {
+	s_prevSneakCam = s_sneakCam;
+	float targetSneak = (this->minecraft && this->minecraft->viewEntityMaybe && this->minecraft->viewEntityMaybe->isSneaking()) ? 0.15f : 0.0f;
+	s_sneakCam += (targetSneak - s_sneakCam) * 0.35f;
+
 	Minecraft* minecraft;					// r3
 	int v5;									// s17
 	float v6;								// r0

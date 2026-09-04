@@ -70,6 +70,7 @@ Options::Option Options::Option::REALISM_SSAO{0, "options.realism.ssao", 54};
 Options::Option Options::Option::REALISM_SCREEN_SPACE_LIGHTING{0, "options.realism.ssl", 55};
 Options::Option Options::Option::REALISM_BLOOM{0, "options.realism.bloom", 56};
 Options::Option Options::Option::EXTENDED_INVENTORY{0, "options.extendedinventory", 57};
+Options::Option Options::Option::CONTROLLER_SUPPORT{0, "options.controllersupport", 60};
 Options::Option Options::Option::MORNING_FOG{0, "options.morningfog", 58};
 Options::Option Options::Option::SUN_GLOW{0, "options.sunglow", 59};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
@@ -175,6 +176,8 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->swapJumpAndSneak);
 						} else if(v13[i] == "options.extendedinventory") {
 							this->readBool(v13[i + 1], this->extendedInventory);
+						} else if(v13[i] == "options.controllersupport") {
+							this->readBool(v13[i + 1], this->controllerSupport);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -348,6 +351,8 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->realismBloom ^= 1u;
 	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
 		this->extendedInventory ^= 1u;
+	} else if(a2 == &Options::Option::CONTROLLER_SUPPORT || (a2 && a2->name == "options.controllersupport")) {
+		this->controllerSupport ^= 1u;
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
@@ -461,6 +466,7 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.sunglow", this->sunGlow);
 	this->addOptionToSaveOutput(v4, "options.swapjumpandsneak", this->swapJumpAndSneak);
 	this->addOptionToSaveOutput(v4, "options.extendedinventory", this->extendedInventory);
+	this->addOptionToSaveOutput(v4, "options.controllersupport", this->controllerSupport);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
@@ -570,6 +576,7 @@ void Options::initDefaultValues(void) {
 	this->realismSSL = 1;
 	this->realismBloom = 1;
 	this->extendedInventory = 0;
+	this->controllerSupport = 1;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->panoramaAngle = 0;
@@ -907,6 +914,8 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->realismBloom;
 	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
 		return this->extendedInventory;
+	} else if(a2 == &Options::Option::CONTROLLER_SUPPORT || (a2 && a2->name == "options.controllersupport")) {
+		return this->controllerSupport;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {
 		return this->graphics;

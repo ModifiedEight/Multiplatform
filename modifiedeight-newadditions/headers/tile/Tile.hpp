@@ -60,23 +60,10 @@ struct Tile{
 	static Tile* fence_birch;
 	static Tile* trapdoor_spruce;
 	static Tile* trapdoor_birch;
+	static Tile* ironTrapdoor;
 	static Tile* coloredBeds[16];
 	static Tile* deadBush;
 	static Tile* cloth;
-	static Tile* coloredPlanks;
-	static Tile* coloredBricks;
-	static Tile* coloredStairs[16];
-	static Tile* coloredFences[16];
-	static Tile* coloredLogs[16];
-	static Tile* coloredSlabHalf1;
-	static Tile* coloredSlab1;
-	static Tile* coloredSlabHalf2;
-	static Tile* coloredSlab2;
-	static Tile* coloredBrickStairs[16];
-	static Tile* coloredBrickSlabHalf1;
-	static Tile* coloredBrickSlab1;
-	static Tile* coloredBrickSlabHalf2;
-	static Tile* coloredBrickSlab2;
 	static Tile* flower;
 	static Tile* rose;
 	static Tile* flowerPaeonia;
@@ -119,6 +106,7 @@ struct Tile{
 	static Tile* door_wood;
 	static Tile* door_spruce;
 	static Tile* door_birch;
+	static Tile* door_jungle;
 	static Tile* ladder;
 	static Tile* rail;
 	static Tile* stairs_stone;
@@ -167,6 +155,7 @@ struct Tile{
 	static Tile* activatorRail;
 	static Tile* stairs_sandStone;
 	static Tile* cobbleWall;
+	static Tile* stoneWall;
 	static Tile* carrots;
 	static Tile* potatoes;
 	static Tile* quartzBlock;
@@ -203,6 +192,16 @@ struct Tile{
 	static Tile* button_cobblestone;
 	static Tile* button_gold;
 	static Tile* button_iron;
+	static Tile* copperOre;
+	static Tile* copperBlock;
+	static Tile* copperFence;
+	static Tile* copperWall;
+	static Tile* copperStairs;
+	static Tile* copperSlabHalf;
+	static Tile* copperSlab;
+	static Tile* copperDoor;
+	static Tile* copperTrapdoor;
+	static Tile* enderChest;
 
 	static Tile::SoundType SOUND_NORMAL;
 	static Tile::SoundType SOUND_WOOD;

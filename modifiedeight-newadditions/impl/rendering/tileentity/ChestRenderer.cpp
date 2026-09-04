@@ -1,5 +1,6 @@
 #include <rendering/tileentity/ChestRenderer.hpp>
 #include <tile/entity/ChestTileEntity.hpp>
+#include <tile/Tile.hpp>
 
 ChestRenderer::ChestRenderer() : TileEntityRenderer(), field_8(0), field_1A8(1){
 
@@ -77,7 +78,11 @@ void ChestRenderer::render(struct TileEntity* tee, float x, float y, float z, fl
 			glTranslatef(modelOffsetX * v20, 0.0, 0.0);
 		} else {
 			v19 = &this->field_8;
-			this->bindTexture("item/chest/normal.png");
+			if(te->type == 6 || (te->level && te->getTile() && Tile::enderChest && te->getTile() == Tile::enderChest)) {
+				this->bindTexture("item/chest/ender.png");
+			} else {
+				this->bindTexture("item/chest/normal.png");
+			}
 		}
 		v22 = 1.0 - (float)(te->field_88 + (float)((float)(te->field_84 - te->field_88) * a6));
 		v19->field_18.xRotAngle = -(float)(0.5 * (float)((float)(1.0 - (float)((float)(v22 * v22) * v22)) * 3.1416));

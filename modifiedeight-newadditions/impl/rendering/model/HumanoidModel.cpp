@@ -2,10 +2,13 @@
 #include <rendering/model/HumanoidModel.hpp>
 #include <entity/Entity.hpp>
 #include <entity/Mob.hpp>
+#include <entity/Player.hpp>
+#include <entity/LocalPlayer.hpp>
 #include <math/Mth.hpp>
 #include <level/Level.hpp>
 #include <tile/material/Material.hpp>
 #include <tile/Tile.hpp>
+#include <cmath>
 #include <math.h>
 
 HumanoidModel::HumanoidModel(float a2, float a3)
@@ -51,8 +54,9 @@ HumanoidModel::HumanoidModel(float a2, float a3)
 HumanoidModel::~HumanoidModel() {
 }
 void HumanoidModel::render(Entity* a2, float a3, float a4, float a5, float a6, float a7, float a8) {
-	ItemInstance* item; // r7
+	ItemInstance* item;
 
+	this->curEntity = a2;
 	if(a2) {
 		this->field_4 = a2->isRiding();
 		if(a2->isMob()) {
@@ -74,6 +78,7 @@ void HumanoidModel::render(Entity* a2, float a3, float a4, float a5, float a6, f
 	this->rightLegModel.render(a8);
 	this->leftLegModel.render(a8);
 	this->isUsingBow = 0;
+	this->curEntity = nullptr;
 }
 
 void HumanoidModel::renderHorrible(float a2, float a3, float a4, float a5, float a6, float a7) {
@@ -85,26 +90,11 @@ void HumanoidModel::renderHorrible(float a2, float a3, float a4, float a5, float
 	this->rightLegModel.renderHorrible(a7);
 	this->leftLegModel.renderHorrible(a7);
 }
+
 void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, float a7) {
-	float v10;		 // s19
-	float v11;		 // s16
-	float v12;		 // r0
-	float v14;		 // s15
-	float v15;		 // s15
-	float v16;		 // s15
-	float v17;		 // s16
-	float v18;		 // r0
-	float v19;		 // s21
-	float v20;		 // s19
-	float v21;		 // s22
-	float v22;		 // r0
-	float v23;		 // s15
-	float v24;		 // s14
-	float v25;		 // s16
-	float v26;		 // r0
-	float v28;		 // s15
-	float yRotAngle; // s13
-	float v30;		 // s14
+	this->headModel.yRotAngle = a5 / 57.29578f;
+	this->headModel.xRotAngle = a6 / 57.29578f;
+	this->headModel.zRotAngle = 0.0f;
 
 	this->headModel.xOffset = 0.0f;
 	this->headModel.yOffset = 0.0f;
@@ -128,111 +118,120 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 	this->leftLegModel.yOffset = 12.0f;
 	this->leftLegModel.zOffset = 0.0f;
 
-	this->headModel.yRotAngle = a5 / (float)(180.0 / 3.1416);
-	v10 = a2 * 0.6662;
-	this->headModel.xRotAngle = a6 / (float)(180.0 / 3.1416);
-	v11 = Mth::cos(a2 * 0.6662) * a3;
-	v12 = Mth::cos(v10 + 3.1416);
-	this->leftArmModel.xRotAngle = v11;
-	this->rightArmModel.zRotAngle = 0.0;
-	this->leftArmModel.zRotAngle = 0.0;
-	this->rightLegModel.yRotAngle = 0.0;
-	this->leftLegModel.yRotAngle = 0.0;
-	this->rightArmModel.xRotAngle = v12 * a3;
-	this->rightLegModel.xRotAngle = v11 * 1.4;
-	this->leftLegModel.xRotAngle = (float)(v12 * a3) * 1.4;
+	float walkSpeed = 0.6662f;
+	float limbSwing = a2 * walkSpeed;
+	float limbSwingAmount = a3;
+	float cosSwing = Mth::cos(limbSwing);
+	float sinSwing = Mth::sin(limbSwing);
 
-	if (a3 > 0.001f) {
-		float walkSway = Mth::sin(a2 * 0.6662f) * a3 * 0.04f;
-		float walkBob = fabsf(Mth::sin(a2 * 0.6662f)) * a3 * 0.35f;
-		this->bodyModel.xRotAngle += a3 * 0.05f;
+	this->leftArmModel.xRotAngle = cosSwing * limbSwingAmount;
+	this->rightArmModel.xRotAngle = -cosSwing * limbSwingAmount;
+	this->rightArmModel.yRotAngle = 0.0f;
+	this->leftArmModel.yRotAngle = 0.0f;
+	this->rightArmModel.zRotAngle = 0.0f;
+	this->leftArmModel.zRotAngle = 0.0f;
+	this->rightLegModel.yRotAngle = 0.0f;
+	this->leftLegModel.yRotAngle = 0.0f;
+	this->rightLegModel.zRotAngle = 0.0f;
+	this->leftLegModel.zRotAngle = 0.0f;
+	this->rightLegModel.xRotAngle = cosSwing * 1.35f * limbSwingAmount;
+	this->leftLegModel.xRotAngle = -cosSwing * 1.35f * limbSwingAmount;
+
+	if (limbSwingAmount < 0.05f && !this->isSwimming && !this->field_4) {
+		float breath = Mth::sin(a4 * 0.08f);
+		float breathHead = Mth::sin(a4 * 0.04f);
+		this->bodyModel.yOffset += breath * 0.2f;
+		this->headModel.yOffset += breath * 0.2f;
+		this->rightArmModel.zRotAngle += Mth::cos(a4 * 0.08f) * 0.035f + 0.05f;
+		this->leftArmModel.zRotAngle -= Mth::cos(a4 * 0.08f) * 0.035f + 0.05f;
+		this->headModel.zRotAngle += breathHead * 0.015f;
+	} else if (limbSwingAmount >= 0.05f && !this->isSwimming && !this->field_4) {
+		float walkSway = sinSwing * limbSwingAmount * 0.055f;
+		float walkBob = fabsf(sinSwing) * limbSwingAmount * 0.4f;
+		this->bodyModel.xRotAngle += limbSwingAmount * 0.08f;
 		this->bodyModel.zRotAngle += walkSway;
-		this->headModel.zRotAngle = walkSway * 0.5f;
+		this->bodyModel.yRotAngle += walkSway * 0.7f;
+		this->headModel.zRotAngle += walkSway * 0.4f;
 		this->bodyModel.yOffset += walkBob;
 		this->headModel.yOffset += walkBob;
 		this->rightArmModel.yOffset += walkBob;
 		this->leftArmModel.yOffset += walkBob;
 		this->rightLegModel.yOffset += walkBob;
 		this->leftLegModel.yOffset += walkBob;
-		this->rightLegModel.xOffset = -2.0f;
-		this->leftLegModel.xOffset = 2.0f;
-		this->rightArmModel.zRotAngle += Mth::cos(a2 * 0.6662f) * a3 * 0.04f;
-		this->leftArmModel.zRotAngle -= Mth::cos(a2 * 0.6662f) * a3 * 0.04f;
-		this->rightArmModel.yRotAngle += Mth::sin(a2 * 0.6662f) * a3 * 0.05f;
-		this->leftArmModel.yRotAngle += Mth::sin(a2 * 0.6662f) * a3 * 0.05f;
+		this->rightArmModel.zRotAngle += Mth::cos(limbSwing) * limbSwingAmount * 0.055f + 0.05f;
+		this->leftArmModel.zRotAngle -= Mth::cos(limbSwing) * limbSwingAmount * 0.055f + 0.05f;
 	}
 
 	if(this->field_4) {
-		v14 = -(float)(3.1416 * 0.5);
-		this->rightArmModel.xRotAngle = (float)(v12 * a3) + (float)(v14 * 0.4);
-		this->rightLegModel.xRotAngle = v14 * 0.8;
-		this->leftLegModel.xRotAngle = v14 * 0.8;
-		this->rightLegModel.yRotAngle = (float)(3.1416 * 0.5) * 0.2;
-		this->leftLegModel.yRotAngle = v14 * 0.2;
-		this->leftArmModel.xRotAngle = v11 + (float)(v14 * 0.4);
+		float v14 = -1.570796f;
+		this->rightArmModel.xRotAngle = (-cosSwing * limbSwingAmount) + (v14 * 0.4f);
+		this->rightLegModel.xRotAngle = v14 * 0.8f;
+		this->leftLegModel.xRotAngle = v14 * 0.8f;
+		this->rightLegModel.yRotAngle = 0.31416f;
+		this->leftLegModel.yRotAngle = -0.31416f;
+		this->leftArmModel.xRotAngle = (cosSwing * limbSwingAmount) + (v14 * 0.4f);
 	}
 	if(this->field_318) {
-		this->leftArmModel.xRotAngle = (float)(this->leftArmModel.xRotAngle * 0.5) - (float)((float)(3.1416 * 0.5) * 0.2);
+		this->leftArmModel.xRotAngle = (this->leftArmModel.xRotAngle * 0.5f) - 0.31416f;
 	}
 	if(this->field_319) {
-		this->rightArmModel.xRotAngle = (float)(this->rightArmModel.xRotAngle * 0.5) - (float)((float)(3.1416 * 0.5) * 0.2);
+		this->rightArmModel.xRotAngle = (this->rightArmModel.xRotAngle * 0.5f) - 0.31416f;
 	}
-	v15 = this->field_0;
-	this->rightArmModel.yRotAngle = 0.0;
-	this->leftArmModel.yRotAngle = 0.0;
-	if(v15 > -9990.0) {
-		v16 = sqrt(v15);
-		v17 = Mth::sin((float)(v16 * 3.1416) + (float)(v16 * 3.1416)) * 0.25;
-		this->bodyModel.yRotAngle += v17;
-		this->rightArmModel.zOffset = Mth::sin(v17) * 5.0;
-		this->rightArmModel.xOffset = -(float)(Mth::cos(v17) * 5.0);
-		this->leftArmModel.zOffset = -(float)(Mth::sin(v17) * 5.0);
-		v18 = Mth::cos(v17);
-		v19 = this->field_0;
-		this->leftArmModel.yRotAngle = this->leftArmModel.yRotAngle + v17;
-		this->leftArmModel.xRotAngle = this->leftArmModel.xRotAngle + v17;
-		this->leftArmModel.xOffset = v18 * 5.0;
-		v20 = v17 + this->rightArmModel.yRotAngle;
+	float v15 = this->field_0;
+	if(v15 > -9990.0f) {
+		float v16 = sqrtf(v15);
+		float v17 = Mth::sin(v16 * 6.283185f) * 0.25f;
+		this->bodyModel.yRotAngle = v17;
+		this->rightArmModel.zOffset = Mth::sin(v17) * 5.0f;
+		this->rightArmModel.xOffset = -(Mth::cos(v17) * 5.0f);
+		this->leftArmModel.zOffset = -(Mth::sin(v17) * 5.0f);
+		float v18 = Mth::cos(v17);
+		float v19 = this->field_0;
+		this->leftArmModel.yRotAngle += v17;
+		this->leftArmModel.xRotAngle += v17;
+		this->leftArmModel.xOffset = v18 * 5.0f;
+		float v20 = v17 + this->rightArmModel.yRotAngle;
 		this->rightArmModel.yRotAngle = v20;
-		v21 = Mth::sin((float)(1.0 - (float)((float)((float)(1.0 - v19) * (float)(1.0 - v19)) * (float)((float)(1.0 - v19) * (float)(1.0 - v19)))) * 3.1416);
-		v22 = Mth::sin(v19 * 3.1416);
-		v23 = this->headModel.xRotAngle - 0.7;
-		this->rightArmModel.yRotAngle = v20 + (float)(v17 + v17);
-		this->rightArmModel.xRotAngle = this->rightArmModel.xRotAngle - (float)((float)((float)-(float)(v23 * v22) * 0.75) + (float)(v21 * 1.2));
-		this->rightArmModel.zRotAngle = Mth::sin(v19 * 3.1416) * -0.4;
-
+		float v21 = Mth::sin((1.0f - ((1.0f - v19) * (1.0f - v19) * (1.0f - v19) * (1.0f - v19))) * 3.14159265f);
+		float v22 = Mth::sin(v19 * 3.14159265f);
+		float v23 = this->headModel.xRotAngle - 0.7f;
+		this->rightArmModel.yRotAngle = v20 + (v17 * 2.0f);
+		this->rightArmModel.xRotAngle -= (- (v23 * v22) * 0.75f) + (v21 * 1.2f);
+		this->rightArmModel.zRotAngle = Mth::sin(v19 * 3.14159265f) * -0.4f;
 		this->bodyModel.xRotAngle += v22 * 0.1f;
 		this->headModel.yRotAngle -= v17 * 0.4f;
 		this->leftArmModel.xRotAngle -= v22 * 0.3f;
 	}
 	if(this->field_31A) {
-		v24 = this->rightArmModel.xRotAngle + 0.4;
-		this->bodyModel.xRotAngle = 0.5;
-		this->rightLegModel.zOffset = 4.0;
-		this->leftLegModel.zOffset = 4.0;
-		this->rightLegModel.yOffset = 9.0;
-		this->leftLegModel.yOffset = 9.0;
-		this->headModel.yOffset = 1.0;
+		float v24 = this->rightArmModel.xRotAngle + 0.4f;
+		this->bodyModel.xRotAngle = 0.5f;
+		this->rightLegModel.zOffset = 4.0f;
+		this->leftLegModel.zOffset = 4.0f;
+		this->rightLegModel.yOffset = 9.0f;
+		this->leftLegModel.yOffset = 9.0f;
+		this->headModel.yOffset = 1.0f;
 		this->rightArmModel.xRotAngle = v24;
-		this->leftArmModel.xRotAngle = this->leftArmModel.xRotAngle + 0.4;
+		this->leftArmModel.xRotAngle += 0.4f;
 	}
-	v25 = (float)(Mth::cos(a4 * 0.09) * 0.05) + 0.05;
-	v26 = Mth::sin(a4 * 0.067);
-	this->rightArmModel.zRotAngle = this->rightArmModel.zRotAngle + v25;
-	v28 = v26 * 0.05;
-	this->leftArmModel.zRotAngle = this->leftArmModel.zRotAngle - v25;
-	this->rightArmModel.xRotAngle = this->rightArmModel.xRotAngle + (float)(v26 * 0.05);
-	this->leftArmModel.xRotAngle = this->leftArmModel.xRotAngle - (float)(v26 * 0.05);
+	float v25 = (Mth::cos(a4 * 0.09f) * 0.05f) + 0.05f;
+	float v26 = Mth::sin(a4 * 0.067f);
+	this->rightArmModel.zRotAngle += v25;
+	float v28 = v26 * 0.05f;
+	this->leftArmModel.zRotAngle -= v25;
+	this->rightArmModel.xRotAngle += v28;
+	this->leftArmModel.xRotAngle -= v28;
+
 	if(this->isUsingBow) {
-		yRotAngle = this->headModel.yRotAngle;
-		this->rightArmModel.yRotAngle = yRotAngle - 0.1;
-		this->leftArmModel.yRotAngle = (float)(yRotAngle + 0.1) + 0.4;
-		v30 = this->headModel.xRotAngle - (float)(3.1416 * 0.5);
-		this->rightArmModel.zRotAngle = v25 + 0.0;
-		this->leftArmModel.zRotAngle = 0.0 - v25;
+		float yRotAngle = this->headModel.yRotAngle;
+		this->rightArmModel.yRotAngle = yRotAngle - 0.1f;
+		this->leftArmModel.yRotAngle = yRotAngle + 0.5f;
+		float v30 = this->headModel.xRotAngle - 1.570796f;
+		this->rightArmModel.zRotAngle = v25;
+		this->leftArmModel.zRotAngle = -v25;
 		this->rightArmModel.xRotAngle = v30 + v28;
 		this->leftArmModel.xRotAngle = v30 - v28;
 	}
+
 	if(this->isSwimming) {
 		this->bodyModel.xRotAngle = 1.5708f;
 		this->bodyModel.yOffset = 19.0f;

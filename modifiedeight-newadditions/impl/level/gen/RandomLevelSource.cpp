@@ -621,6 +621,15 @@ void RandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, int3
 		OreFeature f(Tile::ironOre->blockID, 8);
 		f.place(this->level, a8, v37, v38 & 0x3F, v40);
 	}
+	if (Tile::copperOre) {
+		for(int v36 = 0; v36 < 16; ++v36) {
+			int32_t v37 = chunkXStart + (a8->genrand_int32() & 0xF);
+			int32_t v38 = a8->genrand_int32() % 96;
+			int32_t v40 = chunkZStart + (a8->genrand_int32() & 0xF);
+			OreFeature f(Tile::copperOre->blockID, 8);
+			f.place(this->level, a8, v37, v38, v40);
+		}
+	}
 	for(int v42 = 0; v42 < 2; ++v42) {
 		int32_t v43 = chunkXStart + (a8->genrand_int32() & 0xF);
 		int8_t v44 = a8->genrand_int32();

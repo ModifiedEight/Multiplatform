@@ -35,6 +35,8 @@ void SlimeBlockTile::stepOn(Level* level, int32_t x, int32_t y, int32_t z, Entit
 		if (entity->motionY < -0.1f) {
 			entity->motionY = -entity->motionY * 0.8f;
 		}
+		entity->motionX *= 0.25f;
+		entity->motionZ *= 0.25f;
 	}
 }
 

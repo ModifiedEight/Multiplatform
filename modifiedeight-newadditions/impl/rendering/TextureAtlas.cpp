@@ -37,16 +37,54 @@ static uint8_t* load_and_resize_png(struct NinecraftApp* mc, const std::string& 
 		return pixels;
 	}
 	uint8_t* resized = (uint8_t*)malloc(target_w * target_h * 4);
-	for (int y = 0; y < target_h; ++y) {
-		for (int x = 0; x < target_w; ++x) {
-			int src_x = x * w / target_w;
-			int src_y = y * h / target_h;
-			int dst_idx = (y * target_w + x) * 4;
-			int src_idx = (src_y * w + src_x) * 4;
-			resized[dst_idx + 0] = pixels[src_idx + 0];
-			resized[dst_idx + 1] = pixels[src_idx + 1];
-			resized[dst_idx + 2] = pixels[src_idx + 2];
-			resized[dst_idx + 3] = pixels[src_idx + 3];
+	if (w >= target_w && h >= target_h) {
+		for (int y = 0; y < target_h; ++y) {
+			int y0 = y * h / target_h;
+			int y1 = (y + 1) * h / target_h;
+			if (y1 <= y0) y1 = y0 + 1;
+			for (int x = 0; x < target_w; ++x) {
+				int x0 = x * w / target_w;
+				int x1 = (x + 1) * w / target_w;
+				if (x1 <= x0) x1 = x0 + 1;
+				uint32_t r_sum = 0, g_sum = 0, b_sum = 0, a_sum = 0;
+				uint32_t count = (y1 - y0) * (x1 - x0);
+				for (int sy = y0; sy < y1; ++sy) {
+					for (int sx = x0; sx < x1; ++sx) {
+						int sidx = (sy * w + sx) * 4;
+						uint32_t a = pixels[sidx + 3];
+						r_sum += pixels[sidx + 0] * a;
+						g_sum += pixels[sidx + 1] * a;
+						b_sum += pixels[sidx + 2] * a;
+						a_sum += a;
+					}
+				}
+				int didx = (y * target_w + x) * 4;
+				if (a_sum > 0) {
+					uint32_t avg_a = a_sum / count;
+					resized[didx + 0] = (uint8_t)(r_sum / a_sum);
+					resized[didx + 1] = (uint8_t)(g_sum / a_sum);
+					resized[didx + 2] = (uint8_t)(b_sum / a_sum);
+					resized[didx + 3] = (avg_a >= 80) ? 255 : 0;
+				} else {
+					resized[didx + 0] = 0;
+					resized[didx + 1] = 0;
+					resized[didx + 2] = 0;
+					resized[didx + 3] = 0;
+				}
+			}
+		}
+	} else {
+		for (int y = 0; y < target_h; ++y) {
+			for (int x = 0; x < target_w; ++x) {
+				int src_x = x * w / target_w;
+				int src_y = y * h / target_h;
+				int dst_idx = (y * target_w + x) * 4;
+				int src_idx = (src_y * w + src_x) * 4;
+				resized[dst_idx + 0] = pixels[src_idx + 0];
+				resized[dst_idx + 1] = pixels[src_idx + 1];
+				resized[dst_idx + 2] = pixels[src_idx + 2];
+				resized[dst_idx + 3] = pixels[src_idx + 3];
+			}
 		}
 	}
 	stbi_image_free(pixels);
@@ -309,7 +347,11 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				"seagrass", "tall_seagrass_bottom", "tall_seagrass_top", "kelp", "kelp_plant",
 				"flower_rose", "flower_pot", "daylight_detector_side", "daylight_detector_top", "daylight_detector_inverted_top",
 				"sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3",
-				"jukebox_top", "jukebox_side", "slime", "slime_block"
+				"jukebox_top", "jukebox_side", "slime", "slime_block",
+				"iron_trapdoor", "jungle_door_top", "jungle_door_bottom",
+				"copper_ore", "copper_block", "copper_bars",
+				"copper_door_bottom", "copper_door_top", "copper_trapdoor",
+				"ender_chest_front", "ender_chest_side", "ender_chest_top"
 			};
 			for (const char* cs : customSlots) {
 				std::string img_path = std::string("textures/blocks/") + cs + ".png";
@@ -343,20 +385,54 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				vec.emplace_back(uv);
 				this->field_4[cs] = TextureAtlasTextureItem(cs, uv, vec);
 			}
+			if (this->field_4.find("copper_door_top") != this->field_4.end() &&
+			    this->field_4.find("copper_door_bottom") != this->field_4.end()) {
+				TextureUVCoordinateSet top_uv = this->field_4["copper_door_top"].uvCoords;
+				TextureUVCoordinateSet bot_uv = this->field_4["copper_door_bottom"].uvCoords;
+				std::vector<TextureUVCoordinateSet> door_vec;
+				door_vec.emplace_back(top_uv);
+				door_vec.emplace_back(bot_uv);
+				door_vec.emplace_back(top_uv);
+				door_vec.emplace_back(bot_uv);
+				this->field_4["copper_door"] = TextureAtlasTextureItem("copper_door", bot_uv, door_vec);
+				this->field_4["door_copper"] = TextureAtlasTextureItem("door_copper", bot_uv, door_vec);
+			}
+			if (this->field_4.find("jungle_door_top") != this->field_4.end() &&
+			    this->field_4.find("jungle_door_bottom") != this->field_4.end()) {
+				TextureUVCoordinateSet top_uv = this->field_4["jungle_door_top"].uvCoords;
+				TextureUVCoordinateSet bot_uv = this->field_4["jungle_door_bottom"].uvCoords;
+				std::vector<TextureUVCoordinateSet> door_vec;
+				door_vec.emplace_back(bot_uv);
+				door_vec.emplace_back(top_uv);
+				door_vec.emplace_back(bot_uv);
+				door_vec.emplace_back(top_uv);
+				this->field_4["jungle_door"] = TextureAtlasTextureItem("jungle_door", bot_uv, door_vec);
+				this->field_4["door_jungle"] = TextureAtlasTextureItem("door_jungle", bot_uv, door_vec);
+			}
 		} else {
 			const char* customItemSlots[] = {
 				"flower_pot", "sweet_berries",
 				"spawn_egg_wolf", "spawn_egg_squid", "spawn_egg_polar_bear",
 				"spawn_egg_cod", "spawn_egg_salmon", "spawn_egg_pufferfish",
 				"spawn_egg_tropical_fish", "spawn_egg_slime", "spawn_egg_fox",
-				"spawn_egg_turtle", "spawn_egg_frog", "spawn_egg_villager"
+				"spawn_egg_turtle", "spawn_egg_frog", "spawn_egg_villager",
+				"spawn_egg_ocelot",
+				"oak_boat", "spruce_boat", "birch_boat", "jungle_boat",
+				"jungle_door", "iron_trapdoor",
+				"copper_ingot", "copper_door", "ender_chest",
+				"armorstand"
 			};
 			const char* customItemFiles[] = {
 				"textures/items/flower_pot.png", "textures/items/sweet_berries.png",
 				"textures/items/spawn_egg_wolf.png", "textures/items/spawn_egg_squid.png", "textures/items/spawn_egg_polar_bear.png",
 				"textures/items/spawn_egg_cod.png", "textures/items/spawn_egg_salmon.png", "textures/items/spawn_egg_pufferfish.png",
 				"textures/items/spawn_egg_tropical_fish.png", "textures/items/spawn_egg_slime.png", "textures/items/spawn_egg_fox.png",
-				"textures/items/spawn_egg_turtle.png", "textures/items/spawn_egg_frog.png", "textures/items/spawn_egg_villager.png"
+				"textures/items/spawn_egg_turtle.png", "textures/items/spawn_egg_frog.png", "textures/items/spawn_egg_villager.png",
+				"textures/items/spawn_egg_ocelot.png",
+				"textures/items/oak_boat.png", "textures/items/spruce_boat.png", "textures/items/birch_boat.png", "textures/items/jungle_boat.png",
+				"textures/items/jungle_door.png", "textures/items/iron_trapdoor.png",
+				"textures/items/copper_ingot.png", "textures/items/copper_door.png", "textures/items/ender_chest.png",
+				"textures/items/armorstand.png"
 			};
 			int numSlots = sizeof(customItemSlots) / sizeof(customItemSlots[0]);
 			for (int ci = 0; ci < numSlots; ++ci) {

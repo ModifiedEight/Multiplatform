@@ -189,7 +189,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight Classic 1.6.5pre2", 0);
+  SDL_WM_SetCaption("ModifiedEight Classic 1.6.5pre3", 0);
 
   {
     int w, h, ch;
@@ -451,7 +451,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight Classic 1.6.5pre2",
+            "ModifiedEight Classic 1.6.5pre3",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -501,7 +501,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight Classic 1.6.5pre2",
+              details, "icon", "ModifiedEight Classic 1.6.5pre3",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }

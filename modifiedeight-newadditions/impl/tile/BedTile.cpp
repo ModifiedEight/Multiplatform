@@ -9,15 +9,18 @@
 
 int32_t BedTile::HEAD_DIRECTION_OFFSETS[] = {0, 1, -1, 0, 0, -1, 1, 0};
 
-BedTile::BedTile(int32_t id)
-	: DirectionalTile(id, Material::cloth) {
-	TextureAtlasTextureItem v35(*this->getTextureItem("bed"));
-	this->field_B0 = *v35.getUV(0);
-	this->field_80 = *v35.getUV(1);
-	this->field_98 = *v35.getUV(2);
-	this->field_F8 = *v35.getUV(3);
-	this->field_C8 = *v35.getUV(4);
-	this->field_E0 = *v35.getUV(5);
+BedTile::BedTile(int32_t id, const std::string& texName, int32_t color)
+	: DirectionalTile(id, Material::cloth), bedColor(color) {
+	TextureAtlasTextureItem* v35 = this->getTextureItem(texName);
+	if (!v35 || v35->name == "error") {
+		v35 = this->getTextureItem("bed");
+	}
+	this->field_B0 = *v35->getUV(0);
+	this->field_80 = *v35->getUV(1);
+	this->field_98 = *v35->getUV(2);
+	this->field_F8 = *v35->getUV(3);
+	this->field_C8 = *v35->getUV(4);
+	this->field_E0 = *v35->getUV(5);
 }
 
 void BedTile::_setShape(void) {
@@ -145,7 +148,7 @@ void BedTile::neighborChanged(Level* level, int32_t a3, int32_t a4, int32_t a5, 
 	} else if(level->getTile(a3 + off1, a4, a5 + off2) != this->blockID) {
 		level->setTile(a3, a4, a5, 0, 3);
 		if(!level->isClientMaybe) {
-			this->popResource(level, a3, a4, a5, ItemInstance(Item::bed));
+			this->popResource(level, a3, a4, a5, ItemInstance(Item::bed, 1, this->bedColor));
 		}
 	}
 }
@@ -153,9 +156,12 @@ int32_t BedTile::getResource(int32_t a2, Random* a3) {
 	if(BedTile::isHeadPiece(a2)) return 0;
 	return Item::bed->itemID;
 }
+int32_t BedTile::getSpawnResourcesAuxValue(int32_t) {
+	return this->bedColor;
+}
 void BedTile::spawnResources(Level* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, float a7){
 	if(!BedTile::isHeadPiece(a6)){
-		this->popResource(a2, a3, a4, a5, ItemInstance(Item::bed));
+		this->popResource(a2, a3, a4, a5, ItemInstance(Item::bed, 1, this->bedColor));
 	}
 }
 int32_t BedTile::getRenderLayer() {

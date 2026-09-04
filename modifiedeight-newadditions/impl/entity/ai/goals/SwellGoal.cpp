@@ -13,6 +13,13 @@ SwellGoal::SwellGoal(Creeper* a2)
 SwellGoal::~SwellGoal() {
 }
 bool_t SwellGoal::canUse() {
+	if(this->holder->level) {
+		std::vector<Entity*> nearby;
+		this->holder->level->getEntitiesOfType(22, this->holder->boundingBox.expand(12.0f, 6.0f, 12.0f), nearby);
+		for(Entity* e: nearby) {
+			if(e && !e->isDead) return 0;
+		}
+	}
 	if(this->holder->getSwellDir() > 0) return 1;
 	Entity* res = this->holder->getTarget();
 	if(res) {
@@ -49,6 +56,18 @@ void SwellGoal::tick() {
 	float v7;		  // s14
 	Sensing* sensing; // r0
 	int32_t v9;		  // r1
+
+	holder = this->holder;
+	if(holder->level) {
+		std::vector<Entity*> nearby;
+		holder->level->getEntitiesOfType(22, holder->boundingBox.expand(12.0f, 6.0f, 12.0f), nearby);
+		for(Entity* e: nearby) {
+			if(e && !e->isDead) {
+				holder->setSwellDir(-1);
+				return;
+			}
+		}
+	}
 
 	this->target.lock();
 

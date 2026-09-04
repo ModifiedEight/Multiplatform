@@ -10,6 +10,9 @@ ItemFrame::ItemFrame(Level* level)
 	, rotation(0)
 	, dropChance(1.0f) {
 	this->entityRenderId = (EntityRendererId)36;
+	this->synchedEntityData.define(8, (int32_t)0);
+	this->synchedEntityData.define(9, (int32_t)0);
+	this->synchedEntityData.define(10, (int8_t)0);
 }
 
 ItemFrame::ItemFrame(Level* level, int32_t x, int32_t y, int32_t z, int32_t dir)
@@ -18,6 +21,9 @@ ItemFrame::ItemFrame(Level* level, int32_t x, int32_t y, int32_t z, int32_t dir)
 	, dropChance(1.0f) {
 	this->entityRenderId = (EntityRendererId)36;
 	this->setDir(dir);
+	this->synchedEntityData.define(8, (int32_t)0);
+	this->synchedEntityData.define(9, (int32_t)0);
+	this->synchedEntityData.define(10, (int8_t)0);
 }
 
 ItemFrame::~ItemFrame() {
@@ -43,17 +49,24 @@ void ItemFrame::setItem(const ItemInstance& newItem) {
 	this->item = newItem;
 	this->item.count = 1;
 	this->rotation = 0;
+	this->synchedEntityData.set(8, (int32_t)this->item.getId());
+	this->synchedEntityData.set(9, (int32_t)this->item.getAuxValue());
+	this->synchedEntityData.set(10, (int8_t)0);
 	if (this->level) {
 		this->level->playSound(this, "random.pop", 0.5f, 1.0f);
 	}
 }
 
 void ItemFrame::removeFramedItem() {
-	if (!this->item.isNull() && this->item.count > 0) {
+	ItemInstance disp = this->getDisplayedItem();
+	if (!disp.isNull() && disp.count > 0) {
 		if (this->dropChance > 0.0f) {
-			this->spawnAtLocation(this->item, 0.0f);
+			this->spawnAtLocation(disp, 0.0f);
 		}
 		this->item = ItemInstance();
+		this->synchedEntityData.set(8, (int32_t)0);
+		this->synchedEntityData.set(9, (int32_t)0);
+		this->synchedEntityData.set(10, (int8_t)0);
 		if (this->level) {
 			this->level->playSound(this, "random.pop", 0.5f, 1.2f);
 		}
@@ -69,7 +82,8 @@ void ItemFrame::dropItem() {
 
 bool_t ItemFrame::hurt(Entity* attacker, int32_t damage) {
 	if (this->isDead) return 0;
-	if (!this->item.isNull() && this->item.count > 0) {
+	ItemInstance disp = this->getDisplayedItem();
+	if (!disp.isNull() && disp.count > 0) {
 		this->removeFramedItem();
 		return 1;
 	}
@@ -80,11 +94,12 @@ bool_t ItemFrame::hurt(Entity* attacker, int32_t damage) {
 
 bool_t ItemFrame::interactWithPlayer(Player* player) {
 	if (!player) return 0;
-	if (this->item.isNull() || this->item.count <= 0) {
+	ItemInstance disp = this->getDisplayedItem();
+	if (disp.isNull() || disp.count <= 0) {
 		ItemInstance* sel = player->inventory ? player->inventory->getSelected() : nullptr;
 		if (sel && !sel->isNull() && sel->count > 0) {
 			this->setItem(*sel);
-			if (player->inventory && player->inventory->field_20 == 0) {
+			if (player->inventory && !player->abilities.instabuild) {
 				sel->count--;
 				if (sel->count <= 0) {
 					player->inventory->clearSlot(player->inventory->selectedSlot);
@@ -94,13 +109,30 @@ bool_t ItemFrame::interactWithPlayer(Player* player) {
 			return 1;
 		}
 	} else {
-		this->rotation = (this->rotation + 1) % 8;
+		this->rotation = (this->getRotation() + 1) % 8;
+		this->synchedEntityData.set(10, (int8_t)this->rotation);
 		if (this->level) {
 			this->level->playSound(this, "random.click", 0.3f, 0.6f + (float)this->rotation * 0.05f);
 		}
 		return 1;
 	}
 	return 0;
+}
+
+ItemInstance ItemFrame::getDisplayedItem() const {
+	if (!this->item.isNull() && this->item.count > 0) {
+		return this->item;
+	}
+	int32_t id = const_cast<SynchedEntityData&>(this->synchedEntityData).getInt(8);
+	int32_t aux = const_cast<SynchedEntityData&>(this->synchedEntityData).getInt(9);
+	if (id > 0) {
+		return ItemInstance(id, 1, aux);
+	}
+	return ItemInstance();
+}
+
+int32_t ItemFrame::getRotation() const {
+	return (int32_t)const_cast<SynchedEntityData&>(this->synchedEntityData).getByte(10);
 }
 
 void ItemFrame::readAdditionalSaveData(CompoundTag* tag) {

@@ -316,12 +316,12 @@ void ItemRenderer::renderGuiItemInChunk(ItemRenderChunkType a1, Textures* a2, co
 
 	if(a3) {
 		tileClass = a3->tileClass;
-		if(!tileClass || (!TileRenderer::canRender(tileClass->getRenderShape()))) {
+		if(!tileClass || (Tile::enderChest && tileClass == Tile::enderChest) || (!TileRenderer::canRender(tileClass->getRenderShape()))) {
 			if(!a3->itemClass) {
 				return;
 			}
 			if(a1 == IRCT_THREE) {
-				if(tileClass) {
+				if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
 LABEL_19:
 					v19 = getFoliageColor(tileClass, a3->getAuxValue(), a3->getId());
 LABEL_21:
@@ -332,7 +332,7 @@ LABEL_21:
 				if(a1 == IRCT_NULL) {
 					return;
 				}
-				if(tileClass) {
+				if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
 					if(a1 == IRCT_TWO) {
 						return;
 					}
@@ -365,13 +365,13 @@ void ItemRenderer::renderGuiItemNew(Textures* a1, const ItemInstance* a2, int32_
 	Item* itemClass; // r1
 
 	tileClass = a2->tileClass;
-	if(tileClass && (TileRenderer::canRender(tileClass->getRenderShape()))) {
+	if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true) && (TileRenderer::canRender(tileClass->getRenderShape()))) {
 		a1->loadAndBindTexture("terrain-atlas.tga");
 		ItemRenderer::renderGuiItemInChunk(IRCT_THREE, a1, (ItemInstance*)a2, a4, a5, a7, a6, a8);
 	} else {
 		itemClass = a2->itemClass;
 		if(itemClass) {
-			if(tileClass) {
+			if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
 				a1->loadAndBindTexture("terrain-atlas.tga");
 				v16 = getFoliageColor(tileClass, a2->getAuxValue(), a2->getId());
 			} else {
@@ -436,7 +436,7 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 	}
 	glTranslatef(x, y + (float)((float)(Mth::sin((float)((float)(v13 / 10.0) + hoverStart)) * 0.1) + 0.1), z);
 	tileClass = e->itemInstance.tileClass;
-	if(tileClass && (v18 = tileClass->getRenderShape(), TileRenderer::canRender(v18))) {
+	if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true) && (v18 = tileClass->getRenderShape(), TileRenderer::canRender(v18))) {
 		v19 = 0;
 		glRotatef((float)((float)(v13 / 20.0) + hoverStart) * 57.296, 0.0, 1.0, 0.0);
 		v35 = 0.5;
@@ -514,7 +514,7 @@ void ItemRenderer::render(Entity* e_, float x, float y, float z, float a6, float
 			}
 			Tesselator::instance.offset({v31, v32, v33});
 		}
-		if(tileClass) {
+		if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
 			this->bindTexture("terrain-atlas.tga");
 		} else if(e->itemInstance.itemClass) {
 			this->bindTexture(e->itemInstance.itemClass->itemTexture);

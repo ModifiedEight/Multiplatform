@@ -22,6 +22,7 @@
 #include <entity/Villager.hpp>
 #include <entity/ZombieVillager.hpp>
 #include <entity/Frog.hpp>
+#include <entity/Ocelot.hpp>
 
 Mob* MobFactory::CreateMob(int32_t type, Level* level) {
 	Mob* v3; // r4
@@ -44,6 +45,9 @@ Mob* MobFactory::CreateMob(int32_t type, Level* level) {
 			break;
 		case 17:
 			v3 = new Squid(level);
+			break;
+		case 22:
+			v3 = new Ocelot(level);
 			break;
 		case 26:
 			v3 = new PolarBear(level);
@@ -130,6 +134,9 @@ std::string MobFactory::GetMobNameID(int32_t type) {
 
 		case 17:
 			return "entity.Squid";
+
+		case 22:
+			return "entity.Ocelot";
 
 		case 26:
 			return "entity.PolarBear";

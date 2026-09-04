@@ -54,7 +54,7 @@ bool_t Frog::canSpawn() {
 	int32_t z = (int32_t)floorf(this->posZ);
 	if (y <= 1 || y >= 127) return 0;
 	Biome* b = this->level->getBiome(x, z);
-	if (b != Biome::swampland) return 0;
+	if (b != Biome::swampland && b != Biome::equatorialRainforest) return 0;
 	int32_t tileBelow = this->level->getTile(x, y - 1, z);
 	return (tileBelow == Tile::grass->blockID || tileBelow == Tile::dirt->blockID || tileBelow == Tile::sand->blockID) && PathfinderMob::canSpawn();
 }

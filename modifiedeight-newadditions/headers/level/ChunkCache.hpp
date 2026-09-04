@@ -15,6 +15,7 @@ struct ChunkCache: ChunkSource
 	Level* level;
 	LevelChunk* lastChunk;
 
+	ChunkCache();
 	virtual ~ChunkCache();
 	virtual bool_t hasChunk(int32_t, int32_t);
 	virtual LevelChunk* getChunk(int32_t, int32_t);

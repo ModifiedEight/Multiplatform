@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <entity/EntityFactory.hpp>
 #include <entity/Player.hpp>
+#include <entity/Frog.hpp>
 #include <inventory/Inventory.hpp>
 #include <item/ItemInstance.hpp>
 #include <entity/Zombie.hpp>
@@ -452,12 +453,10 @@ LABEL_58:
 		v38 = Tile::tiles[v43];
 		if((!a6 || !v38 || v38->getAABB(this, startX.i, startY.i, v23.i)) && v43 > 0) {
 			if(v38->mayPick(v44, a5)) {
-				if((this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4) || (startX.i >= 0 && v23.i >= 0 && startX.i <= 255 && v23.i <= 255)) {
-					HitResult v49 = v38->clip(this, startX.i, startY.i, v23.i, sx, end);
-					if(v49.hitType != 2) {
-						swclip.stop();
-						return HitResult(v49);
-					}
+				HitResult v49 = v38->clip(this, startX.i, startY.i, v23.i, sx, end);
+				if(v49.hitType != 2) {
+					swclip.stop();
+					return HitResult(v49);
 				}
 			}
 		}
@@ -1436,33 +1435,33 @@ int32_t Level::getTopTile(int32_t x, int32_t z) {
 	return this->getTile(x, y, z);
 }
 bool_t Level::hasChunk(int32_t x, int32_t z) {
+	if (!this || !this->chunkSource) return 0;
 	return this->chunkSource->hasChunk(x, z);
 }
 bool_t Level::hasChunkAt(int32_t x, int32_t y, int32_t z) {
+	if (!this || !this->chunkSource) return 0;
 	return LevelHeight::inRange(y) && this->hasChunk(x >> 4, z >> 4);
 }
 bool_t Level::hasChunksAt(int32_t x, int32_t y, int32_t z, int32_t radius) {
+	if (!this || !this->chunkSource) return 0;
 	return this->hasChunksAt(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius);
 }
 bool_t Level::hasChunksAt(int32_t minX, int32_t minY, int32_t minZ, int32_t maxX, int32_t maxY, int32_t maxZ) {
-	int32_t xx;	   // r5
-	int32_t minZc; // r7
-	bool_t result; // r0
-	int32_t zz;	   // r4
-
-	if(maxY < 0 || minY > LevelHeight::maxY()) {
+	if (!this || !this->chunkSource) return 0;
+	if (minX > maxX || minY > maxY || minZ > maxZ) return 0;
+	if (maxY < 0 || minY > LevelHeight::maxY()) {
 		return 0;
 	}
-	xx = minX >> 4;
-	minZc = minZ >> 4;
-	while(xx <= maxX >> 4) {
-		for(zz = minZc; zz <= maxZ >> 4; ++zz) {
-			result = this->hasChunk(xx, zz);
-			if(!result) {
-				return result;
+	int32_t minXc = minX >> 4;
+	int32_t maxXc = maxX >> 4;
+	int32_t minZc = minZ >> 4;
+	int32_t maxZc = maxZ >> 4;
+	for (int32_t xx = minXc; xx <= maxXc; ++xx) {
+		for (int32_t zz = minZc; zz <= maxZc; ++zz) {
+			if (!this->hasChunk(xx, zz)) {
+				return 0;
 			}
 		}
-		++xx;
 	}
 	return 1;
 }
@@ -1481,11 +1480,7 @@ bool_t Level::hasNeighborSignal(int32_t x, int32_t y, int32_t z) {
 	}
 }
 bool_t Level::inRange(int32_t x, int32_t y, int32_t z) {
-	// Infinite worlds have no horizontal bounds
-	if(this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4) {
-		return LevelHeight::inRange(y);
-	}
-	return (uint32_t)x <= 0xff && y <= LevelHeight::maxY() && z >= 0 && z <= 255;
+	return LevelHeight::inRange(y);
 }
 bool_t Level::isDay() {
 	return this->skyDarken <= 3;
@@ -2335,29 +2330,11 @@ bool_t Level::isEmptyTile(int32_t x, int32_t y, int32_t z) {
 	return this->getTile(x, y, z) == 0;
 }
 float Level::getBrightness(int32_t x, int32_t y, int32_t z) {
-	float base = this->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
-	for (Player* p : this->playersMaybe) {
-		if (!p || !p->inventory) continue;
-		ItemInstance* held = p->inventory->getSelected();
-		if (!held || held->count <= 0) continue;
-		int id = held->getId();
-		int lightPower = 0;
-		if (id == 50) lightPower = 14;
-		else if (id == 89 || id == 91 || id == 327) lightPower = 15;
-		if (lightPower > 0) {
-			float dx = (float)x + 0.5f - p->posX;
-			float dy = (float)y + 0.5f - (p->posY + 1.2f);
-			float dz = (float)z + 0.5f - p->posZ;
-			float distSq = dx * dx + dy * dy + dz * dz;
-			float maxR = (float)lightPower;
-			if (distSq < maxR * maxR) {
-				float dist = sqrtf(distSq);
-				float dyn = (1.0f - (dist / maxR)) * 0.95f;
-				if (dyn > base) base = dyn;
-			}
-		}
-	}
-	return base;
+	if (!this->dimensionPtr || !this->dimensionPtr->lightRamp) return 1.0f;
+	int raw = this->getRawBrightness(x, y, z);
+	if (raw < 0) raw = 0;
+	if (raw > 15) raw = 15;
+	return this->dimensionPtr->lightRamp[raw];
 }
 int32_t Level::getData(int32_t x, int32_t y, int32_t z) {
 	if(!LevelHeight::inRange(y)) {
@@ -2430,9 +2407,11 @@ void Level::tick() {
 	if (--this->weatherTicks <= 0) {
 		if (this->weatherType == 0) {
 			this->weatherType = (this->random.genrand_int32() % 4 == 0) ? 2 : 1;
+			this->isRainFrogs = (this->weatherType == 1 && (this->random.genrand_int32() % 100 == 0));
 			this->weatherTicks = 12000 + (this->random.genrand_int32() % 12000);
 		} else {
 			this->weatherType = 0;
+			this->isRainFrogs = false;
 			this->weatherTicks = 12000 + (this->random.genrand_int32() % 24000);
 		}
 	}
@@ -2473,29 +2452,48 @@ void Level::tick() {
 			}
 		}
 
-		if (this->gameTickCounter % 6 == 0 && this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
+		if (!this->isClientMaybe && this->isRainFrogs && this->rainLevel > 0.5f && this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
+			if (this->gameTickCounter % 25 == 0) {
+				Player* p = this->playersMaybe[0];
+				int frogCount = 0;
+				for (auto* e : this->entities) {
+					if (e && e->getEntityTypeId() == 40 && p->distanceTo(e) < 32.0f) {
+						frogCount++;
+					}
+				}
+				if (frogCount < 12) {
+					float ox = (this->random.nextFloat() - 0.5f) * 28.0f;
+					float oz = (this->random.nextFloat() - 0.5f) * 28.0f;
+					float fx = p->posX + ox;
+					float fz = p->posZ + oz;
+					float fy = p->posY + 45.0f + this->random.nextFloat() * 25.0f;
+					if (fy > 126.0f) fy = 126.0f;
+					Frog* frog = new Frog(this);
+					frog->moveTo(fx, fy, fz, this->random.nextFloat() * 360.0f, 0.0f);
+					frog->fallDistance = 0.0f;
+					frog->motionY = -0.2f;
+					MobSpawner::finalizeMobSettings(frog, this, 0.0, 0.0, 0.0);
+					this->addEntity(frog);
+				}
+			}
+		}
+
+		if (this->gameTickCounter % 20 == 0 && this->playersMaybe.size() > 0 && this->playersMaybe[0]) {
 			Player* p = this->playersMaybe[0];
 			int px = Mth::floor(p->posX);
 			int pz = Mth::floor(p->posZ);
-			int cx = px + (this->random.genrand_int32() % 64) - 32;
-			int cz = pz + (this->random.genrand_int32() % 64) - 32;
-			for (int dx = -1; dx <= 1; ++dx) {
-				for (int dz = -1; dz <= 1; ++dz) {
-					if (this->random.genrand_int32() % 2 == 0) continue;
-					int rx = cx + dx;
-					int rz = cz + dz;
-					Biome* b = this->getBiome(rx, rz);
-					if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert) {
-						int topY = this->getHeightmap(rx, rz);
-						if (topY > 0 && topY < 127) {
-							int tileBelow = this->getTile(rx, topY - 1, rz);
-							int tileAt = this->getTile(rx, topY, rz);
-							if (tileAt == 0 && tileBelow > 0 && Tile::tiles[tileBelow] && Tile::tiles[tileBelow]->isSolidRender() && tileBelow != 78 && tileBelow != 79) {
-								this->setTile(rx, topY, rz, 78, 3);
-							} else if (tileBelow == 8 || tileBelow == 9) {
-								this->setTile(rx, topY - 1, rz, 79, 3);
-							}
-						}
+			int rx = px + (this->random.genrand_int32() % 64) - 32;
+			int rz = pz + (this->random.genrand_int32() % 64) - 32;
+			Biome* b = this->getBiome(rx, rz);
+			if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert) {
+				int topY = this->getHeightmap(rx, rz);
+				if (topY > 0 && topY < 127) {
+					int tileBelow = this->getTile(rx, topY - 1, rz);
+					int tileAt = this->getTile(rx, topY, rz);
+					if (tileAt == 0 && tileBelow > 0 && Tile::tiles[tileBelow] && Tile::tiles[tileBelow]->isSolidRender() && tileBelow != 78 && tileBelow != 79) {
+						this->setTile(rx, topY, rz, 78, 3);
+					} else if (tileBelow == 8 || tileBelow == 9) {
+						this->setTile(rx, topY - 1, rz, 79, 3);
 					}
 				}
 			}
@@ -2602,17 +2600,7 @@ void Level::tickTiles() {
 			ChunkPos* off = &_offsets[i];
 			int xx = (off->x + posX);
 			int32_t zz = off->z + posZ;
-			if(this->levelData.getGeneratorVersion() != 0 && this->levelData.getGeneratorVersion() != 4) {
-				// Infinite world: no bounds on chunk coordinates
-				this->somethingRelatedToChunkPos.insert({xx, zz});
-			} else {
-				// Old world: clamp to 0-15 (256x256 blocks)
-				if((uint32_t)xx <= 0xf) {
-					if(zz >= 0 && zz <= 15) {
-						this->somethingRelatedToChunkPos.insert({xx, zz});
-					}
-				}
-			}
+			this->somethingRelatedToChunkPos.insert({xx, zz});
 		}
 	}
 

@@ -2,6 +2,7 @@
 #include <AppPlatform_sdl.hpp>
 #include <DiscordRPC.hpp>
 #include <NinecraftApp.hpp>
+#include <gui/Screen.hpp>
 #include <_AssetFile.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <input/Keyboard.hpp>
@@ -79,8 +80,14 @@ static void performPickBlock(Minecraft *mc) {
     } else if (Tile::door_birch && tile == Tile::door_birch) {
       pickId = Item::door_birch ? Item::door_birch->itemID : 461;
       pickData = 0;
+    } else if (Tile::door_jungle && tile == Tile::door_jungle) {
+      pickId = Item::door_jungle ? Item::door_jungle->itemID : 462;
+      pickData = 0;
     } else if (Tile::door_iron && tile == Tile::door_iron) {
       pickId = Item::door_iron ? Item::door_iron->itemID : 330;
+      pickData = 0;
+    } else if (Tile::copperDoor && tile == Tile::copperDoor) {
+      pickId = Item::copperDoor ? Item::copperDoor->itemID : 430;
       pickData = 0;
     } else if (Tile::bed &&
                (tile == Tile::bed || tile->getRenderShape() == 14)) {
@@ -230,7 +237,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.5.1pre2", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.5.1", 0);
 
   {
     int w, h, ch;
@@ -258,6 +265,8 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_EnableUNICODE(1);
+  SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+  SDL_JoystickEventState(SDL_ENABLE);
   this->sdl_surface = this->setSDLVideoMode();
   if (!this->sdl_surface) {
     return 0;
@@ -571,7 +580,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.5.1pre2",
+              details, "icon", "ModifiedEight New Additions 1.6.5.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }
@@ -724,6 +733,188 @@ void AppPlatform_sdl::init() {
                            appPlatform.sdl_event.type == SDL_KEYDOWN);
         break;
       }
+    }
+
+    static SDL_Joystick *s_gameController = nullptr;
+    if (!s_gameController && SDL_NumJoysticks() > 0) {
+      s_gameController = SDL_JoystickOpen(0);
+    }
+
+    bool controllerEnabled = Options::instance ? Options::instance->controllerSupport : true;
+    if (s_gameController && controllerEnabled) {
+      SDL_JoystickUpdate();
+      int numAxes = SDL_JoystickNumAxes(s_gameController);
+      int numButtons = SDL_JoystickNumButtons(s_gameController);
+      auto getJBtn = [&](int b) -> bool {
+        return (b >= 0 && b < numButtons) ? (SDL_JoystickGetButton(s_gameController, b) != 0) : false;
+      };
+
+      int16_t rawLX = (numAxes > 0) ? SDL_JoystickGetAxis(s_gameController, 0) : 0;
+      int16_t rawLY = (numAxes > 1) ? SDL_JoystickGetAxis(s_gameController, 1) : 0;
+      float lx = (float)rawLX / 32767.0f;
+      float ly = (float)rawLY / 32767.0f;
+      const float deadzone = 0.18f;
+      if (fabsf(lx) < deadzone) lx = 0.0f; else lx = (lx > 0 ? (lx - deadzone) : (lx + deadzone)) / (1.0f - deadzone);
+      if (fabsf(ly) < deadzone) ly = 0.0f; else ly = (ly > 0 ? (ly - deadzone) : (ly + deadzone)) / (1.0f - deadzone);
+
+      int rxAxis = (numAxes >= 5) ? 3 : 2;
+      int ryAxis = (numAxes >= 5) ? 4 : 3;
+      int16_t rawRX = (numAxes > rxAxis) ? SDL_JoystickGetAxis(s_gameController, rxAxis) : 0;
+      int16_t rawRY = (numAxes > ryAxis) ? SDL_JoystickGetAxis(s_gameController, ryAxis) : 0;
+      float rx = (float)rawRX / 32767.0f;
+      float ry = (float)rawRY / 32767.0f;
+      if (fabsf(rx) < deadzone) rx = 0.0f; else rx = (rx > 0 ? (rx - deadzone) : (rx + deadzone)) / (1.0f - deadzone);
+      if (fabsf(ry) < deadzone) ry = 0.0f; else ry = (ry > 0 ? (ry - deadzone) : (ry + deadzone)) / (1.0f - deadzone);
+
+      bool lt = false, rt = false;
+      if (numAxes >= 6) {
+        lt = SDL_JoystickGetAxis(s_gameController, 2) > 8000;
+        rt = SDL_JoystickGetAxis(s_gameController, 5) > 8000;
+      } else if (numAxes >= 3) {
+        int16_t trig = SDL_JoystickGetAxis(s_gameController, 2);
+        if (trig < -8000) lt = true;
+        if (trig > 8000) rt = true;
+      }
+      if (!lt && getJBtn(6) && numButtons > 10) lt = true;
+      if (!rt && getJBtn(7) && numButtons > 10) rt = true;
+
+      bool btnA = getJBtn(0);
+      bool btnB = getJBtn(1);
+      bool btnX = getJBtn(2);
+      bool btnY = getJBtn(3);
+      bool btnLB = getJBtn(4);
+      bool btnRB = getJBtn(5);
+      bool btnBack = getJBtn(6);
+      bool btnStart = getJBtn(7);
+      bool btnL3 = getJBtn(8);
+      bool btnR3 = getJBtn(9);
+
+      uint8_t hat = (SDL_JoystickNumHats(s_gameController) > 0) ? SDL_JoystickGetHat(s_gameController, 0) : 0;
+      bool dpadUp = (hat & SDL_HAT_UP) != 0;
+      bool dpadDown = (hat & SDL_HAT_DOWN) != 0;
+      bool dpadLeft = (hat & SDL_HAT_LEFT) != 0;
+      bool dpadRight = (hat & SDL_HAT_RIGHT) != 0;
+
+      static bool prevJLB = false, prevJRB = false, prevJDpadL = false, prevJDpadR = false;
+      static bool prevJBtnX = false, prevJBtnY = false, prevJStart = false;
+      static bool prevJLT = false, prevJRT = false;
+      static bool prevJDpadUp = false, prevJDpadDown = false;
+      static bool prevJBtnA = false, prevJBtnB = false;
+
+      if (mc->player && !mc->currentScreen) {
+        if (mc->player->moveInput) {
+          if (fabsf(lx) > 0.0f || fabsf(ly) > 0.0f) {
+            mc->player->moveInput->strafeInput = -lx;
+            mc->player->moveInput->forwardInput = -ly;
+          }
+          if (btnA) mc->player->moveInput->jumpingMaybe = 1;
+          if (btnB || btnR3) mc->player->moveInput->sneakingMaybe = 1;
+        }
+
+        if (btnL3 || (ly < -0.85f)) {
+          mc->player->setSprinting(true);
+        } else if (ly >= -0.2f && !btnL3 && (fabsf(lx) < 0.2f)) {
+          mc->player->setSprinting(false);
+        }
+
+        if (fabsf(rx) > 0.0f || fabsf(ry) > 0.0f) {
+          float sens = (mc->options.sensitity * 0.6f + 0.2f) * 14.0f;
+          float turnX = rx * sens;
+          float turnY = ry * sens * (mc->options.invertMouse ? 1.0f : -1.0f);
+          mc->player->turn(turnX, turnY);
+        }
+
+        if ((btnLB && !prevJLB) || (dpadLeft && !prevJDpadL)) {
+          int newslot = mc->player->inventory->selectedSlot - 1;
+          if (newslot < 0) newslot = mc->gui.getNumSlots() - 2;
+          mc->player->inventory->selectSlot(newslot);
+        }
+        if ((btnRB && !prevJRB) || (dpadRight && !prevJDpadR)) {
+          int newslot = mc->player->inventory->selectedSlot + 1;
+          if (newslot >= mc->gui.getNumSlots() - 1) newslot = 0;
+          mc->player->inventory->selectSlot(newslot);
+        }
+
+        if (rt && !prevJRT && !Keyboard::_states[lbkey]) {
+          Keyboard::feed(lbkey, 1);
+        } else if (!rt && prevJRT && Keyboard::_states[lbkey]) {
+          Keyboard::feed(lbkey, 0);
+        }
+
+        if (lt && !prevJLT && !Keyboard::_states[rbkey]) {
+          Keyboard::feed(rbkey, 1);
+        } else if (!lt && prevJLT && Keyboard::_states[rbkey]) {
+          Keyboard::feed(rbkey, 0);
+        }
+
+        if ((btnX && !prevJBtnX) || (btnY && !prevJBtnY)) {
+          mc->player->startCrafting((int32_t)mc->player->posX, (int32_t)mc->player->posY, (int32_t)mc->player->posZ, 0);
+        }
+
+        if (btnStart && !prevJStart) {
+          mc->pauseGame(1);
+        }
+
+        if (dpadUp && !prevJDpadUp && mc->isCreativeMode()) {
+          performPickBlock(mc);
+        }
+        if (dpadDown && !prevJDpadDown) {
+          mc->options.toggle(&Options::Option::THIRD_PERSON, 1);
+        }
+      } else if (mc->currentScreen) {
+        static float vCursorX = -1.0f, vCursorY = -1.0f;
+        if (vCursorX < 0.0f) {
+          vCursorX = (float)this->screenWidth * 0.5f;
+          vCursorY = (float)this->screenHeight * 0.5f;
+        }
+
+        if (fabsf(lx) > 0.05f || fabsf(ly) > 0.05f) {
+          vCursorX += lx * 10.0f;
+          vCursorY += ly * 10.0f;
+          if (vCursorX < 0.0f) vCursorX = 0.0f;
+          if (vCursorX > (float)this->screenWidth) vCursorX = (float)this->screenWidth;
+          if (vCursorY < 0.0f) vCursorY = 0.0f;
+          if (vCursorY > (float)this->screenHeight) vCursorY = (float)this->screenHeight;
+          Mouse::feed(0, 0, (uint16_t)vCursorX, (uint16_t)vCursorY);
+        }
+
+        if (btnA && !prevJBtnA) {
+          Mouse::feed(1, 1, (uint16_t)vCursorX, (uint16_t)vCursorY);
+        } else if (!btnA && prevJBtnA) {
+          Mouse::feed(1, 0, (uint16_t)vCursorX, (uint16_t)vCursorY);
+        }
+
+        if (btnB && !prevJBtnB) {
+          mc->currentScreen->handleBackEvent(0);
+        }
+
+        static int scrollRepeat = 0;
+        if (dpadUp || ry < -0.4f) {
+          if (++scrollRepeat % 4 == 1) {
+            Mouse::feed(SDL_BUTTON_WHEELUP, 1, (uint16_t)vCursorX, (uint16_t)vCursorY);
+          }
+        } else if (dpadDown || ry > 0.4f) {
+          if (++scrollRepeat % 4 == 1) {
+            Mouse::feed(SDL_BUTTON_WHEELDOWN, 1, (uint16_t)vCursorX, (uint16_t)vCursorY);
+          }
+        } else {
+          scrollRepeat = 0;
+        }
+      }
+
+      prevJLB = btnLB;
+      prevJRB = btnRB;
+      prevJDpadL = dpadLeft;
+      prevJDpadR = dpadRight;
+      prevJBtnX = btnX;
+      prevJBtnY = btnY;
+      prevJStart = btnStart;
+      prevJLT = lt;
+      prevJRT = rt;
+      prevJDpadUp = dpadUp;
+      prevJDpadDown = dpadDown;
+      prevJBtnA = btnA;
+      prevJBtnB = btnB;
     }
 
     // TODO engine stuff

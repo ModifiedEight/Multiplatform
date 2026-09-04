@@ -807,11 +807,17 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
 
       const char* prefixes[] = {
         "assets/",
+        "assets/images/",
         "platforms/android/app/src/classic/assets/",
+        "platforms/android/app/src/classic/assets/images/",
         "platforms/android/app/src/newadditions/assets/",
+        "platforms/android/app/src/newadditions/assets/images/",
         "modifiedeight/assets/",
+        "modifiedeight/assets/images/",
         "modifiedeight-newadditions/assets/",
+        "modifiedeight-newadditions/assets/images/",
         "../../assets/",
+        "../../assets/images/",
         ""
       };
 

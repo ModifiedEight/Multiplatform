@@ -95,7 +95,7 @@ void Touch::InventoryPane::renderSelectedItem(std::vector<ScrollingPane::GridIte
 				v17 = Gui::floorAlignToScreenPixel((float)((float)(v15 + (float)this->field_264) + 4.0) + (float)this->field_228.minY);
 				tileClass = v14->tileClass;
 				v19 = (float)(-15 * this->invTicker + 255) / 255.0;
-				if(tileClass) {
+				if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
 					v20 = tileClass->getRenderShape();
 					TileRenderer::canRender(v20);
 					this->minecraft->texturesPtr->loadAndBindTexture("terrain-atlas.tga");

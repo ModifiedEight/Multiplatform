@@ -15,6 +15,7 @@
 #include <level/biome/TaigaBiome.hpp>
 #include <level/biome/JungleBiome.hpp>
 #include <level/biome/BirchForestBiome.hpp>
+#include <level/biome/EquatorialRainforestBiome.hpp>
 #include <level/biome/MountainBiome.hpp>
 #include <level/biome/IcePeaksBiome.hpp>
 Biome* Biome::rainForest;
@@ -29,6 +30,7 @@ Biome* Biome::plains;
 Biome* Biome::iceDesert;
 Biome* Biome::tundra;
 Biome* Biome::jungle;
+Biome* Biome::equatorialRainforest;
 Biome* Biome::birchForest;
 Biome* Biome::mountain;
 Biome* Biome::icePeaks;
@@ -167,10 +169,12 @@ void Biome::recalc(void) {
 
 void Biome::initBiomes(void) {
 	Biome::rainForest = (new RainforestBiome())->setColor(0x537B09)->setName("Rainforest")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
+	Biome::rainForest->creatureVec.emplace_back(Biome::MobSpawnerData(15, 22, 1, 3));
 	Biome::rainForest->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
 	Biome::swampland = (new SwampBiome())->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x8BAF48)->setTemperatureAndDownfall(0.8f, 0.9f);
 	Biome::swampland->monsterVec.emplace_back(Biome::MobSpawnerData(25, 37, 2, 4));
 	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(15, 37, 2, 4));
+	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(15, 40, 1, 3));
 	Biome::swampland->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
 	Biome::seasonalForest = (new Biome())->setColor(0x56621)->setName("Seasonal Forest");
 	Biome::forest = (new ForestBiome())->setColor(0x56621)->setName("Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
@@ -190,7 +194,13 @@ void Biome::initBiomes(void) {
 	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(8, 14, 2, 4));
 	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(10, 38, 2, 4));
 	Biome::jungle = (new JungleBiome())->setColor(0x537B09)->setName("Jungle")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
+	Biome::jungle->creatureVec.emplace_back(Biome::MobSpawnerData(20, 22, 1, 3));
 	Biome::jungle->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
+	Biome::equatorialRainforest = (new EquatorialRainforestBiome())->setColor(0x1F4715)->setName("Equatorial Rainforest")->setLeafColor(0x2A621E)->setTemperatureAndDownfall(1.3f, 1.0f);
+	Biome::equatorialRainforest->monsterVec.emplace_back(Biome::MobSpawnerData(30, 37, 2, 5));
+	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(25, 37, 2, 5));
+	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(15, 22, 1, 3));
+	Biome::equatorialRainforest->waterCreatureVec.emplace_back(Biome::MobSpawnerData(20, 39, 2, 6));
 	Biome::birchForest = (new BirchForestBiome())->setColor(0x56621)->setName("Birch Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
 	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(8, 14, 2, 4));
 	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(4, 38, 1, 3));
@@ -213,6 +223,7 @@ void Biome::teardownBiomes(void) {
 	if(Biome::iceDesert) delete Biome::iceDesert; Biome::iceDesert = 0;
 	if(Biome::tundra) delete Biome::tundra; Biome::tundra = 0;
 	if(Biome::jungle) delete Biome::jungle; Biome::jungle = 0;
+	if(Biome::equatorialRainforest) delete Biome::equatorialRainforest; Biome::equatorialRainforest = 0;
 	if(Biome::birchForest) delete Biome::birchForest; Biome::birchForest = 0;
 	if(Biome::mountain) delete Biome::mountain; Biome::mountain = 0;
 	if(Biome::icePeaks) delete Biome::icePeaks; Biome::icePeaks = 0;
@@ -239,7 +250,7 @@ Biome* Biome::_getBiome(float temp, float rain) {
 	if((float)(rain * temp) >= 0.2) {
 		if(newRain <= 0.5 || temp >= 0.7) {
 			if(temp >= 0.5) {
-				if(temp >= 0.90f && newRain >= 0.85f) {
+				if(temp >= 0.85f && newRain >= 0.75f) {
 					v2 = &Biome::jungle;
 				} else if(temp >= 0.97) {
 					if(newRain >= 0.45) {

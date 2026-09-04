@@ -55,7 +55,7 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	RenderCall* v7 = new RenderCall();
 	this->field_90[fid].reset(v7);
 
-	if(a3.tileClass) {
+	if(a3.tileClass && (Tile::enderChest ? a3.tileClass != Tile::enderChest : true)) {
 		int v12 = a3.tileClass->getRenderShape();
 		if(TileRenderer::canRender(v12) && a3.tileClass->getRenderShape() != 22) {
 			Tesselator::instance.begin(0);
@@ -87,7 +87,7 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	int v25 = a3.getId();
 	v7->field_30 = 1;
 	v7->field_0 = v25;
-	if(a3.tileClass || !a3.itemClass) {
+	if((a3.tileClass && (Tile::enderChest ? a3.tileClass != Tile::enderChest : true)) || !a3.itemClass) {
 		v7->field_2C = "terrain-atlas.tga";
 	} else {
 		v7->field_2C = a3.itemClass->itemTexture;
@@ -327,6 +327,12 @@ void ItemInHandRenderer::render(float a2) {
 
 	glPushMatrix();
 	player = (Mob*)this->minecraft->player;
+	static float s_prevHandSneak = 0.0f;
+	static float s_handSneak = 0.0f;
+	float handInterp = s_prevHandSneak + (s_handSneak - s_prevHandSneak) * a2;
+	if (handInterp > 0.0001f) {
+		glTranslatef(0.0f, -0.06f * handInterp, 0.04f * handInterp);
+	}
 	v6 = this->field_20 + (float)((float)(this->field_1C - this->field_20) * a2);
 	static int32_t s_digAnimTick = 0;
 	if(!this->field_4.itemClass) {
@@ -675,6 +681,12 @@ void ItemInHandRenderer::renderWater(float a2) {
 	glPopMatrix();
 }
 void ItemInHandRenderer::tick() {
+	static float s_prevHandSneak = 0.0f;
+	static float s_handSneak = 0.0f;
+	s_prevHandSneak = s_handSneak;
+	float targetHand = (this->minecraft && this->minecraft->player && this->minecraft->player->isSneaking()) ? 1.0f : 0.0f;
+	s_handSneak += (targetHand - s_handSneak) * 0.35f;
+
 	ItemInstance* sel; // r0
 	float v11;		   // s14
 	float v12;		   // s15

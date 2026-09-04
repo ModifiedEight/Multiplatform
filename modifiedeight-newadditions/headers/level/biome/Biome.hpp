@@ -42,6 +42,7 @@ UNK	int8_t field_33 = 0;
 	static Biome* iceDesert;
 	static Biome* tundra;
 	static Biome* jungle;
+	static Biome* equatorialRainforest;
 	static Biome* birchForest;
 	static Biome* mountain;
 	static Biome* icePeaks;

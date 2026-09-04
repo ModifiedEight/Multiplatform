@@ -15,9 +15,13 @@
 #include <entity/ItemFrame.hpp>
 #include <entity/ArmorStand.hpp>
 #include <entity/Frog.hpp>
+#include <entity/Boat.hpp>
 
 Entity* EntityFactory::CreateEntity(int32_t type, Level* level) {
 	switch(type) {
+		case 40:
+		case 41:
+			return new Boat(level);
 		case 64:
 			return new ItemEntity(level);
 		case 65:

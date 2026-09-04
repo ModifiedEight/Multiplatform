@@ -14,6 +14,8 @@ namespace Touch {
 }
 struct CreativeInventoryScreen: Screen, Touch::IInventoryPaneCallback
 {
+	static constexpr int NUM_TABS = 9;
+
 	struct TabButtonWithMeta
 	{
 		int32_t field_0;
@@ -23,7 +25,7 @@ struct CreativeInventoryScreen: Screen, Touch::IInventoryPaneCallback
 		TabButtonWithMeta(CreativeInventoryScreen::TabButtonWithMeta&&);
 		~TabButtonWithMeta();
 	};
-	static std::vector<ItemInstance> filteredItems[6];
+	static std::vector<ItemInstance> filteredItems[NUM_TABS];
 	static std::vector<ItemInstance> items;
 
 	int32_t field_58, field_5C;
@@ -31,7 +33,8 @@ struct CreativeInventoryScreen: Screen, Touch::IInventoryPaneCallback
 	std::shared_ptr<ImageWithBackground> armorButton;
 	std::shared_ptr<NinePatchLayer> field_68;
 	std::shared_ptr<NinePatchLayer> field_70;
-	std::shared_ptr<Touch::InventoryPane> field_78[6];
+	std::shared_ptr<NinePatchLayer> rightTabPatch;
+	std::shared_ptr<Touch::InventoryPane> field_78[NUM_TABS];
 	std::vector<CreativeInventoryScreen::TabButtonWithMeta> field_98;
 	Button* field_A4;
 	int32_t field_A8, field_AC, field_B0;
@@ -42,7 +45,7 @@ struct CreativeInventoryScreen: Screen, Touch::IInventoryPaneCallback
 	CreativeInventoryScreen();
 	void _putItemInToolbar(const ItemInstance*);
 	void closeWindow();
-	std::shared_ptr<ImageButton> createInventoryTabButton(int32_t, int32_t);
+	std::shared_ptr<ImageButton> createInventoryTabButton(int32_t, int32_t, bool = false);
 	void drawIcon(int, std::shared_ptr<ImageButton>, bool_t, bool_t);
 	int32_t getCategoryFromPanel(const Touch::InventoryPane*);
 	ItemInstance getItemFromType(int32_t);

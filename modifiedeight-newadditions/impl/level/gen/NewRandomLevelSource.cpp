@@ -19,6 +19,7 @@
 #include <level/gen/feature/ReedsFeature.hpp>
 #include <level/gen/feature/SpringFeature.hpp>
 #include <level/gen/feature/WaterLilyFeature.hpp>
+#include <entity/Frog.hpp>
 #include <math.h>
 #include <tile/HeavyTile.hpp>
 #include <tile/material/Material.hpp>
@@ -150,6 +151,19 @@ void NewRandomLevelSource::buildSurfaces(int32_t a2, int32_t a3, uint8_t* a4, st
 							}
 						}
 
+					}
+				}
+			}
+			if (biome == Biome::equatorialRainforest) {
+				for (int blockY = 64; blockY >= 61; --blockY) {
+					int index = (blockX * 16 + blockZ) * 128 + blockY;
+					if (blockY >= 63 && a4[index] == Tile::grass->blockID) {
+						if (((blockX * 7 + blockZ * 13) % 10) < 8) {
+							a4[index] = Tile::calmWater->blockID;
+							if (blockY > 0) a4[index - 1] = Tile::dirt->blockID;
+						}
+					} else if (blockY <= 63 && a4[index] == 0) {
+						a4[index] = Tile::calmWater->blockID;
 					}
 				}
 			}
@@ -632,6 +646,15 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 		OreFeature f(Tile::ironOre->blockID, 8);
 		f.place(this->level, a8, v37, v38 & 0x3F, v40);
 	}
+	if (Tile::copperOre) {
+		for(int v36 = 0; v36 < 16; ++v36) {
+			int32_t v37 = chunkXStart + (a8->genrand_int32() & 0xF);
+			int32_t v38 = a8->genrand_int32() % 96;
+			int32_t v40 = chunkZStart + (a8->genrand_int32() & 0xF);
+			OreFeature f(Tile::copperOre->blockID, 8);
+			f.place(this->level, a8, v37, v38, v40);
+		}
+	}
 	for(int v42 = 0; v42 < 2; ++v42) {
 		int32_t v43 = chunkXStart + (a8->genrand_int32() & 0xF);
 		int8_t v44 = a8->genrand_int32();
@@ -680,8 +703,8 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 	if(biomeAtChunk == Biome::birchForest) {
 		amountOfTrees += v67 + 3;
 	}
-	if (biomeAtChunk == Biome::jungle) {
-		amountOfTrees += v67 + 3;
+	if (biomeAtChunk == Biome::jungle || biomeAtChunk == Biome::equatorialRainforest) {
+		amountOfTrees += v67 + 5;
 	}
 	if(biomeAtChunk == Biome::seasonalForest) {
 		amountOfTrees += v67 + 1;
@@ -864,6 +887,169 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 					int32_t spy = this->level->getHeightmap(spx, spz);
 					if (spy > 0 && spy < 127 && this->level->isEmptyTile(spx, spy, spz) && this->level->getTile(spx, spy - 1, spz) == Tile::grass->blockID) {
 						this->level->setTileAndData(spx, spy, spz, Tile::pumpkin->blockID, a8->genrand_int32() & 3, 2);
+					}
+				}
+			}
+		}
+	}
+	if (biomeAtChunk == Biome::equatorialRainforest) {
+		for (int i = 0; i < 25; ++i) {
+			int32_t rx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t rz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t ry = this->level->getHeightmap(rx, rz);
+			ReedsFeature rf;
+			rf.place(this->level, a8, rx, ry, rz);
+		}
+		for (int i = 0; i < 14; ++i) {
+			int32_t bx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t bz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t by = this->level->getHeightmap(bx, bz);
+			JungleBushFeature jbf(3, 3);
+			jbf.place(this->level, a8, bx, by, bz);
+		}
+		for (int i = 0; i < 28; ++i) {
+			int32_t fx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t fz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t fy = this->level->getHeightmap(fx, fz);
+			while (fy > 62 && (this->level->getTile(fx, fy, fz) == Tile::leaves->blockID || 
+			                   this->level->getTile(fx, fy, fz) == Tile::treeTrunk->blockID || 
+			                   this->level->getTile(fx, fy, fz) == Tile::vine->blockID || 
+			                   this->level->isEmptyTile(fx, fy, fz))) {
+				fy--;
+			}
+			if (fy > 0 && fy < 127 && this->level->isEmptyTile(fx, fy, fz)) {
+				int32_t g = this->level->getTile(fx, fy - 1, fz);
+				if (g == Tile::grass->blockID || g == Tile::dirt->blockID) {
+					if ((a8->genrand_int32() % 3 == 0) && Tile::doublePlant) {
+						DoublePlantFeature dpf(3);
+						dpf.place(this->level, a8, fx, fy, fz);
+					} else {
+						this->level->setTileAndData(fx, fy, fz, Tile::tallgrass->blockID, 2, 2);
+					}
+				}
+			}
+		}
+		if (Tile::flowerOrchid) {
+			for (int i = 0; i < 16; ++i) {
+				int32_t ox = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t oz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t oy = this->level->getHeightmap(ox, oz);
+				while (oy > 62 && (this->level->getTile(ox, oy, oz) == Tile::leaves->blockID || 
+				                   this->level->getTile(ox, oy, oz) == Tile::treeTrunk->blockID || 
+				                   this->level->getTile(ox, oy, oz) == Tile::vine->blockID || 
+				                   this->level->isEmptyTile(ox, oy, oz))) {
+					oy--;
+				}
+				if (oy > 0 && oy < 127 && this->level->isEmptyTile(ox, oy, oz)) {
+					int32_t g = this->level->getTile(ox, oy - 1, oz);
+					if (g == Tile::grass->blockID || g == Tile::dirt->blockID) {
+						this->level->setTileAndData(ox, oy, oz, Tile::flowerOrchid->blockID, 0, 2);
+					}
+				}
+			}
+		}
+		for (int wx = 0; wx < 16; ++wx) {
+			for (int wz = 0; wz < 16; ++wz) {
+				int32_t px = chunkXStart + wx;
+				int32_t pz = chunkZStart + wz;
+				int32_t py = this->level->getHeightmap(px, pz);
+				while (py > 62 && (this->level->getTile(px, py, pz) == Tile::leaves->blockID || 
+				                   this->level->getTile(px, py, pz) == Tile::treeTrunk->blockID || 
+				                   this->level->getTile(px, py, pz) == Tile::vine->blockID || 
+				                   this->level->isEmptyTile(px, py, pz))) {
+					py--;
+				}
+				if (py == 63 || py == 64) {
+					if (((wx * 7 + wz * 13) % 10) < 7) {
+						int t = this->level->getTile(px, py - 1, pz);
+						if (t == Tile::grass->blockID || t == Tile::dirt->blockID) {
+							this->level->setTileAndData(px, py - 1, pz, Tile::dirt->blockID, 0, 2);
+							this->level->setTileAndData(px, py, pz, Tile::calmWater->blockID, 0, 2);
+						}
+					}
+				}
+			}
+		}
+		if (Tile::mushroom1 && Tile::mushroom2) {
+			for (int m = 0; m < 12; ++m) {
+				int32_t mx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t mz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t my = this->level->getHeightmap(mx, mz);
+				if (my > 0 && my < 127) {
+					int32_t ground = this->level->getTile(mx, my - 1, mz);
+					if ((ground == Tile::grass->blockID || ground == Tile::dirt->blockID || ground == Tile::rock->blockID) && this->level->isEmptyTile(mx, my, mz)) {
+						int32_t mTile = (a8->genrand_int32() % 2 == 0) ? Tile::mushroom1->blockID : Tile::mushroom2->blockID;
+						this->level->setTileAndData(mx, my, mz, mTile, 0, 2);
+					}
+				}
+			}
+		}
+		for (int i = 0; i < 6; ++i) {
+			int32_t lx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t lz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int len = 4 + (a8->genrand_int32() % 4);
+			int dir = a8->genrand_int32() % 2;
+			for (int step = 0; step < len; ++step) {
+				int sx = lx + (dir == 0 ? step : 0);
+				int sz = lz + (dir == 1 ? step : 0);
+				int sy = this->level->getHeightmap(sx, sz);
+				while (sy > 62 && (this->level->getTile(sx, sy, sz) == Tile::leaves->blockID || 
+				                   this->level->getTile(sx, sy, sz) == Tile::treeTrunk->blockID || 
+				                   this->level->getTile(sx, sy, sz) == Tile::vine->blockID || 
+				                   this->level->isEmptyTile(sx, sy, sz))) {
+					sy--;
+				}
+				if (sy < 1) continue;
+				int t = this->level->getTile(sx, sy, sz);
+				int tBelow = this->level->getTile(sx, sy - 1, sz);
+				if (t == 0 || t == Tile::water->blockID || t == Tile::calmWater->blockID || t == Tile::tallgrass->blockID || t == Tile::vine->blockID) {
+					int placeY = (sy > 62 ? sy : 63);
+					this->level->setTileAndData(sx, placeY, sz, Tile::treeTrunk->blockID, (dir == 0 ? 7 : 11), 2);
+					if (tBelow == Tile::water->blockID || tBelow == Tile::calmWater->blockID) {
+						for (int d = placeY - 1; d >= 1; --d) {
+							int subT = this->level->getTile(sx, d, sz);
+							if (subT == Tile::water->blockID || subT == Tile::calmWater->blockID || subT == 0) {
+								if (a8->genrand_int32() % 2 == 0) {
+									this->level->setTileAndData(sx, d, sz, Tile::treeTrunk->blockID, 3, 2);
+								}
+							} else break;
+						}
+					}
+				}
+			}
+		}
+		for (int i = 0; i < 8; ++i) {
+			int32_t wx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t wz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t wy = this->level->getHeightmap(wx, wz);
+			while (wy > 62 && (this->level->getTile(wx, wy, wz) == Tile::leaves->blockID || 
+			                   this->level->getTile(wx, wy, wz) == Tile::treeTrunk->blockID || 
+			                   this->level->getTile(wx, wy, wz) == Tile::vine->blockID || 
+			                   this->level->isEmptyTile(wx, wy, wz))) {
+				wy--;
+			}
+			WaterLilyFeature wlf;
+			wlf.place(this->level, a8, wx, wy, wz);
+		}
+		if (!this->level->isClientMaybe) {
+			int frogCount = 2 + (a8->genrand_int32() % 3);
+			for (int f = 0; f < frogCount; ++f) {
+				int32_t fx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t fz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t fy = this->level->getHeightmap(fx, fz);
+				while (fy > 62 && (this->level->getTile(fx, fy, fz) == Tile::leaves->blockID || 
+				                   this->level->getTile(fx, fy, fz) == Tile::treeTrunk->blockID || 
+				                   this->level->getTile(fx, fy, fz) == Tile::vine->blockID || 
+				                   this->level->isEmptyTile(fx, fy, fz))) {
+					fy--;
+				}
+				if (fy > 0 && fy < 126) {
+					int32_t ground = this->level->getTile(fx, fy, fz);
+					if (ground == Tile::water->blockID || ground == Tile::calmWater->blockID || ground == Tile::grass->blockID || ground == Tile::dirt->blockID || ground == Tile::waterLily->blockID) {
+						Frog* frog = new Frog(this->level);
+						frog->moveTo((float)fx + 0.5f, (float)(fy + 1), (float)fz + 0.5f, 0.0f, 0.0f);
+						MobSpawner::finalizeMobSettings(frog, this->level, 0.0, 0.0, 0.0);
+						this->level->addEntity(frog);
 					}
 				}
 			}

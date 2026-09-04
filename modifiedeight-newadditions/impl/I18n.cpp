@@ -108,14 +108,6 @@ std::string I18n::getDescriptionString(const struct ItemInstance &a2) {
   if (Tile::woodSlabHalf == a2.tileClass && a2.tileClass) {
     return I18n::get("desc.slab");
   }
-  if ((Tile::coloredSlabHalf1 && a2.tileClass == Tile::coloredSlabHalf1) ||
-      (Tile::coloredSlabHalf2 && a2.tileClass == Tile::coloredSlabHalf2) ||
-      (Tile::coloredBrickSlabHalf1 &&
-       a2.tileClass == Tile::coloredBrickSlabHalf1) ||
-      (Tile::coloredBrickSlabHalf2 &&
-       a2.tileClass == Tile::coloredBrickSlabHalf2)) {
-    return I18n::get("desc.slab");
-  }
   if (Item::bed && a2.itemClass == Item::bed) {
     return I18n::get("desc.bed");
   }
@@ -125,12 +117,20 @@ std::string I18n::getDescriptionString(const struct ItemInstance &a2) {
   if (Item::door_birch && a2.itemClass == Item::door_birch) {
     return I18n::get("desc.doorbirch");
   }
+  if (Item::door_jungle && a2.itemClass == Item::door_jungle) {
+    return I18n::get("desc.doorjungle");
+  }
+  if (Tile::ironTrapdoor && a2.tileClass == Tile::ironTrapdoor) {
+    return I18n::get("desc.trapdoor");
+  }
+  if (Item::boat && a2.itemClass == Item::boat) {
+    return I18n::get("desc.boat");
+  }
   if ((Item::redstoneLamp && a2.itemClass == Item::redstoneLamp) ||
       (Tile::redstoneLampOff && a2.tileClass == Tile::redstoneLampOff)) {
     return I18n::get("desc.redstonelamp");
   }
-  if ((Tile::wood && a2.tileClass == Tile::wood) ||
-      (Tile::coloredPlanks && a2.tileClass == Tile::coloredPlanks)) {
+  if (Tile::wood && a2.tileClass == Tile::wood) {
     return I18n::get("desc.wood");
   }
   if ((Tile::fence_spruce && a2.tileClass == Tile::fence_spruce) ||
@@ -365,7 +365,7 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     return 1;
   }
   if (a1 == "options.neoncolortheme") {
-    a2 = "Neon Theme";
+    a2 = "Theme";
     return 1;
   }
   if (a1 == "options.hudcamerabutton") {
@@ -452,6 +452,7 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   if (a1 == "item.clownfish.name") { a2 = "Tropical Fish"; return 1; }
   if (a1 == "item.pufferfish.name") { a2 = "Pufferfish"; return 1; }
   if (a1 == "tile.slimeBlock.name") { a2 = "Slime Block"; return 1; }
+  if (a1 == "tile.stoneWall.name") { a2 = "Stone Wall"; return 1; }
   if (a1 == "item.slimeball.name") { a2 = "Slimeball"; return 1; }
   if (a1 == "entity.Squid.name") { a2 = "Squid"; return 1; }
   if (a1 == "entity.Wolf.name") { a2 = "Wolf"; return 1; }
@@ -513,9 +514,42 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   if (a1 == "options.realism.cavelighting") { a2 = "Atmospheric Caves"; return 1; }
   if (a1 == "options.realism.softshadows") { a2 = "Soft Shadows"; return 1; }
   if (a1 == "options.extendedinventory") { a2 = "Extended Inventory"; return 1; }
+  if (a1 == "options.controllersupport") { a2 = "Controller Support"; return 1; }
   if (a1 == "options.realism.ssao") { a2 = "SSAO Occlusion"; return 1; }
   if (a1 == "options.realism.ssl") { a2 = "Screen-Space Lighting"; return 1; }
   if (a1 == "options.realism.bloom") { a2 = "Light Bloom"; return 1; }
+  if (a1 == "tile.copperOre.name" || a1 == "item.copperOre.name" || a1 == "desc.copperOre" || a1 == "tile.copperOre") { a2 = "Copper Ore"; return 1; }
+  if (a1 == "tile.copperBlock.name" || a1 == "item.copperBlock.name" || a1 == "desc.copperBlock" || a1 == "tile.copperBlock") { a2 = "Copper Block"; return 1; }
+  if (a1 == "item.copperIngot.name" || a1 == "tile.copperIngot.name" || a1 == "desc.copperIngot" || a1 == "item.copperIngot") { a2 = "Copper Ingot"; return 1; }
+  if (a1 == "tile.copperFence.name" || a1 == "item.copperFence.name" || a1 == "desc.copperFence" || a1 == "tile.copperFence") { a2 = "Copper Bars"; return 1; }
+  if (a1 == "tile.copperWall.name" || a1 == "item.copperWall.name" || a1 == "desc.copperWall" || a1 == "tile.copperWall") { a2 = "Copper Wall"; return 1; }
+  if (a1 == "tile.copperStairs.name" || a1 == "item.copperStairs.name" || a1 == "desc.copperStairs" || a1 == "tile.copperStairs") { a2 = "Copper Stairs"; return 1; }
+  if (a1 == "tile.copperSlab.name" || a1 == "item.copperSlab.name" || a1 == "desc.copperSlab" || a1 == "tile.copperSlab") { a2 = "Copper Slab"; return 1; }
+  if (a1 == "item.copperDoor.name" || a1 == "tile.copperDoor.name" || a1 == "desc.copperDoor" || a1 == "item.copperDoor" || a1 == "tile.copperDoor") { a2 = "Copper Door"; return 1; }
+  if (a1 == "tile.copperTrapdoor.name" || a1 == "item.copperTrapdoor.name" || a1 == "desc.copperTrapdoor" || a1 == "tile.copperTrapdoor") { a2 = "Copper Trapdoor"; return 1; }
+  if (a1 == "tile.enderChest.name" || a1 == "item.enderChest.name" || a1 == "desc.enderChest" || a1 == "tile.enderChest") { a2 = "Ender Chest"; return 1; }
+  if (a1 == "tile.cobbleWall.name" || a1 == "tile.cobbleWall.normal.name" || a1 == "tile.cobbleWall") { a2 = "Cobblestone Wall"; return 1; }
+  if (a1 == "tile.cobbleWall.mossy.name") { a2 = "Mossy Cobblestone Wall"; return 1; }
+  if (a1 == "tile.stoneWall.name" || a1 == "tile.stoneWall") { a2 = "Stone Wall"; return 1; }
+  if (a1 == "tile.doorJungle.name" || a1 == "item.doorJungle.name" || a1 == "desc.doorjungle" || a1 == "desc.doorJungle") { a2 = "Jungle Door"; return 1; }
+  if (a1 == "tile.ironTrapdoor.name" || a1 == "item.ironTrapdoor.name" || a1 == "desc.ironTrapdoor" || a1 == "desc.trapdoor.iron") { a2 = "Iron Trapdoor"; return 1; }
+  if (a1 == "tile.slimeBlock.name" || a1 == "item.slimeBlock.name" || a1 == "desc.slimeBlock") { a2 = "Slime Block"; return 1; }
+  if (a1 == "item.bed.white.name" || a1 == "item.bed.white") { a2 = "White Bed"; return 1; }
+  if (a1 == "item.bed.orange.name" || a1 == "item.bed.orange") { a2 = "Orange Bed"; return 1; }
+  if (a1 == "item.bed.magenta.name" || a1 == "item.bed.magenta") { a2 = "Magenta Bed"; return 1; }
+  if (a1 == "item.bed.lightBlue.name" || a1 == "item.bed.lightBlue") { a2 = "Light Blue Bed"; return 1; }
+  if (a1 == "item.bed.yellow.name" || a1 == "item.bed.yellow") { a2 = "Yellow Bed"; return 1; }
+  if (a1 == "item.bed.lime.name" || a1 == "item.bed.lime") { a2 = "Lime Bed"; return 1; }
+  if (a1 == "item.bed.pink.name" || a1 == "item.bed.pink") { a2 = "Pink Bed"; return 1; }
+  if (a1 == "item.bed.gray.name" || a1 == "item.bed.gray") { a2 = "Gray Bed"; return 1; }
+  if (a1 == "item.bed.silver.name" || a1 == "item.bed.silver") { a2 = "Light Gray Bed"; return 1; }
+  if (a1 == "item.bed.cyan.name" || a1 == "item.bed.cyan") { a2 = "Cyan Bed"; return 1; }
+  if (a1 == "item.bed.purple.name" || a1 == "item.bed.purple") { a2 = "Purple Bed"; return 1; }
+  if (a1 == "item.bed.blue.name" || a1 == "item.bed.blue") { a2 = "Blue Bed"; return 1; }
+  if (a1 == "item.bed.brown.name" || a1 == "item.bed.brown") { a2 = "Brown Bed"; return 1; }
+  if (a1 == "item.bed.green.name" || a1 == "item.bed.green") { a2 = "Green Bed"; return 1; }
+  if (a1 == "item.bed.red.name" || a1 == "item.bed.red" || a1 == "item.bed.name" || a1 == "tile.bed.name") { a2 = "Red Bed"; return 1; }
+  if (a1 == "item.bed.black.name" || a1 == "item.bed.black") { a2 = "Black Bed"; return 1; }
   if (a1 == "tile.grassPath.name") {
     a2 = "Grass Path";
     return 1;
@@ -567,6 +601,9 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
 }
 
 std::string I18n::get(const std::string &a2) {
+  std::string res;
+  if (I18n::get(a2, res))
+    return res;
   if (a2 == "options.newadditions")
     return "ModifiedEight New Additions";
   if (a2 == "options.newadditions.desc")
@@ -590,7 +627,7 @@ std::string I18n::get(const std::string &a2) {
   if (a2 == "options.classicgui")
     return "Classic GUI";
   if (a2 == "options.neoncolortheme")
-    return "Neon Theme";
+    return "Theme";
   if (a2 == "options.hudcamerabutton")
     return "HUD Camera Button";
   if (a2 == "options.hudcamerabutton.desc")
@@ -637,6 +674,7 @@ std::string I18n::get(const std::string &a2) {
   if (a2 == "item.clownfish.name") return "Tropical Fish";
   if (a2 == "item.pufferfish.name") return "Pufferfish";
   if (a2 == "tile.slimeBlock.name") return "Slime Block";
+  if (a2 == "tile.stoneWall.name") return "Stone Wall";
   if (a2 == "item.slimeball.name") return "Slimeball";
   if (a2 == "entity.Squid.name") return "Squid";
   if (a2 == "entity.Wolf.name") return "Wolf";
@@ -688,6 +726,7 @@ std::string I18n::get(const std::string &a2) {
   if (a2 == "options.realism.cavelighting") return "Atmospheric Caves";
   if (a2 == "options.realism.bloom") return "Bloom Effect";
   if (a2 == "options.extendedinventory") return "Extended Inventory";
+  if (a2 == "options.controllersupport") return "Controller Support";
   if (a2 == "options.realism.ssao") return "SSAO Occlusion";
   if (a2 == "options.realism.ssl") return "Screen-Space Lighting";
   if (a2 == "options.realism.bloom") return "Light Bloom";
@@ -703,6 +742,8 @@ std::string I18n::get(const std::string &a2) {
     return "Armor Stand";
   if (a2 == "entity.Frog.name" || a2 == "entity.Frog")
     return "Frog";
+  if (a2 == "entity.Ocelot.name" || a2 == "entity.Ocelot")
+    return "Ocelot";
   if (a2 == "tile.daylightDetector.name" || a2 == "item.daylightDetector.name")
     return "Daylight Sensor";
   if (a2 == "tile.daylightDetectorInverted.name" || a2 == "item.daylightDetectorInverted.name")

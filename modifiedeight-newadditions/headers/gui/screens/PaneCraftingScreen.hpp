@@ -49,6 +49,7 @@ struct PaneCraftingScreen: Screen, IItemPaneCallback
 	virtual bool_t renderGameBehind();
 	virtual bool_t closeOnPlayerHurt();
 	virtual void buttonClicked(Button*);
+	virtual void mouseClicked(int32_t, int32_t, int32_t);
 	virtual void onItemSelected(const ItemPane*, int32_t);
 	virtual std::vector<CItem*>* getItems(const ItemPane*);
 	virtual void filterRecipes(std::vector<Recipe*>&);

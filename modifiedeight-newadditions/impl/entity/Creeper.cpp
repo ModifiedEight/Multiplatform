@@ -11,6 +11,8 @@
 #include <entity/ai/goals/LookAtPlayerGoal.hpp>
 #include <entity/ai/goals/NearestAttackableTargetGoal.hpp>
 #include <entity/ai/goals/HurtByTargetGoal.hpp>
+#include <cmath>
+#include <math.h>
 
 
 Creeper::Creeper(Level* a2)
@@ -60,8 +62,41 @@ void Creeper::tick() {
 		}
 	}
 	Monster::tick();
-	if(!this->level->isClientMaybe && !this->attackTarget) {
-		this->checkCantSeeTarget(0, 0.0);
+	if(!this->level->isClientMaybe) {
+		std::vector<Entity*> nearby;
+		this->level->getEntitiesOfType(22, this->boundingBox.expand(12.0f, 6.0f, 12.0f), nearby);
+		bool fleeing = false;
+		for(Entity* e: nearby) {
+			if(e && !e->isDead) {
+				float dx = this->posX - e->posX;
+				float dz = this->posZ - e->posZ;
+				float d = sqrtf(dx * dx + dz * dz);
+				if(d > 0.001f && d < 12.0f) {
+					fleeing = true;
+					this->setSwellDir(-1);
+					this->swellTime = 0;
+					this->attackTarget = 0;
+
+					float targetYaw = (float)(atan2f(dz, dx) * 180.0f / 3.141592653589793f) - 90.0f;
+					float rotDiff = targetYaw - this->yaw;
+					while (rotDiff < -180.0f) rotDiff += 360.0f;
+					while (rotDiff > 180.0f) rotDiff -= 360.0f;
+					this->yaw += rotDiff * 0.35f;
+
+					float fleeSpeed = 0.28f;
+					this->motionX = (dx / d) * fleeSpeed;
+					this->motionZ = (dz / d) * fleeSpeed;
+
+					if(this->isCollidedHorizontally && this->onGround) {
+						this->motionY = 0.42f;
+					}
+					break;
+				}
+			}
+		}
+		if(!fleeing && !this->attackTarget) {
+			this->checkCantSeeTarget(0, 0.0);
+		}
 	}
 }
 bool_t Creeper::interactWithPlayer(Player* a2) {

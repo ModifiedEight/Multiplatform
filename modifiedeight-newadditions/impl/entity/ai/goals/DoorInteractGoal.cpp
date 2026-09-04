@@ -19,7 +19,7 @@ DoorInteractGoal::DoorInteractGoal(Mob* a2) {
 
 Tile* DoorInteractGoal::getDoorTile(int32_t x, int32_t y, int32_t z) {
 	int32_t id = this->holder->level->getTile(x, y, z);
-	if(id == Tile::door_wood->blockID || id == Tile::door_spruce->blockID || id == Tile::door_birch->blockID) {
+	if(id == Tile::door_wood->blockID || id == Tile::door_spruce->blockID || id == Tile::door_birch->blockID || (Tile::door_jungle && id == Tile::door_jungle->blockID)) {
 		return Tile::tiles[id];
 	}
 	return 0;

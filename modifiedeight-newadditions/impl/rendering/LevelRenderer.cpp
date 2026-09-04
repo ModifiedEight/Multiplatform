@@ -1500,7 +1500,7 @@ bool LevelRenderer::updateDirtyChunks(Mob *a2, bool_t a3) {
       v22->rebuild();
       v22->setClean();
       ++rebuilt;
-      if (smooth && rebuilt >= 2 && v40.stopContinue() >= 0.007) {
+      if (smooth && rebuilt >= 1 && v40.stopContinue() >= 0.0035) {
         break;
       }
     }
@@ -1524,7 +1524,7 @@ bool LevelRenderer::updateDirtyChunks(Mob *a2, bool_t a3) {
       goto LABEL_39;
     }
   }
-  if (v40.stopContinue() >= 0.01) {
+  if (v40.stopContinue() >= 0.005) {
     goto LABEL_39;
   }
   if (v25->isInFrustumMaybe || v23 == 2) {

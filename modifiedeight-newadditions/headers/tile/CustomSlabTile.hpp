@@ -13,7 +13,7 @@ struct CustomSlabTile : SlabTile {
 		virtual bool_t useOn(ItemInstance*, Player*, Level*, int32_t, int32_t, int32_t, int32_t, float, float, float);
 	};
 
-	int32_t slabType; // 0 = dirt, 1 = grass, 2 = stone (rock)
+	int32_t slabType; // 0 = dirt, 1 = grass, 2 = stone (rock), 3 = copper
 	int32_t partnerSlabId;
 
 	CustomSlabTile(int32_t id, bool_t isFull, int32_t slabType);

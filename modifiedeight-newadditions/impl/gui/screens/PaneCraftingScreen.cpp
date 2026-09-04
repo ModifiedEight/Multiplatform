@@ -430,6 +430,20 @@ void PaneCraftingScreen::buttonClicked(Button* a2) {
 		this->_resortRecipes();
 	}
 }
+void PaneCraftingScreen::mouseClicked(int32_t a2, int32_t a3, int32_t a4) {
+	if (a4 == 4 || a4 == 5) {
+		if (this->scrollingPane) {
+			this->scrollingPane->adjustContentSize();
+			float delta = (a4 == 4) ? 26.0f : -26.0f;
+			float newY = this->scrollingPane->contentOffset()->y + delta;
+			if (newY > 0.0f) newY = 0.0f;
+			if (newY < (float)this->scrollingPane->field_12C) newY = (float)this->scrollingPane->field_12C;
+			this->scrollingPane->setContentOffset(this->scrollingPane->contentOffset()->x, newY);
+		}
+		return;
+	}
+	Screen::mouseClicked(a2, a3, a4);
+}
 void PaneCraftingScreen::onItemSelected(const ItemPane* a2, int32_t a3) {
 	if(this->field_78 < this->field_6C.size()) {
 		if(a3 < this->field_6C[this->field_78].size()) {

@@ -541,7 +541,7 @@ void TileRenderer::renderGuiTile(Tile* tile, int32_t a3, float a4, float a5) {
 	this->field_0 = 0;
 	v11 = tile->getRenderShape();
 	v12 = v11;
-	if(!v11 || v11 == 31 || tile == (Tile*)Tile::chest) {
+	if(!v11 || v11 == 31 || tile == (Tile*)Tile::chest || (Tile::enderChest && tile == (Tile*)Tile::enderChest)) {
 		tile->updateDefaultShape();
 		Tesselator::instance.begin(7, 24);
 		Tesselator::instance.color(a4 * cr, a4 * cg, a4 * cb, a5);
@@ -2858,10 +2858,6 @@ bool_t TileRenderer::tesselateCrossInWorld(Tile* tile, int32_t x, int32_t y, int
 	int32_t belowId = this->levelSource->getTile(x, y - 1, z);
 	int32_t belowMeta = this->levelSource->getData(x, y - 1, z);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
@@ -2952,10 +2948,6 @@ bool_t TileRenderer::tesselateFlowerPotInWorld(Tile* tile, int32_t x, int32_t y,
 	int32_t belowId = this->levelSource->getTile(x, y - 1, z);
 	int32_t belowMeta = this->levelSource->getData(x, y - 1, z);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
@@ -3061,10 +3053,6 @@ bool_t TileRenderer::tesselateDoorInWorld(Tile* tile, int32_t x, int32_t y, int3
 	int32_t belowId = this->levelSource->getTile(x, base_y, z);
 	int32_t belowMeta = this->levelSource->getData(x, base_y, z);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
@@ -3936,10 +3924,6 @@ bool_t TileRenderer::tesselateRailInWorld(BaseRailTile* tile, int32_t x, int32_t
 	int32_t belowId = this->levelSource->getTile(x, y - 1, z);
 	int32_t belowMeta = this->levelSource->getData(x, y - 1, z);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
@@ -4836,73 +4820,48 @@ bool_t TileRenderer::tesselateTreeInWorld(Tile* tile, int32_t x, int32_t y, int3
 	return this->tesselateBlockInWorld(tile, x, y, z);
 }
 bool_t TileRenderer::tesselateWallInWorld(WallTile* tile, int32_t x, int32_t y, int32_t z) {
-	bool_t v9;	 // r0
-	int32_t v10; // r10
-	int32_t v11; // r11
-	bool_t v12;	 // r0
-	float v13;	 // s18
-	float v14;	 // s17
-	bool_t v16;	 // [sp+10h] [bp-48h]
-	bool_t v17;	 // [sp+14h] [bp-44h]
-	bool_t v18;	 // [sp+18h] [bp-40h]
-	bool_t v19;	 // [sp+1Ch] [bp-3Ch]
+	bool_t cXNeg = tile->connectsTo(this->levelSource, x - 1, y, z);
+	bool_t cXPos = tile->connectsTo(this->levelSource, x + 1, y, z);
+	bool_t cZNeg = tile->connectsTo(this->levelSource, x, y, z - 1);
+	bool_t cZPos = tile->connectsTo(this->levelSource, x, y, z + 1);
 
-	v16 = tile->connectsTo(this->levelSource, x - 1, y, z);
-	v17 = tile->connectsTo(this->levelSource, x + 1, y, z);
-	v19 = tile->connectsTo(this->levelSource, x, y, z - 1);
-	v9 = tile->connectsTo(this->levelSource, x, y, z + 1);
-	v18 = v9;
-	if(v19) {
-		if(v9 && !v16 && !v17) {
-			v10 = 1;
-			v11 = 0;
-			goto LABEL_13;
+	int32_t topId = this->levelSource->getTile(x, y + 1, z);
+	bool_t wallAbove = topId && Tile::tiles[topId] && Tile::tiles[topId]->getRenderShape() == 32;
+	int32_t botId = this->levelSource->getTile(x, y - 1, z);
+	bool_t wallBelow = botId && Tile::tiles[botId] && Tile::tiles[botId]->getRenderShape() == 32;
+	bool_t emptyAbove = this->levelSource->isEmptyTile(x, y + 1, z);
+
+	bool_t isStraightX = (cXNeg && cXPos && !cZNeg && !cZPos);
+	bool_t isStraightZ = (cZNeg && cZPos && !cXNeg && !cXPos);
+	bool_t needPost = (!isStraightX && !isStraightZ) || wallAbove || wallBelow || !emptyAbove;
+
+	if (needPost) {
+		tile->setShape(0.25f, 0.0f, 0.25f, 0.75f, 1.0f, 0.75f);
+		this->tesselateBlockInWorld(tile, x, y, z);
+		if (cXNeg) {
+			tile->setShape(0.0f, 0.0f, 0.3125f, 0.25f, 0.8125f, 0.6875f);
+			this->tesselateBlockInWorld(tile, x, y, z);
+		}
+		if (cXPos) {
+			tile->setShape(0.75f, 0.0f, 0.3125f, 1.0f, 0.8125f, 0.6875f);
+			this->tesselateBlockInWorld(tile, x, y, z);
+		}
+		if (cZNeg) {
+			tile->setShape(0.3125f, 0.0f, 0.0f, 0.6875f, 0.8125f, 0.25f);
+			this->tesselateBlockInWorld(tile, x, y, z);
+		}
+		if (cZPos) {
+			tile->setShape(0.3125f, 0.0f, 0.75f, 0.6875f, 0.8125f, 1.0f);
+			this->tesselateBlockInWorld(tile, x, y, z);
 		}
 	} else {
-		if(v9) {
-			v10 = 0;
-			goto LABEL_12;
+		if (isStraightZ) {
+			tile->setShape(0.3125f, 0.0f, 0.0f, 0.6875f, 0.8125f, 1.0f);
+			this->tesselateBlockInWorld(tile, x, y, z);
+		} else if (isStraightX) {
+			tile->setShape(0.0f, 0.0f, 0.3125f, 1.0f, 0.8125f, 0.6875f);
+			this->tesselateBlockInWorld(tile, x, y, z);
 		}
-		if(v16 && v17) {
-			v10 = 0;
-			v11 = 1;
-			goto LABEL_13;
-		}
-	}
-	v10 = 0;
-LABEL_12:
-	v11 = 0;
-LABEL_13:
-	v12 = this->levelSource->isEmptyTile(x, y + 1, z);
-	if(v10) {
-		if(v12) {
-			tile->setShape(0.5 - 0.1875, 0.0, 0.0, 0.1875 + 0.5, 0.8125, 1.0);
-			goto LABEL_24;
-		}
-	} else if(v11 && v12) {
-		tile->setShape(0.0, 0.0, 0.5 - 0.1875, 1.0, 0.8125, 0.1875 + 0.5);
-		goto LABEL_24;
-	}
-	v13 = 0.5 - 0.25;
-	v14 = 0.25 + 0.5;
-	tile->setShape(0.5 - 0.25, 0.0, 0.5 - 0.25, 0.25 + 0.5, 1.0, 0.25 + 0.5);
-	this->tesselateBlockInWorld(tile, x, y, z);
-	if(v16) {
-		tile->setShape(0.0, 0.0, 0.5 - 0.1875, v13, 0.8125, 0.1875 + 0.5);
-		this->tesselateBlockInWorld(tile, x, y, z);
-	}
-	if(v17) {
-		tile->setShape(v14, 0.0, 0.5 - 0.1875, 1.0, 0.8125, 0.1875 + 0.5);
-		this->tesselateBlockInWorld(tile, x, y, z);
-	}
-	if(v19) {
-		tile->setShape(0.5 - 0.1875, 0.0, 0.0, 0.1875 + 0.5, 0.8125, v13);
-		this->tesselateBlockInWorld(tile, x, y, z);
-	}
-	if(v18) {
-		tile->setShape(0.5 - 0.1875, 0.0, v14, 0.1875 + 0.5, 0.8125, 1.0);
-LABEL_24:
-		this->tesselateBlockInWorld(tile, x, y, z);
 	}
 	tile->updateShape(this->levelSource, x, y, z);
 	return 1;

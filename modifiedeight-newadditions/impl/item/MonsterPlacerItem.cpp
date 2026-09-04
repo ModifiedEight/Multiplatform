@@ -47,6 +47,7 @@ TextureUVCoordinateSet* MonsterPlacerItem::getIcon(int32_t a2, int32_t a3, bool_
 	switch (a2) {
 		case 14: namedEgg = "spawn_egg_wolf"; break;
 		case 17: namedEgg = "spawn_egg_squid"; break;
+		case 22: namedEgg = "spawn_egg_ocelot"; break;
 		case 26: namedEgg = "spawn_egg_polar_bear"; break;
 		case 27: namedEgg = "spawn_egg_cod"; break;
 		case 28: namedEgg = "spawn_egg_salmon"; break;

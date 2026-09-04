@@ -9,6 +9,10 @@ WoodTile::WoodTile(int32_t a2)
 WoodTile::~WoodTile() {
 }
 TextureUVCoordinateSet* WoodTile::getTexture(int32_t, int32_t a3) {
+	if (this->field_80.uv.empty()) {
+		TextureAtlasTextureItem* item = this->getTextureItem("planks");
+		if (item) this->field_80 = *item;
+	}
 	return this->field_80.getUV(a3);
 }
 std::string WoodTile::getTypeDescriptionId(int32_t a3) {

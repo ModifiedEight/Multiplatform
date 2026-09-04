@@ -22,7 +22,7 @@
 ChestScreen::ChestScreen(Player* a2, ChestTileEntity* a3)
 	: field_60(4, "")
 	, field_D0(5, "Inventory")
-	, field_104(6, a3->pair ? "Large Chest" : "Chest") {
+	, field_104(6, a3->type == 6 ? "Ender Chest" : (a3->pair ? "Large Chest" : "Chest")) {
 	this->field_50 = new ChestMenu(a3);
 	this->field_138 = 0;
 	this->field_140.width = 1;

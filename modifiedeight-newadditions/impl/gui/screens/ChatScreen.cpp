@@ -588,14 +588,15 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 					mc->level->levelEvent(0, 9810, 0, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
 				}
 				mc->gui.addMessage("", "Set weather to clear", 200);
-			} else if (wtype == "rain" || wtype == "snow") {
+			} else if (wtype == "rain" || wtype == "snow" || wtype == "rainfrogs") {
 				if (mc->level) {
 					mc->level->weatherType = 1;
+					mc->level->isRainFrogs = (wtype == "rainfrogs");
 					mc->level->weatherTicks = 24000;
 					extern int g_morningFogTicks;
 					mc->level->levelEvent(0, 9810, 1, (int16_t)(mc->level->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, mc->level->weatherTicks);
 				}
-				mc->gui.addMessage("", "Set weather to " + wtype, 200);
+				mc->gui.addMessage("", "Set weather to rain", 200);
 			} else if (wtype == "thunder" || wtype == "storm") {
 				if (mc->level) {
 					mc->level->weatherType = 2;

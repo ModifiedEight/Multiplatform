@@ -394,6 +394,20 @@ void VillageFeature::placeWell(Level* level, Random* random, int32_t x, int32_t 
 			this->placeBlock(level, x + rx, y + 4, z + rz, mat.stoneId, mat.stoneMeta);
 		}
 	}
+
+	if (!level->isClientMaybe) {
+		for (int vCount = 0; vCount < 3; ++vCount) {
+			Villager* v = new Villager(level);
+			int32_t vx = x + (vCount == 0 ? -1 : (vCount == 1 ? 4 : 1));
+			int32_t vz = z + (vCount == 0 ? 1 : (vCount == 1 ? 2 : -1));
+			int32_t vy = y + 1;
+			v->houseX = vx; v->houseY = vy; v->houseZ = vz;
+			v->profession = random->genrand_int32() % 5;
+			v->moveTo((float)vx + 0.5f, (float)vy, (float)vz + 0.5f, (float)(random->genrand_int32() % 360), 0.0f);
+			MobSpawner::finalizeMobSettings(v, level, 0.0, 0.0, 0.0);
+			level->addEntity(v);
+		}
+	}
 }
 
 void VillageFeature::placeSmallHouse(Level* level, Random* random, int32_t x, int32_t y, int32_t z, int32_t rotation, int32_t variant, const VillageMaterials& mat) {
@@ -638,6 +652,22 @@ void VillageFeature::placeLargeHouse(Level* level, Random* random, int32_t x, in
 		this->placeRotated(level, x, y, z, lx, 7, 3, sizeX, sizeZ, mat.stairId, 3, rotation);
 	}
 
+	if (!level->isClientMaybe) {
+		for (int vCount = 0; vCount < 2; ++vCount) {
+			Villager* v = new Villager(level);
+			int32_t vrx = (vCount == 0 ? 2 : 4), vrz = (vCount == 0 ? 2 : 3);
+			if (rotation == 1) { vrx = sizeZ - 2; vrz = 2; }
+			else if (rotation == 2) { vrx = sizeX - 2; vrz = sizeZ - 2; }
+			else if (rotation == 3) { vrx = 2; vrz = sizeX - 2; }
+			v->houseX = x + vrx; v->houseY = y + 1; v->houseZ = z + vrz;
+			v->hasBed = 1;
+			v->profession = random->genrand_int32() % 5;
+			v->moveTo((float)(x + vrx) + 0.5f, (float)(y + 1), (float)(z + vrz) + 0.5f, 0.0f, 0.0f);
+			MobSpawner::finalizeMobSettings(v, level, 0.0, 0.0, 0.0);
+			level->addEntity(v);
+		}
+	}
+
 	for (int32_t lx = minX - 2; lx <= maxX + 2; lx += 16) {
 		for (int32_t lz = minZ - 2; lz <= maxZ + 2; lz += 16) {
 			LevelChunk* c = level->getChunkAt(lx, lz);
@@ -684,6 +714,17 @@ void VillageFeature::placeFarm(Level* level, Random* random, int32_t x, int32_t 
 				this->placeRotated(level, x, y, z, lx, 1, lz, sizeX, sizeZ, cropTile, cropAge, rotation);
 			}
 		}
+	}
+
+	if (!level->isClientMaybe) {
+		Villager* v = new Villager(level);
+		int32_t vrx = 3, vrz = 2;
+		if (rotation == 1 || rotation == 3) { vrx = 2; vrz = 3; }
+		v->houseX = x + vrx; v->houseY = y + 1; v->houseZ = z + vrz;
+		v->profession = 0;
+		v->moveTo((float)(x + vrx) + 0.5f, (float)(y + 1), (float)(z + vrz) + 0.5f, 0.0f, 0.0f);
+		MobSpawner::finalizeMobSettings(v, level, 0.0, 0.0, 0.0);
+		level->addEntity(v);
 	}
 }
 
@@ -887,6 +928,22 @@ bool_t VillageFeature::place(Level* level, Random* random, int32_t x, int32_t y,
 		int32_t ly = level->getHeightmap(lx, lz);
 		if (ly >= 64 && level->isEmptyTile(lx, ly, lz)) {
 			this->placeLamp(level, lx, ly, lz, mat);
+		}
+	}
+
+	if (!level->isClientMaybe) {
+		int villagerTotal = 4 + (random->genrand_int32() % 4);
+		for (int vi = 0; vi < villagerTotal; ++vi) {
+			Villager* v = new Villager(level);
+			int32_t vx = x + (random->genrand_int32() % 20) - 10;
+			int32_t vz = z + (random->genrand_int32() % 20) - 10;
+			int32_t vy = level->getHeightmap(vx, vz);
+			if (vy < 60) vy = y + 1;
+			v->houseX = vx; v->houseY = vy; v->houseZ = vz;
+			v->profession = random->genrand_int32() % 5;
+			v->moveTo((float)vx + 0.5f, (float)vy, (float)vz + 0.5f, (float)(random->genrand_int32() % 360), 0.0f);
+			MobSpawner::finalizeMobSettings(v, level, 0.0, 0.0, 0.0);
+			level->addEntity(v);
 		}
 	}
 

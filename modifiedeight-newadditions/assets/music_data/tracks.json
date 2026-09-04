@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Minecraft",
+    "file": "music/minecraft.aac"
+  },
+  {
+    "name": "Subwoofer Lullaby",
+    "file": "music/subwoofer_lullaby.aac"
+  },
+  {
+    "name": "Living Mice",
+    "file": "music/living_mice.aac"
+  },
+  {
+    "name": "Haggstrom",
+    "file": "music/haggstrom.aac"
+  },
+  {
+    "name": "Danny",
+    "file": "music/danny.aac"
+  },
+  {
+    "name": "Key",
+    "file": "music/key.aac"
+  },
+  {
+    "name": "Oxygene",
+    "file": "music/oxygene.aac"
+  },
+  {
+    "name": "Equinoxe",
+    "file": "music/equinoxe.aac"
+  },
+  {
+    "name": "Mice on Venus",
+    "file": "music/mice_on_venus.aac"
+  },
+  {
+    "name": "Door",
+    "file": "music/door.aac"
+  },
+  {
+    "name": "Moog City 2",
+    "file": "music/moog_city_2.aac"
+  }
+]

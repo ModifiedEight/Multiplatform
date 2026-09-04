@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <mutex>
+#include <vector>
+#include <unistd.h>
 
 AppPlatform::Listener::~Listener() {}
 
@@ -805,18 +807,49 @@ AssetFile AppPlatform::readAssetFile(const std::string &path) {
       std::string noAssets = path;
       while (noAssets.rfind("assets/", 0) == 0) noAssets = noAssets.substr(7);
 
-      const char* prefixes[] = {
+      static std::string s_exeDir;
+      static bool s_exeDirChecked = false;
+      if (!s_exeDirChecked) {
+        s_exeDirChecked = true;
+        char buf[1024];
+        ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+        if (len > 0) {
+          buf[len] = '\0';
+          std::string fullPath(buf);
+          size_t pos = fullPath.find_last_of('/');
+          if (pos != std::string::npos) {
+            s_exeDir = fullPath.substr(0, pos + 1);
+          }
+        }
+      }
+
+      std::vector<std::string> prefixes = {
         "assets/",
+        "assets/images/",
         "platforms/android/app/src/newadditions/assets/",
+        "platforms/android/app/src/newadditions/assets/images/",
         "platforms/android/app/src/classic/assets/",
+        "platforms/android/app/src/classic/assets/images/",
         "modifiedeight-newadditions/assets/",
+        "modifiedeight-newadditions/assets/images/",
         "modifiedeight/assets/",
+        "modifiedeight/assets/images/",
         "../../assets/",
+        "../../assets/images/",
         ""
       };
+      if (!s_exeDir.empty()) {
+        prefixes.push_back(s_exeDir + "assets/");
+        prefixes.push_back(s_exeDir + "assets/images/");
+        prefixes.push_back(s_exeDir);
+        prefixes.push_back(s_exeDir + "../../../modifiedeight-newadditions/assets/");
+        prefixes.push_back(s_exeDir + "../../../modifiedeight-newadditions/assets/images/");
+        prefixes.push_back(s_exeDir + "../../../platforms/android/app/src/newadditions/assets/");
+        prefixes.push_back(s_exeDir + "../../../platforms/android/app/src/newadditions/assets/images/");
+      }
 
       std::string foundPath;
-      for (const char* p : prefixes) {
+      for (const auto& p : prefixes) {
         std::string full = std::string(p) + noAssets;
         f = fopen(full.c_str(), "rb");
         if (f) { foundPath = full; break; }

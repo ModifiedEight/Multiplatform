@@ -90,8 +90,12 @@ struct Item{
 	static Item* door_wood;
 	static Item* door_spruce;
 	static Item* door_birch;
+	static Item* door_jungle;
+	static Item* copperDoor;
+	static Item* copperIngot;
 	static Item* bucket;
 	static Item* minecart;
+	static Item* boat;
 	static Item* saddle;
 	static Item* door_iron;
 	static Item* redStone;

@@ -1,5 +1,6 @@
 #include <level/LevelHeight.hpp>
 #include <entity/Player.hpp>
+#include <entity/LocalPlayer.hpp>
 #include <entity/ItemEntity.hpp>
 
 int g_morningFogTicks = 0;
@@ -601,7 +602,8 @@ bool_t Player::isInWall() {
 	return Entity::isInWall();
 }
 float Player::getHeadHeight() {
-	return 0.12;
+	if (this->isSneaking()) return 0.04f;
+	return 0.12f;
 }
 bool_t Player::isShootable() {
 	return 1;
@@ -830,18 +832,45 @@ void Player::travel(float a2, float a3) {
 		float motionY = this->motionY;
 		float jumpMovementFactor = this->jumpMovementFactor;
 		this->jumpMovementFactor = 0.05f;
-		Mob::travel(a2, a3);
+		float rad = this->yaw * 0.0174532925f;
+		float sinYaw = sinf(rad);
+		float cosYaw = cosf(rad);
+		this->motionX += (a2 * cosYaw - a3 * sinYaw) * 0.045f;
+		this->motionZ += (a3 * cosYaw + a2 * sinYaw) * 0.045f;
+		this->move(this->motionX, this->motionY, this->motionZ);
+		this->motionX *= 0.84f;
 		this->motionY = motionY * 0.6f;
+		this->motionZ *= 0.84f;
 		this->jumpMovementFactor = jumpMovementFactor;
 	} else if (this->isInWater() || this->isUnderLiquid(Material::water)) {
-		float speed = 0.04f;
-		this->moveRelative(a2, a3, speed);
+		float radYaw = this->yaw * 0.0174532925f;
+		float radPitch = this->pitch * 0.0174532925f;
+		float cosPitch = cosf(radPitch);
+		float sinPitch = sinf(radPitch);
+		float sinYaw = sinf(radYaw);
+		float cosYaw = cosf(radYaw);
+		
+		bool isSpr = (this->isLocalPlayer() && ((LocalPlayer*)this)->isSprinting);
+		float speed = (isSpr ? 0.038f : 0.024f);
+		float lookX = -sinYaw * cosPitch;
+		float lookY = -sinPitch;
+		float lookZ = cosYaw * cosPitch;
+
+		float strafeX = cosYaw;
+		float strafeZ = sinYaw;
+
+		if (fabsf(a3) > 0.001f || fabsf(a2) > 0.001f) {
+			this->motionX += (lookX * a3 + strafeX * a2) * speed;
+			this->motionY += (lookY * a3) * speed * 0.75f;
+			this->motionZ += (lookZ * a3 + strafeZ * a2) * speed;
+		}
+
 		this->move(this->motionX, this->motionY, this->motionZ);
-		this->motionX *= 0.85f;
-		this->motionY = (this->motionY * 0.85f) - 0.015f;
-		this->motionZ *= 0.85f;
-		if (this->isCollidedHorizontally) {
-			this->motionY = 0.35f;
+		this->motionX *= 0.82f;
+		this->motionY = (this->motionY * 0.82f) - 0.006f;
+		this->motionZ *= 0.82f;
+		if (this->isCollidedHorizontally && this->isUnderLiquid(Material::water)) {
+			this->motionY = 0.2f;
 		}
 	} else {
 		Mob::travel(a2, a3);

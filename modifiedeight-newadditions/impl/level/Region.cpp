@@ -71,8 +71,13 @@ int32_t Region::getRawBrightness(int32_t x, int32_t y, int32_t z, bool_t complex
 	} else if(y < 0) {
 		return 0;
 	} else if(y <= LevelHeight::maxY()) {
-		v14 = this->chunks[(x >> 4) - this->minCX][(z >> 4) - this->minCZ];
-		return v14->getRawBrightness(x & 0xF, y, z & 0xF, this->level->skyDarken);
+		int32_t cx = (x >> 4) - this->minCX;
+		int32_t cz = (z >> 4) - this->minCZ;
+		if(cx >= 0 && cx < this->sizeX && cz >= 0 && cz < this->sizeZ) {
+			v14 = this->chunks[cx][cz];
+			if(v14) return v14->getRawBrightness(x & 0xF, y, z & 0xF, this->level->skyDarken);
+		}
+		return (15 - this->level->skyDarken) & ~((15 - this->level->skyDarken) >> 31);
 	} else {
 		return (15 - this->level->skyDarken) & ~((15 - this->level->skyDarken) >> 31);
 	}

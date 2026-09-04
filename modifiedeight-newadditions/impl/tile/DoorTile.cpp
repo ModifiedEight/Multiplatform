@@ -7,16 +7,21 @@
 
 DoorTile::DoorTile(int32_t id, const Material* mat, const char* texName)
 	: Tile(id, mat) {
-	TextureAtlasTextureItem texItem(*this->getTextureItem(texName));
-	this->field_80 = *texItem.getUV(1);
-	this->field_98 = *texItem.getUV(0);
-	this->field_B0 = *texItem.getUV(3);
-	this->field_C8 = *texItem.getUV(2);
-	if(mat != Material::metal) {
-		this->textureUV = this->field_80;
-	} else {
-		this->textureUV = this->field_B0;
+	TextureAtlasTextureItem* texItem = this->getTextureItem(texName);
+	if (texItem) {
+		if (texItem->getUVCount() >= 4 && std::string(texName) == "door") {
+			this->field_80 = *texItem->getUV(1);
+			this->field_98 = *texItem->getUV(0);
+			this->field_B0 = *texItem->getUV(3);
+			this->field_C8 = *texItem->getUV(2);
+		} else {
+			this->field_80 = texItem->getUVCount() > 1 ? *texItem->getUV(1) : (texItem->getUVCount() > 0 ? *texItem->getUV(0) : TextureUVCoordinateSet());
+			this->field_98 = texItem->getUVCount() > 0 ? *texItem->getUV(0) : TextureUVCoordinateSet();
+			this->field_B0 = this->field_80;
+			this->field_C8 = this->field_98;
+		}
 	}
+	this->textureUV = this->field_80;
 	this->setShape(0, 0, 0, 1, 1, 1);
 }
 bool_t DoorTile::blocksLight() {
@@ -168,16 +173,38 @@ TextureUVCoordinateSet* DoorTile::getTexture(LevelSource* level, int32_t x, int3
 	float v25;					 // [sp+14h] [bp-1Ch]
 
 	if((uint32_t)a6 > 1) {
+		if (this->field_80.minX == 0.0f && this->field_80.maxX == 0.0f) {
+			TextureAtlasTextureItem* texItem = nullptr;
+			if (Tile::door_jungle && this == Tile::door_jungle) {
+				texItem = this->getTextureItem("door_jungle");
+				if (!texItem) texItem = this->getTextureItem("jungle_door");
+			} else if (Tile::copperDoor && this == Tile::copperDoor) {
+				TextureAtlasTextureItem* topItem = this->getTextureItem("copper_door_top");
+				TextureAtlasTextureItem* botItem = this->getTextureItem("copper_door_bottom");
+				if (topItem && botItem) {
+					this->field_80 = *topItem->getUV(0);
+					this->field_98 = *botItem->getUV(0);
+					this->field_B0 = this->field_80;
+					this->field_C8 = this->field_98;
+				}
+			}
+			if (texItem) {
+				this->field_80 = texItem->getUVCount() > 1 ? *texItem->getUV(1) : (texItem->getUVCount() > 0 ? *texItem->getUV(0) : TextureUVCoordinateSet());
+				this->field_98 = texItem->getUVCount() > 0 ? *texItem->getUV(0) : TextureUVCoordinateSet();
+				this->field_B0 = this->field_80;
+				this->field_C8 = this->field_98;
+			}
+		}
 		cdata = DoorTile::getCompositeData(level, x, y, z);
 		material = this->material;
 		v9 = cdata;
 		if((cdata & 8) != 0) {
-			if(material == Material::metal) {
+			if(material == Material::metal && this != Tile::copperDoor) {
 				v10 = &this->field_B0;
 			} else {
 				v10 = &this->field_80;
 			}
-		} else if(material == Material::metal) {
+		} else if(material == Material::metal && this != Tile::copperDoor) {
 			v10 = &this->field_C8;
 		} else {
 			v10 = &this->field_98;
@@ -321,8 +348,10 @@ LABEL_9:
 }
 int32_t DoorTile::getResource(int32_t a2, Random*) {
 	if((a2 & 8) != 0) return 0;
-	if(this->blockID == Tile::door_spruce->blockID) return Item::door_spruce->itemID;
-	if(this->blockID == Tile::door_birch->blockID) return Item::door_birch->itemID;
+	if(Tile::door_spruce && this->blockID == Tile::door_spruce->blockID) return Item::door_spruce->itemID;
+	if(Tile::door_birch && this->blockID == Tile::door_birch->blockID) return Item::door_birch->itemID;
+	if(Tile::door_jungle && this->blockID == Tile::door_jungle->blockID) return Item::door_jungle ? Item::door_jungle->itemID : 0;
+	if(Tile::copperDoor && this->blockID == Tile::copperDoor->blockID) return Item::copperDoor ? Item::copperDoor->itemID : 0;
 	if(this->material == Material::metal) return Item::door_iron->itemID;
 	return Item::door_wood->itemID;
 }
@@ -336,7 +365,7 @@ int32_t DoorTile::getRenderLayer() {
 bool_t DoorTile::use(Level* level, int32_t x, int32_t y, int32_t z, Player* player) {
 	int8_t cdata; // r0
 
-	if(this->material != Material::metal) {
+	if(this->material != Material::metal || (Tile::copperDoor && this->blockID == Tile::copperDoor->blockID)) {
 		cdata = DoorTile::getCompositeData(level, x, y, z);
 		if((cdata & 8) != 0) {
 			level->setData(x, y - 1, z, cdata & 7 ^ 4, 2);

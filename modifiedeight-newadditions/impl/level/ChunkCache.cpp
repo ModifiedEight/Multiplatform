@@ -3,6 +3,22 @@
 #include <level/chunk/LevelChunk.hpp>
 #include <level/storage/chunk/ChunkStorage.hpp>
 #include <level/storage/LevelData.hpp>
+#include <cstring>
+
+ChunkCache::ChunkCache() {
+	this->field_4 = 1;
+	this->field_5 = 0;
+	this->field_6 = 0;
+	this->field_7 = 0;
+	this->lastChunkX = -999999999;
+	this->lastChunkZ = -999999999;
+	this->emptyChunk = nullptr;
+	this->generatorSource = nullptr;
+	this->chunkStorage = nullptr;
+	this->level = nullptr;
+	this->lastChunk = nullptr;
+	memset(this->chunks, 0, sizeof(this->chunks));
+}
 
 ChunkCache::~ChunkCache() {
 	if(this->generatorSource) {
@@ -23,24 +39,18 @@ ChunkCache::~ChunkCache() {
 	}
 }
 
-static bool_t sub_D66664FE(int a1, int a2) {
-	return a1 >= 0 && a2 >= 0 && a1 <= 15 && a2 <= 15;
-}
-// Returns true if chunk coords are 'valid' for this level (always true for infinite worlds)
 static bool_t chunkInRange(struct Level* level, int x, int z) {
-	if(level && level->getLevelData() && (level->getLevelData()->getGeneratorVersion() != 0 && level->getLevelData()->getGeneratorVersion() != 4))
-		return 1;
-	return sub_D66664FE(x, z);
+	return 1;
 }
 
 bool_t ChunkCache::hasChunk(int32_t x, int32_t z) {
-	LevelChunk* result;
-
-	bool_t isInfinite = (this->level && this->level->getLevelData() && (this->level->getLevelData()->getGeneratorVersion() != 0 && this->level->getLevelData()->getGeneratorVersion() != 4));
-	if((!isInfinite && !sub_D66664FE(x, z)) || (x == this->lastChunkX && z == this->lastChunkZ && this->lastChunk && this->lastChunk != this->emptyChunk)) {
+	if(!this) return 0;
+	if(x == this->lastChunkX && z == this->lastChunkZ && this->lastChunk && this->lastChunk != this->emptyChunk) {
 		return 1;
 	}
-	result = this->chunks[64 * (z & 0x3F) + (x & 0x3F)];
+	int idx = ((z & 0x3F) << 6) | (x & 0x3F);
+	if (idx < 0 || idx >= 4096) return 0;
+	LevelChunk* result = this->chunks[idx];
 	if(!result || result == this->emptyChunk) {
 		return 0;
 	}

@@ -6,9 +6,6 @@
 #include <entity/Sheep.hpp>
 #include <I18n.hpp>
 #include <Options.hpp>
-#include <tile/ColoredSlabTile.hpp>
-#include <tile/ColoredFenceTile.hpp>
-#include <tile/ColoredLogTile.hpp>
 
 std::string DyePowderItem::COLOR_DESCS[] = {"black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"};
 
@@ -110,10 +107,6 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 		BlockColorRegistry::setBlockFaceColor(x, y, z, face, colorHex);
 
 		if (tileId == Tile::cloth->blockID || (Tile::woolCarpet && tileId == Tile::woolCarpet->blockID)) {
-			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
-			level->setData(x, y, z, targetMeta, 3);
-		} else if ((Tile::coloredPlanks && tileId == Tile::coloredPlanks->blockID) ||
-		           (Tile::coloredBricks && tileId == Tile::coloredBricks->blockID)) {
 			int targetMeta = (colorIdx == 15) ? 0 : (~colorIdx & 0xF);
 			level->setData(x, y, z, targetMeta, 3);
 		} else if (Tile::stainedGlass && tileId == Tile::stainedGlass->blockID) {

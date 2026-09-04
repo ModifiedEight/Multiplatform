@@ -170,34 +170,34 @@ int32_t Villager::getMaxHealth() {
 
 void Villager::aiStep() {
 	if (!this->level->isClientMaybe) {
-		if (this->hurtTime == 0) {
+		if (this->hurtTime == 0 && ((this->entityId + this->level->gameTickCounter) % 10 == 0)) {
 			AABB searchBox{this->posX - 8.0f, this->posY - 4.0f, this->posZ - 8.0f,
 			               this->posX + 8.0f, this->posY + 4.0f, this->posZ + 8.0f};
-			std::vector<Entity*>* ents = this->level->getEntities(this, searchBox);
-			if (ents) {
-				for (Entity* e : *ents) {
-					if (e && !e->isDead && (e->getEntityTypeId() == 32 || e->getEntityTypeId() == 121)) {
-						float dx = this->posX - e->posX;
-						float dz = this->posZ - e->posZ;
-						float len = sqrtf(dx * dx + dz * dz);
-						if (len > 0.1f) {
-							dx /= len; dz /= len;
-							this->getNavigation()->moveTo(this->posX + dx * 10.0f, this->posY, this->posZ + dz * 10.0f, 1.25f);
-						}
-						break;
+			std::vector<Entity*> ents;
+			this->level->getEntitiesOfType(32, searchBox, ents);
+			this->level->getEntitiesOfType(121, searchBox, ents);
+			for (Entity* e : ents) {
+				if (e && !e->isDead) {
+					float dx = this->posX - e->posX;
+					float dz = this->posZ - e->posZ;
+					float len = sqrtf(dx * dx + dz * dz);
+					if (len > 0.1f) {
+						dx /= len; dz /= len;
+						this->getNavigation()->moveTo(this->posX + dx * 10.0f, this->posY, this->posZ + dz * 10.0f, 1.25f);
 					}
+					break;
 				}
 			}
 		}
 
 		if (!this->level->isDay()) {
-			if (!this->hasBed && (this->random.genrand_int32() % 20 == 0)) {
+			if (!this->hasBed && ((this->entityId + this->level->gameTickCounter) % 80 == 0)) {
 				int vx = (int)floor(this->posX);
 				int vy = (int)floor(this->posY);
 				int vz = (int)floor(this->posZ);
-				for (int dy = -2; dy <= 2 && !this->hasBed; ++dy) {
-					for (int dx = -16; dx <= 16 && !this->hasBed; ++dx) {
-						for (int dz = -16; dz <= 16 && !this->hasBed; ++dz) {
+				for (int dy = -1; dy <= 2 && !this->hasBed; ++dy) {
+					for (int dx = -6; dx <= 6 && !this->hasBed; ++dx) {
+						for (int dz = -6; dz <= 6 && !this->hasBed; ++dz) {
 							int tileId = this->level->getTile(vx + dx, vy + dy, vz + dz);
 							if (tileId == 26 || tileId == 220 || (Tile::bed && tileId == Tile::bed->blockID)) {
 								this->hasBed = true;

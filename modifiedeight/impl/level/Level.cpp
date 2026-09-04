@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <entity/EntityFactory.hpp>
 #include <entity/Player.hpp>
+#include <inventory/Inventory.hpp>
 #include <entity/Zombie.hpp>
 #include <entity/path/PathFinder.hpp>
 #include <level/BiomeSource.hpp>
@@ -2322,7 +2323,11 @@ bool_t Level::isEmptyTile(int32_t x, int32_t y, int32_t z) {
 	return this->getTile(x, y, z) == 0;
 }
 float Level::getBrightness(int32_t x, int32_t y, int32_t z) {
-	return this->dimensionPtr->lightRamp[this->getRawBrightness(x, y, z)];
+	if (!this->dimensionPtr || !this->dimensionPtr->lightRamp) return 1.0f;
+	int raw = this->getRawBrightness(x, y, z);
+	if (raw < 0) raw = 0;
+	if (raw > 15) raw = 15;
+	return this->dimensionPtr->lightRamp[raw];
 }
 int32_t Level::getData(int32_t x, int32_t y, int32_t z) {
 	if(y < 0 || y > 127) {

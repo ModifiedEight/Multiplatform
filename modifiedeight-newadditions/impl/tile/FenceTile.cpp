@@ -7,14 +7,7 @@ bool_t FenceTile::connectsTo(struct LevelSource* level, int32_t x, int32_t y, in
 	Tile* v7; // r4
 
 	v6 = level->getTile(x, y, z);
-	bool isColoredFence = false;
-	for (int i = 0; i < 16; i++) {
-		if (Tile::coloredFences[i] && v6 == Tile::coloredFences[i]->blockID) {
-			isColoredFence = true;
-			break;
-		}
-	}
-	if(v6 == this->blockID || v6 == Tile::fenceGate->blockID || v6 == Tile::fence->blockID || v6 == Tile::fence_spruce->blockID || v6 == Tile::fence_birch->blockID || isColoredFence) {
+	if(v6 == this->blockID || v6 == Tile::fenceGate->blockID || v6 == Tile::fence->blockID || v6 == Tile::fence_spruce->blockID || v6 == Tile::fence_birch->blockID) {
 		return 1;
 	}
 	v7 = Tile::tiles[v6];

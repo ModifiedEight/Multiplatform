@@ -51,11 +51,7 @@ bool CushionManager::isSlabTile(Tile *tile) {
   int id = tile->blockID;
   return id == 44 || id == 126 || id == 182 || id == 184 || id == 186 ||
          id == 188 || (Tile::stoneSlabHalf && tile == Tile::stoneSlabHalf) ||
-         (Tile::woodSlabHalf && tile == Tile::woodSlabHalf) ||
-         (Tile::coloredSlabHalf1 && tile == Tile::coloredSlabHalf1) ||
-         (Tile::coloredSlabHalf2 && tile == Tile::coloredSlabHalf2) ||
-         (Tile::coloredBrickSlabHalf1 && tile == Tile::coloredBrickSlabHalf1) ||
-         (Tile::coloredBrickSlabHalf2 && tile == Tile::coloredBrickSlabHalf2);
+         (Tile::woodSlabHalf && tile == Tile::woodSlabHalf);
 }
 
 bool CushionManager::isCushionableTile(Tile *tile, int meta) {
@@ -164,8 +160,8 @@ bool CushionManager::handleUse(Player *player, Level *level, int x, int y,
 
   if (isWool) {
     if (isCushionableTile(tile, meta)) {
-      bool isCenter = (faceX >= 0.20f && faceX <= 0.80f && faceZ >= 0.20f &&
-                       faceZ <= 0.80f);
+      bool isCenter = (face == 1 || (faceX >= 0.10f && faceX <= 0.90f && faceZ >= 0.10f &&
+                       faceZ <= 0.90f));
       if (isCenter && !hasCushion(level, x, y, z)) {
         int color = sel->getAuxValue();
         setCushion(level, x, y, z, color);

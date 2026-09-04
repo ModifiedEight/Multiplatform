@@ -57,9 +57,7 @@ bool_t BedItem::useOn(ItemInstance* a2, Player* a3, Level* a4, int32_t a5, int32
 	auto isSolidBedBase = [&](int x, int y, int z) {
 		if (a4->isSolidBlockingTile(x, y, z)) return true;
 		int id = a4->getTile(x, y, z);
-		return id == Tile::stoneSlabHalf->blockID || id == Tile::woodSlabHalf->blockID ||
-			id == Tile::coloredSlabHalf1->blockID || id == Tile::coloredSlabHalf2->blockID ||
-			id == Tile::coloredBrickSlabHalf1->blockID || id == Tile::coloredBrickSlabHalf2->blockID;
+		return id == Tile::stoneSlabHalf->blockID || id == Tile::woodSlabHalf->blockID;
 	};
 	if(!a4->isEmptyTile(v18, a6 + 1, v19) || !isSolidBedBase(a5, a6, a7) || !isSolidBedBase(v18, a6, v19)) {
 		return 0;

@@ -489,10 +489,6 @@ static bool isSolidOrSlab(Level* a2, int32_t a3, int32_t a4, int32_t a5) {
 	int32_t belowId = a2->getTile(a3, a4, a5);
 	int32_t belowMeta = a2->getData(a3, a4, a5);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {
@@ -506,10 +502,6 @@ void BaseRailTile::updateShape(LevelSource* a2, int32_t a3, int32_t a4, int32_t 
 	int32_t belowId = a2->getTile(a3, a4 - 1, a5);
 	int32_t belowMeta = a2->getData(a3, a4 - 1, a5);
 	if (belowId == Tile::stoneSlabHalf->blockID || belowId == Tile::woodSlabHalf->blockID ||
-	    (Tile::coloredSlabHalf1 && belowId == Tile::coloredSlabHalf1->blockID) ||
-	    (Tile::coloredSlabHalf2 && belowId == Tile::coloredSlabHalf2->blockID) ||
-	    (Tile::coloredBrickSlabHalf1 && belowId == Tile::coloredBrickSlabHalf1->blockID) ||
-	    (Tile::coloredBrickSlabHalf2 && belowId == Tile::coloredBrickSlabHalf2->blockID) ||
 	    (Tile::dirtSlabHalf && belowId == Tile::dirtSlabHalf->blockID) ||
 	    (Tile::grassSlabHalf && belowId == Tile::grassSlabHalf->blockID) ||
 	    (Tile::rockSlabHalf && belowId == Tile::rockSlabHalf->blockID)) {

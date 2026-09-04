@@ -21,8 +21,8 @@ bool_t ArmorStandItem::useOn(ItemInstance* item, Player* player, Level* level, i
 	float placeZ = (float)z + 0.5f;
 
 	ArmorStand* stand = new ArmorStand(level, placeX, placeY, placeZ);
-	stand->yaw = player->yaw;
-	stand->prevYaw = player->yaw;
+	stand->yaw = player->yaw + 180.0f;
+	stand->prevYaw = player->yaw + 180.0f;
 	level->addEntity(stand);
 
 	if (player->inventory && player->inventory->field_20 == 0) {

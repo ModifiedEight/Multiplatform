@@ -136,7 +136,7 @@ void LightUpdate::update(Level* a2) {
 				}
 				if(a2->hasChunksAt(v17, 0, a5 - 1, 1)) {
 					chunk = a2->getChunk(v24, v16 >> 4);
-					if(!chunk->isEmpty()) {
+					if(chunk && !chunk->isEmpty()) {
 						if(this->minY < 0) {
 							this->minY = 0;
 						}

@@ -6,8 +6,9 @@ struct BedTile : DirectionalTile{
 	TextureUVCoordinateSet field_C8, field_E0, field_F8;
 
 	static int32_t HEAD_DIRECTION_OFFSETS[];
+	int32_t bedColor;
 
-	BedTile(int32_t);
+	BedTile(int32_t id, const std::string& texName = "bed", int32_t color = 14);
 	void _setShape(void);
 	static bool_t findStandUpPosition(Level*, int32_t, int32_t, int32_t, int32_t, struct Pos&);
 	static void setOccupied(Level*, int32_t, int32_t, int32_t, bool_t);
@@ -23,6 +24,7 @@ struct BedTile : DirectionalTile{
 	virtual bool_t isSolidRender();
 	virtual void neighborChanged(Level*, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
 	virtual int32_t getResource(int32_t, Random*);
+	virtual int32_t getSpawnResourcesAuxValue(int32_t);
 	virtual void spawnResources(Level*, int32_t, int32_t, int32_t, int32_t, float);
 	virtual int32_t getRenderLayer();
 	virtual bool_t use(Level*, int32_t, int32_t, int32_t, Player*);

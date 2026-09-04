@@ -70,6 +70,7 @@ struct Options{
 		static Options::Option REALISM_SCREEN_SPACE_LIGHTING;
 		static Options::Option REALISM_BLOOM;
 		static Options::Option EXTENDED_INVENTORY;
+		static Options::Option CONTROLLER_SUPPORT;
 	};
 
 	static Options* instance;
@@ -161,6 +162,7 @@ struct Options{
 	bool_t realismSSL;
 	bool_t realismBloom;
 	bool_t extendedInventory;
+	bool_t controllerSupport;
 	char_t field_109;
 	char_t field_10A;
 	char_t field_10B;

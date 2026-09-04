@@ -10,6 +10,7 @@ struct HumanoidModel: Model
 	int8_t field_318, field_319, field_31A;
 	bool_t isUsingBow;
 	bool_t isSwimming;
+	Entity* curEntity;
 	int32_t field_31C;
 
 	HumanoidModel(float, float);

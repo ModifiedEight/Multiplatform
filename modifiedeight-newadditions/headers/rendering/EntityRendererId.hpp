@@ -41,6 +41,8 @@ enum EntityRendererId
 	ITEM_FRAME = 36,
 	ARMOR_STAND = 37,
 	FROG = 38,
+	OCELOT = 39,
+	BOAT = 40,
 
 	LENGTH
 };

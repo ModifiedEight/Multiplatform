@@ -271,11 +271,22 @@ void LocalPlayer::move(float a2, float a3, float a4) {
 char_t _D6E065B0 = 0;
 void LocalPlayer::tick() {
   Player::tick();
+
   if (this->isJumping && this->isRiding()) {
     this->ride(0);
     SetEntityLinkPacket v24(0, this->entityId,
                             this->ridingAt ? this->ridingAt->entityId : 0);
     this->minecraft->rakNetInstance->send(v24);
+  }
+
+  if (this->level && Tile::slimeBlock && this->onGround) {
+    int bx = (int)floor(this->posX);
+    int by = (int)floor(this->boundingBox.minY - 0.2f);
+    int bz = (int)floor(this->posZ);
+    if (this->level->getTile(bx, by, bz) == Tile::slimeBlock->blockID) {
+      this->motionX *= 0.25f;
+      this->motionZ *= 0.25f;
+    }
   }
 
   if (!this->item.isNull()) {
@@ -621,5 +632,5 @@ void LocalPlayer::setSprinting(bool_t s) {
 
 float LocalPlayer::getWalkingSpeedModifier() {
   float base = Player::getWalkingSpeedModifier();
-  return this->isSprinting ? base * 1.3f : base;
+  return this->isSprinting ? base * 1.30f : base;
 }
