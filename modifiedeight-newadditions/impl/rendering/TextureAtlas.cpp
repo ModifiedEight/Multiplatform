@@ -348,9 +348,10 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				"flower_rose", "flower_pot", "daylight_detector_side", "daylight_detector_top", "daylight_detector_inverted_top",
 				"sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3",
 				"jukebox_top", "jukebox_side", "slime", "slime_block",
-				"iron_trapdoor", "jungle_door_top", "jungle_door_bottom",
+				"iron_trapdoor", "trapdoor_jungle", "jungle_trapdoor", "jungle_door_top", "jungle_door_bottom",
 				"copper_ore", "copper_block", "copper_bars",
 				"copper_door_bottom", "copper_door_top", "copper_trapdoor",
+				"copper_bulb", "copper_bulb_lit", "copper_bulb_powered", "copper_bulb_lit_powered", "copper_grate",
 				"ender_chest_front", "ender_chest_side", "ender_chest_top"
 			};
 			for (const char* cs : customSlots) {
@@ -418,9 +419,9 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				"spawn_egg_turtle", "spawn_egg_frog", "spawn_egg_villager",
 				"spawn_egg_ocelot",
 				"oak_boat", "spruce_boat", "birch_boat", "jungle_boat",
-				"jungle_door", "iron_trapdoor",
+				"jungle_door", "iron_trapdoor", "trapdoor_jungle", "jungle_trapdoor",
 				"copper_ingot", "copper_door", "ender_chest",
-				"armorstand"
+				"armorstand", "skull_wolf", "skull_fox"
 			};
 			const char* customItemFiles[] = {
 				"textures/items/flower_pot.png", "textures/items/sweet_berries.png",
@@ -430,9 +431,9 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				"textures/items/spawn_egg_turtle.png", "textures/items/spawn_egg_frog.png", "textures/items/spawn_egg_villager.png",
 				"textures/items/spawn_egg_ocelot.png",
 				"textures/items/oak_boat.png", "textures/items/spruce_boat.png", "textures/items/birch_boat.png", "textures/items/jungle_boat.png",
-				"textures/items/jungle_door.png", "textures/items/iron_trapdoor.png",
+				"textures/items/jungle_door.png", "textures/items/iron_trapdoor.png", "textures/items/trapdoor_jungle.png", "textures/items/jungle_trapdoor.png",
 				"textures/items/copper_ingot.png", "textures/items/copper_door.png", "textures/items/ender_chest.png",
-				"textures/items/armorstand.png"
+				"textures/items/armorstand.png", "textures/items/skull_wolf.png", "textures/items/skull_fox.png"
 			};
 			int numSlots = sizeof(customItemSlots) / sizeof(customItemSlots[0]);
 			for (int ci = 0; ci < numSlots; ++ci) {

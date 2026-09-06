@@ -2,6 +2,7 @@
 #include <level/Level.hpp>
 #include <rendering/Tesselator.hpp>
 #include <tile/Tile.hpp>
+#include <tile/MobHeadTile.hpp>
 TerrainParticle::TerrainParticle(Level* level, ParticleType pt, const std::string& a2)
 	: Particle(level, pt, a2) {
 	this->rColMul = this->gColMul = this->bColMul = 0.5f;
@@ -17,12 +18,27 @@ void TerrainParticle::init(float a2, float a3, float a4, float a5, float a6, flo
 
 	v13 = Tile::tiles[a8 & 0xffff];
 	this->tile = v13;
-	this->field_168 = *v13->getTexture(2, (a8 >> 16));
+	if(v13 && MobHeadTile::isHeadBlock(v13->blockID)) {
+		this->field_168 = *Tile::rock->getTexture(2, 0);
+	} else {
+		this->field_168 = *v13->getTexture(2, (a8 >> 16));
+	}
 	v19 = this->_scale * 0.3f;
 	tile = this->tile;
 	this->gravity = tile->field_3C;
 	this->_scale = v19;
-	if(tile != Tile::grass) {
+	if(tile && MobHeadTile::isHeadBlock(tile->blockID)) {
+		int ht = MobHeadTile::getHeadType(tile->blockID);
+		static const int32_t headCols[18] = {
+			0x9B6950, 0x47B035, 0x587E3A, 0xC4C4C4, 0x332824, 0xEA9494,
+			0x76B662, 0x4B3B2E, 0xF0A5A2, 0xE8E8E8, 0xEBEBEB, 0xBD8B72,
+			0xF0B849, 0xF5F5F5, 0x388235, 0x587E3A, 0xD7D7D7, 0xD86B27
+		};
+		int32_t c = (ht >= 0 && ht < 18) ? headCols[ht] : 0xAAAAAA;
+		this->rColMul = (float)((c >> 16) & 0xFF) / 255.0f * 0.9f;
+		this->gColMul = (float)((c >> 8) & 0xFF) / 255.0f * 0.9f;
+		this->bColMul = (float)(c & 0xFF) / 255.0f * 0.9f;
+	} else if(tile != Tile::grass) {
 		v21 = tile->getColor(this->level, (int32_t)a2, (int32_t)a3, (int32_t)a4);
 		gColMul = this->gColMul;
 		this->rColMul = this->rColMul * (float)((float)((v21 >> 16) & 0xff) / 255.0) * 0.8f;

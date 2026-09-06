@@ -30,6 +30,7 @@
 #include <tile/BedTile.hpp>
 #include <tile/BeetrootTile.hpp>
 #include <tile/BirchFenceTile.hpp>
+#include <tile/JungleFenceTile.hpp>
 #include <tile/BlockColorRegistry.hpp>
 #include <tile/BookshelfTile.hpp>
 #include <tile/CactusTile.hpp>
@@ -37,6 +38,9 @@
 #include <tile/CarrotTile.hpp>
 #include <tile/ChestTile.hpp>
 #include <tile/EnderChestTile.hpp>
+#include <tile/MobHeadTile.hpp>
+#include <tile/CopperBulbTile.hpp>
+#include <tile/CopperGrateTile.hpp>
 #include <tile/CustomSlabTile.hpp>
 #include <tile/ClayTile.hpp>
 #include <tile/ClothTile.hpp>
@@ -133,6 +137,12 @@ Tile::SoundType Tile::SOUND_GLASS("random.glass", "stone", 1, 1);
 Tile::SoundType Tile::SOUND_CLOTH("cloth", 1, 1);
 Tile::SoundType Tile::SOUND_SAND("step.gravel", "sand", 1, 1);
 Tile::SoundType Tile::SOUND_SILENT("", 0, 0);
+Tile::SoundType Tile::SOUND_SLIME("mob.slime.small", "mob.slime.big", 1.0f, 1.0f);
+Tile::SoundType Tile::SOUND_COPPER_DOOR("block.copper_door.break", "block.copper_door.place", 1.0f, 1.0f);
+Tile::SoundType Tile::SOUND_COPPER_TRAPDOOR("block.copper_trapdoor.break", "block.copper_trapdoor.place", 1.0f, 1.0f);
+Tile::SoundType Tile::SOUND_COPPER_BULB("block.copper_bulb.break", "block.copper_bulb.step", 1.0f, 1.0f);
+Tile::SoundType Tile::SOUND_COPPER_GRATE("block.copper_grate.break", "block.copper_grate.step", 1.0f, 1.0f);
+Tile::SoundType Tile::SOUND_COPPER("block.copper.break", "block.copper.step", 1.0f, 1.0f);
 std::string Tile::WOOD_NAMES[] = {"oak", "spruce", "birch", "jungle"};
 
 Tile *Tile::rock;
@@ -168,8 +178,10 @@ Tile *Tile::tallgrass;
 Tile *Tile::waterLily;
 Tile *Tile::fence_spruce;
 Tile *Tile::fence_birch;
+Tile *Tile::fence_jungle;
 Tile *Tile::trapdoor_spruce;
 Tile *Tile::trapdoor_birch;
+Tile *Tile::trapdoor_jungle;
 Tile *Tile::ironTrapdoor;
 Tile *Tile::coloredBeds[16];
 Tile *Tile::deadBush;
@@ -223,12 +235,45 @@ Tile *Tile::copperOre;
 Tile *Tile::copperBlock;
 Tile *Tile::copperFence;
 Tile *Tile::copperWall;
+Tile *Tile::oakWall;
+Tile *Tile::spruceWall;
+Tile *Tile::birchWall;
+Tile *Tile::jungleWall;
+Tile *Tile::brickWall;
+Tile *Tile::quartzWall;
+Tile *Tile::chiseledQuartzWall;
+Tile *Tile::ironWall;
+Tile *Tile::sandstoneWall;
+Tile *Tile::stoneBrickWall;
+Tile *Tile::mossyStoneBrickWall;
+Tile *Tile::crackedStoneBrickWall;
 Tile *Tile::copperStairs;
 Tile *Tile::copperSlabHalf;
 Tile *Tile::copperSlab;
 Tile *Tile::copperDoor;
 Tile *Tile::copperTrapdoor;
+Tile *Tile::copperBulb;
+Tile *Tile::copperBulbLit;
+Tile *Tile::copperGrate;
 Tile *Tile::enderChest;
+Tile *Tile::head_steve;
+Tile *Tile::head_creeper;
+Tile *Tile::head_zombie;
+Tile *Tile::head_skeleton;
+Tile *Tile::head_spider;
+Tile *Tile::head_pigzombie;
+Tile *Tile::head_slime;
+Tile *Tile::head_cow;
+Tile *Tile::head_pig;
+Tile *Tile::head_sheep;
+Tile *Tile::head_chicken;
+Tile *Tile::head_villager;
+Tile *Tile::head_ocelot;
+Tile *Tile::head_polarbear;
+Tile *Tile::head_turtle;
+Tile *Tile::head_giant;
+Tile *Tile::head_wolf;
+Tile *Tile::head_fox;
 Tile *Tile::stoneWall;
 Tile *Tile::ladder;
 Tile *Tile::rail;
@@ -747,6 +792,20 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           ->setSoundType(Tile::SOUND_WOOD)
           ->setCategory(5, 1)
           ->setDescriptionId("trapdoor_birch");
+  Tile::fence_jungle = (new JungleFenceTile(209))
+                           ->init()
+                           ->setDestroyTime(2.0)
+                           ->setExplodeable(5.0)
+                           ->setSoundType(Tile::SOUND_WOOD)
+                           ->setCategory(5, 1)
+                           ->setDescriptionId("fence_jungle");
+  Tile::trapdoor_jungle =
+      (new TrapDoorTile(207, "trapdoor_jungle", Material::wood))
+          ->init()
+          ->setDestroyTime(3.0)
+          ->setSoundType(Tile::SOUND_WOOD)
+          ->setCategory(5, 1)
+          ->setDescriptionId("trapdoor_jungle");
   Tile::ironTrapdoor =
       (new TrapDoorTile(203, "iron_trapdoor", Material::metal))
           ->init()
@@ -878,21 +937,21 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                           ->init()
                           ->setDestroyTime(3.0)
                           ->setExplodeable(6.0)
-                          ->setSoundType(Tile::SOUND_METAL)
+                          ->setSoundType(Tile::SOUND_COPPER)
                           ->setCategory(1, 1)
                           ->setDescriptionId("copperBlock");
   Tile::copperFence = (new ThinFenceTile(206, "copper_bars", "copper_bars", Material::metal, 1))
                           ->init()
                           ->setDestroyTime(3.0)
                           ->setExplodeable(6.0)
-                          ->setSoundType(Tile::SOUND_METAL)
+                          ->setSoundType(Tile::SOUND_COPPER)
                           ->setCategory(2, 1)
                           ->setDescriptionId("copperFence");
   Tile::copperWall = (new WallTile(230, Tile::copperBlock))
                          ->init()
                          ->setDestroyTime(3.0)
                          ->setExplodeable(6.0)
-                         ->setSoundType(Tile::SOUND_METAL)
+                         ->setSoundType(Tile::SOUND_COPPER)
                          ->setCategory(2, 1)
                          ->setDescriptionId("copperWall");
   Tile::stoneWall = (new WallTile(229, Tile::rock))
@@ -907,32 +966,70 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                              ->init()
                              ->setDestroyTime(3.0)
                              ->setExplodeable(6.0)
-                             ->setSoundType(Tile::SOUND_METAL)
+                             ->setSoundType(Tile::SOUND_COPPER)
                              ->setCategory(2, 1)
                              ->setDescriptionId("copperSlab");
   Tile::copperSlab = (new CustomSlabTile(232, true, 3))
                          ->init()
                          ->setDestroyTime(3.0)
                          ->setExplodeable(6.0)
-                         ->setSoundType(Tile::SOUND_METAL)
+                         ->setSoundType(Tile::SOUND_COPPER)
                          ->setDescriptionId("copperSlab");
   Tile::copperDoor = (new DoorTile(211, Material::metal, "copper_door"))
                          ->init()
                          ->setDestroyTime(3.0)
                          ->setExplodeable(6.0)
-                         ->setSoundType(Tile::SOUND_METAL)
+                         ->setSoundType(Tile::SOUND_COPPER_DOOR)
                          ->setDescriptionId("copperDoor");
   Tile::copperTrapdoor = (new TrapDoorTile(212, "copper_trapdoor", Material::metal))
                              ->init()
                              ->setDestroyTime(3.0)
                              ->setExplodeable(6.0)
-                             ->setSoundType(Tile::SOUND_METAL)
+                             ->setSoundType(Tile::SOUND_COPPER_TRAPDOOR)
                              ->setCategory(3, 8)
                              ->setDescriptionId("copperTrapdoor");
+  Tile::copperBulb = (new CopperBulbTile(159, false))
+                         ->init()
+                         ->setDestroyTime(3.0)
+                         ->setExplodeable(6.0)
+                         ->setSoundType(Tile::SOUND_COPPER_BULB)
+                         ->setCategory(1, 1)
+                         ->setDescriptionId("copperBulb");
+  Tile::copperBulbLit = (new CopperBulbTile(160, true))
+                            ->init()
+                            ->setDestroyTime(3.0)
+                            ->setExplodeable(6.0)
+                            ->setSoundType(Tile::SOUND_COPPER_BULB)
+                            ->setDescriptionId("copperBulb");
+  Tile::copperGrate = (new CopperGrateTile(161))
+                          ->init()
+                          ->setDestroyTime(3.0)
+                          ->setExplodeable(6.0)
+                          ->setSoundType(Tile::SOUND_COPPER_GRATE)
+                          ->setCategory(8, 1)
+                          ->setDescriptionId("copperGrate");
   Tile::enderChest = (new EnderChestTile(213))
                          ->init()
                          ->setCategory(2, 1)
                          ->setDescriptionId("enderChest");
+  Tile::head_steve = (new MobHeadTile(115, 0, "head_steve"))->init();
+  Tile::head_creeper = (new MobHeadTile(116, 1, "head_creeper"))->init();
+  Tile::head_zombie = (new MobHeadTile(117, 2, "head_zombie"))->init();
+  Tile::head_skeleton = (new MobHeadTile(118, 3, "head_skeleton"))->init();
+  Tile::head_spider = (new MobHeadTile(119, 4, "head_spider"))->init();
+  Tile::head_pigzombie = (new MobHeadTile(120, 5, "head_pigzombie"))->init();
+  Tile::head_slime = (new MobHeadTile(121, 6, "head_slime"))->init();
+  Tile::head_cow = (new MobHeadTile(122, 7, "head_cow"))->init();
+  Tile::head_pig = (new MobHeadTile(125, 8, "head_pig"))->init();
+  Tile::head_sheep = (new MobHeadTile(127, 9, "head_sheep"))->init();
+  Tile::head_chicken = (new MobHeadTile(129, 10, "head_chicken"))->init();
+  Tile::head_villager = (new MobHeadTile(130, 11, "head_villager"))->init();
+  Tile::head_ocelot = (new MobHeadTile(131, 12, "head_ocelot"))->init();
+  Tile::head_polarbear = (new MobHeadTile(132, 13, "head_polarbear"))->init();
+  Tile::head_turtle = (new MobHeadTile(137, 14, "head_turtle"))->init();
+  Tile::head_giant = (new MobHeadTile(138, 15, "head_giant"))->init();
+  Tile::head_wolf = (new MobHeadTile(188, 16, "head_wolf"))->init();
+  Tile::head_fox = (new MobHeadTile(189, 17, "head_fox"))->init();
   Tile::ladder = (new LadderTile(65, "ladder", Material::decoration))
                      ->init()
                      ->setDestroyTime(0.4)
@@ -1351,6 +1448,54 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                             ->init()
                             ->setCategory(1, 1)
                             ->setDescriptionId("stairsQuartz");
+  Tile::oakWall = (new WallTile(174, Tile::wood, 0))
+                      ->init()
+                      ->setCategory(2, 1)
+                      ->setDescriptionId("oakWall");
+  Tile::spruceWall = (new WallTile(175, Tile::wood, 1))
+                         ->init()
+                         ->setCategory(2, 1)
+                         ->setDescriptionId("spruceWall");
+  Tile::birchWall = (new WallTile(176, Tile::wood, 2))
+                        ->init()
+                        ->setCategory(2, 1)
+                        ->setDescriptionId("birchWall");
+  Tile::jungleWall = (new WallTile(177, Tile::wood, 3))
+                         ->init()
+                         ->setCategory(2, 1)
+                         ->setDescriptionId("jungleWall");
+  Tile::brickWall = (new WallTile(179, Tile::redBrick))
+                        ->init()
+                        ->setCategory(2, 1)
+                        ->setDescriptionId("brickWall");
+  Tile::quartzWall = (new WallTile(180, Tile::quartzBlock, 0))
+                         ->init()
+                         ->setCategory(2, 1)
+                         ->setDescriptionId("quartzWall");
+  Tile::chiseledQuartzWall = (new WallTile(181, Tile::quartzBlock, 1))
+                                 ->init()
+                                 ->setCategory(2, 1)
+                                 ->setDescriptionId("chiseledQuartzWall");
+  Tile::ironWall = (new WallTile(182, Tile::ironBlock))
+                       ->init()
+                       ->setCategory(2, 1)
+                       ->setDescriptionId("ironWall");
+  Tile::sandstoneWall = (new WallTile(183, Tile::sandStone, 0))
+                            ->init()
+                            ->setCategory(2, 1)
+                            ->setDescriptionId("sandstoneWall");
+  Tile::stoneBrickWall = (new WallTile(184, Tile::stoneBrickSmooth, 0))
+                             ->init()
+                             ->setCategory(2, 1)
+                             ->setDescriptionId("stoneBrickWall");
+  Tile::mossyStoneBrickWall = (new WallTile(185, Tile::stoneBrickSmooth, 1))
+                                  ->init()
+                                  ->setCategory(2, 1)
+                                  ->setDescriptionId("mossyStoneBrickWall");
+  Tile::crackedStoneBrickWall = (new WallTile(186, Tile::stoneBrickSmooth, 2))
+                                    ->init()
+                                    ->setCategory(2, 1)
+                                    ->setDescriptionId("crackedStoneBrickWall");
   Tile::woodSlab = (new WoodSlabTile(157, 1))
                        ->init()
                        ->setDestroyTime(2.0)
@@ -1400,7 +1545,7 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
   Tile::slimeBlock = (new SlimeBlockTile(165, "slime"))
                          ->init()
                          ->setDestroyTime(0.0)
-                         ->setSoundType(Tile::SOUND_GRASS)
+                         ->setSoundType(Tile::SOUND_SLIME)
                          ->setCategory(2, 1)
                          ->setDescriptionId("slimeBlock");
   Tile::sweetBerryBush = (new SweetBerryBushTile(201, "sweetBerryBush"))
@@ -1557,6 +1702,42 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
             ->setCategory(2, 1)
             ->setDescriptionId("stoneWall");
   }
+  if (Tile::oakWall) {
+    Item::items[Tile::oakWall->blockID] = (new TileItem(Tile::oakWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("oakWall");
+  }
+  if (Tile::spruceWall) {
+    Item::items[Tile::spruceWall->blockID] = (new TileItem(Tile::spruceWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("spruceWall");
+  }
+  if (Tile::birchWall) {
+    Item::items[Tile::birchWall->blockID] = (new TileItem(Tile::birchWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("birchWall");
+  }
+  if (Tile::jungleWall) {
+    Item::items[Tile::jungleWall->blockID] = (new TileItem(Tile::jungleWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("jungleWall");
+  }
+  if (Tile::brickWall) {
+    Item::items[Tile::brickWall->blockID] = (new TileItem(Tile::brickWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("brickWall");
+  }
+  if (Tile::quartzWall) {
+    Item::items[Tile::quartzWall->blockID] = (new TileItem(Tile::quartzWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("quartzWall");
+  }
+  if (Tile::chiseledQuartzWall) {
+    Item::items[Tile::chiseledQuartzWall->blockID] = (new TileItem(Tile::chiseledQuartzWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("chiseledQuartzWall");
+  }
+  if (Tile::ironWall) {
+    Item::items[Tile::ironWall->blockID] = (new TileItem(Tile::ironWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("ironWall");
+  }
+  if (Tile::sandstoneWall) {
+    Item::items[Tile::sandstoneWall->blockID] = (new TileItem(Tile::sandstoneWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("sandstoneWall");
+  }
+  if (Tile::stoneBrickWall) {
+    Item::items[Tile::stoneBrickWall->blockID] = (new TileItem(Tile::stoneBrickWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("stoneBrickWall");
+  }
+  if (Tile::mossyStoneBrickWall) {
+    Item::items[Tile::mossyStoneBrickWall->blockID] = (new TileItem(Tile::mossyStoneBrickWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("mossyStoneBrickWall");
+  }
+  if (Tile::crackedStoneBrickWall) {
+    Item::items[Tile::crackedStoneBrickWall->blockID] = (new TileItem(Tile::crackedStoneBrickWall->blockID - 256))->setCategory(2, 1)->setDescriptionId("crackedStoneBrickWall");
+  }
   Item::items[Tile::tallgrass->blockID] =
       (new AuxDataTileItem(Tile::tallgrass->blockID - 256, Tile::tallgrass))
           ->setCategory(2, 8)
@@ -1659,21 +1840,43 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
   Tile::lightBlock[Tile::fence->blockID] = 0;
   Tile::lightBlock[Tile::fence_spruce->blockID] = 0;
   Tile::lightBlock[Tile::fence_birch->blockID] = 0;
+  Tile::lightBlock[Tile::fence_jungle->blockID] = 0;
   Tile::lightBlock[Tile::fenceGate->blockID] = 0;
+  Tile::lightBlock[Tile::trapdoor->blockID] = 0;
+  Tile::lightBlock[Tile::trapdoor_spruce->blockID] = 0;
+  Tile::lightBlock[Tile::trapdoor_birch->blockID] = 0;
+  Tile::lightBlock[Tile::trapdoor_jungle->blockID] = 0;
+  Tile::lightBlock[Tile::door_jungle->blockID] = 0;
   Tile::lightBlock[Tile::ironFence->blockID] = 0;
   Tile::lightBlock[Tile::thinGlass->blockID] = 0;
   Tile::lightBlock[Tile::stainedGlassPane->blockID] = 0;
   Tile::lightBlock[Tile::cobbleWall->blockID] = 0;
   Tile::lightBlock[Tile::ironTrapdoor->blockID] = 0;
+  Tile::lightBlock[Tile::trapdoor_jungle->blockID] = 0;
   Tile::lightBlock[Tile::door_jungle->blockID] = 0;
   Tile::lightBlock[Tile::copperFence->blockID] = 0;
   Tile::lightBlock[Tile::copperWall->blockID] = 0;
   Tile::lightBlock[Tile::stoneWall->blockID] = 0;
+  Tile::lightBlock[Tile::oakWall->blockID] = 0;
+  Tile::lightBlock[Tile::spruceWall->blockID] = 0;
+  Tile::lightBlock[Tile::birchWall->blockID] = 0;
+  Tile::lightBlock[Tile::jungleWall->blockID] = 0;
+  Tile::lightBlock[Tile::brickWall->blockID] = 0;
+  Tile::lightBlock[Tile::quartzWall->blockID] = 0;
+  Tile::lightBlock[Tile::chiseledQuartzWall->blockID] = 0;
+  Tile::lightBlock[Tile::ironWall->blockID] = 0;
+  Tile::lightBlock[Tile::sandstoneWall->blockID] = 0;
+  Tile::lightBlock[Tile::stoneBrickWall->blockID] = 0;
+  Tile::lightBlock[Tile::mossyStoneBrickWall->blockID] = 0;
+  Tile::lightBlock[Tile::crackedStoneBrickWall->blockID] = 0;
   Tile::lightBlock[Tile::copperStairs->blockID] = 0;
   Tile::lightBlock[Tile::copperSlabHalf->blockID] = 0;
   Tile::lightBlock[Tile::copperDoor->blockID] = 0;
   Tile::lightBlock[Tile::copperTrapdoor->blockID] = 0;
   Tile::lightBlock[Tile::enderChest->blockID] = 0;
+  for (int hid : {115, 116, 117, 118, 119, 120, 121, 122, 125, 127, 129, 130, 131, 132, 133, 137, 138, 159, 160, 161, 162, 187, 188, 189, 207}) {
+    if (Tile::tiles[hid]) Tile::lightBlock[hid] = 0;
+  }
   Tile::lightBlock[Tile::bed->blockID] = 0;
   for (int i = 0; i < 16; i++) {
     if (Tile::coloredBeds[i]) {
@@ -1828,6 +2031,18 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
     }
     Item::items[Tile::copperBlock->blockID]->setCategory(1, 1)->setDescriptionId("copperBlock");
   }
+  if (Tile::copperBulb) {
+    if (!Item::items[Tile::copperBulb->blockID]) {
+      Item::items[Tile::copperBulb->blockID] = new TileItem(Tile::copperBulb->blockID - 256);
+    }
+    Item::items[Tile::copperBulb->blockID]->setCategory(1, 1)->setDescriptionId("copperBulb");
+  }
+  if (Tile::copperGrate) {
+    if (!Item::items[Tile::copperGrate->blockID]) {
+      Item::items[Tile::copperGrate->blockID] = new TileItem(Tile::copperGrate->blockID - 256);
+    }
+    Item::items[Tile::copperGrate->blockID]->setCategory(8, 1)->setDescriptionId("copperGrate");
+  }
   Item::lever = Item::items[Tile::lever->blockID];
   Item::redstoneLamp = Item::items[Tile::redstoneLampOff->blockID];
 }
@@ -1841,8 +2056,13 @@ void Tile::teardownTiles() {
 Tile::SoundType::SoundType(const std::string &s, float a, float b) {
   this->field_4 = b;
   this->field_0 = a;
-  this->field_8 = "step." + s;
-  this->field_C = "step." + s;
+  if (s.find('.') != std::string::npos) {
+    this->field_8 = s;
+    this->field_C = s;
+  } else {
+    this->field_8 = "step." + s;
+    this->field_C = "step." + s;
+  }
 }
 
 Tile::SoundType::SoundType(const std::string &f8, const std::string &s, float a,
@@ -1850,7 +2070,11 @@ Tile::SoundType::SoundType(const std::string &f8, const std::string &s, float a,
   this->field_4 = b;
   this->field_0 = a;
   this->field_8 = f8;
-  this->field_C = "step." + s;
+  if (s.find('.') != std::string::npos) {
+    this->field_C = s;
+  } else {
+    this->field_C = "step." + s;
+  }
 }
 
 Tile::Tile(int32_t blockID, const Material *mat) {

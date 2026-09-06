@@ -805,7 +805,7 @@ void GameRenderer::renderLevel(float a2) {
 		if(viewEntityMaybe->isPlayer()) {
 			if(!this->minecraft->currentScreen && !this->minecraft->options.thirdPerson && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
 #ifndef PCTWEAKS
-				if(this->minecraft->useTouchscreen()) {
+				if(this->minecraft->useTouchscreen() && !this->minecraft->mouseGrabbed) {
 #endif
 					levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 #ifndef PCTWEAKS

@@ -212,6 +212,90 @@ void SoundEngine::init(struct Minecraft* a2, struct Options* a3) {
 		char b[64]; snprintf(b, sizeof(b), "sounds/mob/armor_stand/hit%d.ogg", i);
 		loadOggSound(this->sounds, "mob.armor_stand.hit", b);
 	}
+
+	for (int i = 1; i <= 3; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/ocelot/hiss%d.ogg", i);
+		loadOggSound(this->sounds, "mob.cat.hiss", b);
+		loadOggSound(this->sounds, "mob.ocelot.hiss", b);
+	}
+	for (int i = 1; i <= 3; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/ocelot/hitt%d.ogg", i);
+		loadOggSound(this->sounds, "mob.cat.hitt", b);
+		loadOggSound(this->sounds, "mob.cat.hurt", b);
+		loadOggSound(this->sounds, "mob.cat.death", b);
+		loadOggSound(this->sounds, "mob.ocelot.hit", b);
+		loadOggSound(this->sounds, "mob.ocelot.hurt", b);
+		loadOggSound(this->sounds, "mob.ocelot.death", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/ocelot/meow%d.ogg", i);
+		loadOggSound(this->sounds, "mob.cat.meow", b);
+		loadOggSound(this->sounds, "mob.cat.idle", b);
+		loadOggSound(this->sounds, "mob.ocelot.meow", b);
+		loadOggSound(this->sounds, "mob.ocelot.idle", b);
+	}
+	for (int i = 1; i <= 3; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/ocelot/purr%d.ogg", i);
+		loadOggSound(this->sounds, "mob.cat.purr", b);
+		loadOggSound(this->sounds, "mob.ocelot.purr", b);
+	}
+	for (int i = 1; i <= 2; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/mob/ocelot/purreow%d.ogg", i);
+		loadOggSound(this->sounds, "mob.cat.purreow", b);
+		loadOggSound(this->sounds, "mob.ocelot.purreow", b);
+	}
+
+	loadOggSound(this->sounds, "random.enderchestopen", "sounds/random/enderchest/open.ogg");
+	loadOggSound(this->sounds, "random.enderchestclosed", "sounds/random/enderchest/close.ogg");
+
+	for (int i = 1; i <= 3; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_door/toggle%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_door.toggle", b);
+		loadOggSound(this->sounds, "block.copper_door.break", b);
+		loadOggSound(this->sounds, "block.copper_door.place", b);
+	}
+
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_trapdoor/toggle%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_trapdoor.toggle", b);
+		loadOggSound(this->sounds, "block.copper_trapdoor.break", b);
+		loadOggSound(this->sounds, "block.copper_trapdoor.place", b);
+	}
+
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_bulb/break%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_bulb.break", b);
+	}
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_bulb/place%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_bulb.place", b);
+	}
+	for (int i = 1; i <= 6; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_bulb/step%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_bulb.step", b);
+	}
+	loadOggSound(this->sounds, "block.copper_bulb.toggle", "sounds/block/copper_bulb/toggle.ogg");
+	loadOggSound(this->sounds, "block.copper_bulb.turn_on", "sounds/block/copper_bulb/toggle.ogg");
+	loadOggSound(this->sounds, "block.copper_bulb.turn_off", "sounds/block/copper_bulb/toggle.ogg");
+
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_grate/break%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_grate.break", b);
+	}
+	for (int i = 1; i <= 6; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper_grate/step%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper_grate.step", b);
+	}
+
+	for (int i = 1; i <= 4; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper/break%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper.break", b);
+	}
+	for (int i = 1; i <= 6; ++i) {
+		char b[64]; snprintf(b, sizeof(b), "sounds/block/copper/step%d.ogg", i);
+		loadOggSound(this->sounds, "block.copper.step", b);
+		loadOggSound(this->sounds, "step.copper", b);
+	}
 }
 void SoundEngine::play(const std::string& a2, float a3, float a4, float a5, float a6, float a7) {
 	float v8;  // s16

@@ -132,9 +132,9 @@ void VillagerTradeScreen::buttonClicked(Button* btn) {
 }
 
 void VillagerTradeScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
-	int32_t closeX = this->guiX + GW - 18;
-	int32_t closeY = this->guiY + 4;
-	if (mx >= closeX - 4 && mx <= closeX + 16 && my >= closeY - 4 && my <= closeY + 16) {
+	int32_t closeX = this->guiX + GW - 21;
+	int32_t closeY = this->guiY + 5;
+	if (mx >= closeX - 2 && mx <= closeX + 18 && my >= closeY - 2 && my <= closeY + 18) {
 		this->minecraft->setScreen(0);
 		return;
 	}
@@ -170,7 +170,7 @@ void VillagerTradeScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
 			return;
 		}
 
-		int32_t nextX = this->guiX + 142;
+		int32_t nextX = this->guiX + 138;
 		int32_t nextY = this->guiY + 18;
 		if (mx >= nextX - 3 && mx <= nextX + 14 && my >= nextY - 3 && my <= nextY + 18) {
 			if (this->selectedTrade < cnt - 1) {
@@ -316,12 +316,33 @@ void VillagerTradeScreen::render(int32_t mx, int32_t my, float f) {
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	this->blit((float)this->guiX, (float)this->guiY, 0, 0, 176.0f, 166.0f, 176, 166);
 
-	int32_t closeX = this->guiX + GW - 18;
-	int32_t closeY = this->guiY + 4;
-	bool closeHov = (mx >= closeX - 2 && mx <= closeX + 14 && my >= closeY - 2 && my <= closeY + 14);
-	this->fill(closeX, closeY, closeX + 12, closeY + 12, closeHov ? 0xFF9E3A3A : 0xFF4A4A4A);
-	this->fill(closeX, closeY, closeX + 12, closeY + 1, closeHov ? 0xFFCF5C5C : 0xFF6A6A6A);
-	this->font->draw("x", closeX + 3, closeY + 2, closeHov ? 0xFFFFFF : 0xCCCCCC);
+	int32_t closeX = this->guiX + GW - 21;
+	int32_t closeY = this->guiY + 5;
+	bool closeHov = (mx >= closeX && mx <= closeX + 16 && my >= closeY && my <= closeY + 16);
+
+	this->minecraft->texturesPtr->loadAndBindTexture("gui/gui.png");
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (closeHov) {
+		glColor4f(0.75f, 0.75f, 0.75f, 0.85f);
+	} else {
+		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+	}
+	float u0 = 236.0f * 0.00390625f;
+	float v0 = 64.0f * 0.00390625f;
+	float u1 = (236.0f + 18.0f) * 0.00390625f;
+	float v1 = (64.0f + 18.0f) * 0.00390625f;
+	Tesselator& t = Tesselator::instance;
+	t.begin(4);
+	t.vertexUV((float)closeX, (float)(closeY + 16), 0.0f, u0, v1);
+	t.vertexUV((float)(closeX + 16), (float)(closeY + 16), 0.0f, u1, v1);
+	t.vertexUV((float)(closeX + 16), (float)closeY, 0.0f, u1, v0);
+	t.vertexUV((float)closeX, (float)closeY, 0.0f, u0, v0);
+	t.draw(1);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+	int32_t tw = this->font->width("✕");
+	this->font->drawShadow("✕", closeX + (16 - tw + 1) / 2, closeY + 4, closeHov ? 0xFFFFA0 : 0xFFFFFF);
 
 	this->font->draw("Villager", this->guiX + 8, this->guiY + 6, 0x404040);
 	this->font->draw("Inventory", this->guiX + 8, this->guiY + 72, 0x404040);
@@ -344,7 +365,7 @@ void VillagerTradeScreen::render(int32_t mx, int32_t my, float f) {
 		bool prevHov = (mx >= prevX && mx <= prevX + 11 && my >= prevY && my <= prevY + 15);
 		int32_t prevU = (this->selectedTrade > 0) ? (prevHov ? 188 : 176) : 200;
 
-		int32_t nextX = this->guiX + 142;
+		int32_t nextX = this->guiX + 138;
 		int32_t nextY = this->guiY + 18;
 		bool nextHov = (mx >= nextX && mx <= nextX + 11 && my >= nextY && my <= nextY + 15);
 		int32_t nextU = (this->selectedTrade < cnt - 1) ? (nextHov ? 188 : 176) : 200;

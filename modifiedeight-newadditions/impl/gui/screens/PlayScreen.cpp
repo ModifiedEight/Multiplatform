@@ -2,6 +2,7 @@
 #include <gui/screens/PlayScreen.hpp>
 #include <Minecraft.hpp>
 #include <gui/PackedScrollContainer.hpp>
+#include <gui/pane/ScrollingPane.hpp>
 #include <rendering/Tesselator.hpp>
 #include <gui/NinePatchFactory.hpp>
 #include <algorithm>
@@ -330,7 +331,13 @@ PlayScreen::~PlayScreen() {
 
 void PlayScreen::render(int32_t mx, int32_t my, float pt) {
 	this->renderMenuBackground(pt);
-	this->frame->draw(Tesselator::instance, this->field_214.get()->posX - 3, this->field_214.get()->posY - 3);
+	GuiElement* panel = this->field_214.get();
+	int32_t fx = panel->posX - 3;
+	int32_t fy = panel->posY - 3;
+	int32_t fw = panel->width + 6;
+	int32_t fh = panel->height + 6;
+	this->fill(fx, fy, fx + fw, fy + fh, 0x66181824);
+	this->frame->draw(Tesselator::instance, fx, fy);
 	Screen::render(mx, my, pt);
 	this->spinner->render(this->minecraft, mx, my);
 }
@@ -526,6 +533,20 @@ void PlayScreen::buttonClicked(Button* a2) {
 	}
 }
 void PlayScreen::mouseClicked(int32_t a2, int32_t a3, int32_t a4) {
+	if((a4 == 4 || a4 == 5) && this->field_214) {
+		PackedScrollContainer* psc = dynamic_cast<PackedScrollContainer*>(this->field_214.get());
+		if(psc && psc->scrollingPane) {
+			float& offsetY = psc->scrollingPane->getContentOffset()->y;
+			float step = a4 == 4 ? 24.0f : -24.0f;
+			int32_t contentH = psc->field_38;
+			float minOff = (float)((psc->height - contentH) & ((psc->height - contentH) >> 31));
+			offsetY += step;
+			if(offsetY > 0.0f) offsetY = 0.0f;
+			if(offsetY < minOff) offsetY = minOff;
+			psc->setupPositions();
+		}
+		return;
+	}
 	Screen::mouseClicked(a2, a3, a4);
 }
 void PlayScreen::mouseReleased(int32_t a2, int32_t a3, int32_t a4) {

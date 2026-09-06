@@ -73,22 +73,21 @@ void HangingEntity::setDir(int32_t direction) {
 	v15 = (float)this->tileX + 0.5;
 	v16 = (float)this->tileY + 0.5;
 	v17 = (float)this->tileZ + 0.5;
+	float dist = 0.5625f;
 	if(direction == 2) {
-		v17 = v17 - 0.5625;
+		v17 = v17 - dist;
 		v18 = this->getWidth();
 		v15 = v15 - this->offs(v18);
 	} else if(direction == 1) {
-		v15 = v15 - 0.5625;
+		v15 = v15 - dist;
 		v19 = this->getWidth();
 		v17 = v17 + this->offs(v19);
-	} else if(direction) {
-		if(direction == 3) {
-			v15 = v15 + 0.5625;
-			v21 = this->getWidth();
-			v17 = v17 - this->offs(v21);
-		}
+	} else if(direction == 3) {
+		v15 = v15 + dist;
+		v21 = this->getWidth();
+		v17 = v17 - this->offs(v21);
 	} else {
-		v17 = v17 + 0.5625;
+		v17 = v17 + dist;
 		v20 = this->getWidth();
 		v15 = v15 + this->offs(v20);
 	}

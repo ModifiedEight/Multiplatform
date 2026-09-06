@@ -539,7 +539,6 @@ int32_t LevelRenderer::getLayerFeature(int32_t a1, bool_t a2) {
   }
 }
 void LevelRenderer::render(const AABB &a2) {
-  this->textures->loadAndBindTexture("terrain-atlas.tga");
   Vec3 v5 = this->minecraft->player->getPos(0.0);
   Vec3 v6(-v5.x, -v5.y, -v5.z);
   Tesselator::instance.offset(v6);
@@ -566,8 +565,8 @@ void LevelRenderer::render(const AABB &a2) {
   Tesselator::instance.vertex(a2.maxX, a2.maxY, a2.maxZ);
   Tesselator::instance.vertex(a2.minX, a2.minY, a2.maxZ);
   Tesselator::instance.vertex(a2.minX, a2.maxY, a2.maxZ);
-  Tesselator::instance.offset(0.0, 0.0, 0.0);
   Tesselator::instance.draw(1);
+  Tesselator::instance.offset(0.0, 0.0, 0.0);
 }
 int32_t LevelRenderer::renderChunks(int32_t a2, float a3, bool_t a4) {
   int32_t v10;
@@ -887,6 +886,10 @@ void LevelRenderer::renderEntities(Vec3 a2, FrustumCuller *a3, bool_t a4,
     if (a4) {
       this->renderShadows(this->field_178, this->field_190, a5);
     }
+    glDisable(GL_LIGHTING);
+    glDisable(0x4000u);
+    glDisable(GL_BLEND);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
   } else {
     this->field_18 = v8 - 1;
   }
@@ -977,93 +980,82 @@ void LevelRenderer::renderHit(Player *a2, const HitResult &a3, int32_t df,
 
   if (!df && this->destroyProgress > 0.0) {
     v8 = 0;
+    EnableState vBlend(3042);
+    BlendFunctionState v17(0x306u, 0);
     glPushMatrix();
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-3.0f, -3.0f);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.1f);
-    this->textures->loadAndBindTexture("terrain-atlas.tga");
-    v10 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
-    if (v10 > 0) {
-      v8 = Tile::tiles[v10];
+    {
+      EnableState v16(32823);
+      glPolygonOffset(-3.0f, -3.0f);
+      glDepthMask(GL_FALSE);
+      this->textures->loadAndBindTexture("terrain-atlas.tga");
+      v10 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
+      if (v10 > 0) {
+        v8 = Tile::tiles[v10];
+      }
+      Tesselator::instance.begin(0);
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+      Tesselator::instance.noColor();
+      glTranslatef(-EntityRenderDispatcher::xOff, -EntityRenderDispatcher::yOff,
+                   -EntityRenderDispatcher::zOff);
+      if (!v8) {
+        v8 = Tile::rock;
+      }
+      v11 = a3.field_4;
+      v12 = a3.field_8;
+      v14 = a3.field_C;
+      int32_t stage = (int32_t)(float)(this->destroyProgress * 10.0);
+      if (stage < 0) stage = 0;
+      if (stage > 9) stage = 9;
+      this->field_70->tesselateInWorld(
+          v8, v11, v12, v14,
+          *this->destroyTexture.getUV(stage));
+      Tesselator::instance.draw(1);
+      glPolygonOffset(0.0f, 0.0f);
+      glDepthMask(GL_TRUE);
     }
-    if (!v8) {
-      v8 = Tile::rock;
-    }
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    Tesselator::instance.begin(0);
-    Tesselator::instance.color(1.0f, 1.0f, 1.0f, 1.0f);
-    glTranslatef(-EntityRenderDispatcher::xOff, -EntityRenderDispatcher::yOff,
-                 -EntityRenderDispatcher::zOff);
-    v11 = a3.field_4;
-    v12 = a3.field_8;
-    v14 = a3.field_C;
-    int32_t stage = (int32_t)(float)(this->destroyProgress * 10.0);
-    if (stage < 0) stage = 0;
-    if (stage > 9) stage = 9;
-    this->field_70->tesselateInWorld(
-        v8, v11, v12, v14,
-        *this->destroyTexture.getUV(stage));
-    Tesselator::instance.draw(1);
-    glDisable(GL_POLYGON_OFFSET_FILL);
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPopMatrix();
   }
 }
 void LevelRenderer::renderHitOutline(Player *a2, const HitResult &a3,
-                                     int32_t a4, void *, float a6) {
-  int32_t v9;  // r0
-  int32_t v10; // r8
-  float v11;   // s17
-  float v12;   // s18
-  float v13;   // s16
-
+                                     int32_t a4, void *a5, float a6) {
   if (!a4 && a3.hitType == 0) {
-    glColor4f(0.0, 0.0, 0.0, 0.4);
-    glLineWidth(1.0);
+    glColor4f(0.0f, 0.0f, 0.0f, 0.4f);
+    glLineWidth(2.0f);
     DisableState v14(3553);
-    v9 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
-    v10 = v9;
+    int32_t v9 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
     if (v9 > 0) {
-      Tile::tiles[v9]->updateShape(this->level, a3.field_4, a3.field_8,
-                                   a3.field_C);
-      v11 = a2->prevPosX + (float)((float)(a2->posX - a2->prevPosX) * a6);
-      v12 = a2->prevPosY + (float)((float)(a2->posY - a2->prevPosY) * a6);
-      v13 = a2->prevPosZ + (float)((float)(a2->posZ - a2->prevPosZ) * a6);
-      AABB v15 = Tile::tiles[v10]->getTileAABB(this->level, a3.field_4,
-                                               a3.field_8, a3.field_C);
+      Tile::tiles[v9]->updateShape(this->level, a3.field_4, a3.field_8, a3.field_C);
+      float v11 = a2->prevPosX + (float)((float)(a2->posX - a2->prevPosX) * a6);
+      float v12 = a2->prevPosY + (float)((float)(a2->posY - a2->prevPosY) * a6);
+      float v13 = a2->prevPosZ + (float)((float)(a2->posZ - a2->prevPosZ) * a6);
+      AABB v15 = Tile::tiles[v9]->getTileAABB(this->level, a3.field_4, a3.field_8, a3.field_C);
       AABB v16{
-          .minX = (float)(v15.minX - 0.002) - v11,
-          .minY = (float)(v15.minY - 0.002) - v12,
-          .minZ = (float)(v15.minZ - 0.002) - v13,
-          .maxX = (float)(v15.maxX + 0.002) - v11,
-          .maxY = (float)(v15.maxY + 0.002) - v12,
-          .maxZ = (float)(v15.maxZ + 0.002) - v13,
+          (float)(v15.minX - 0.002f) - v11,
+          (float)(v15.minY - 0.002f) - v12,
+          (float)(v15.minZ - 0.002f) - v13,
+          (float)(v15.maxX + 0.002f) - v11,
+          (float)(v15.maxY + 0.002f) - v12,
+          (float)(v15.maxZ + 0.002f) - v13,
       };
-
       this->render(v16);
     }
-    //~v14
   }
 }
 void LevelRenderer::renderHitSelect(Player *a2, const HitResult &a3, int32_t a4,
                                     void *a5, float a6) {
   if (a4 == 0) {
     Tile *v8 = 0;
-    glEnable(0x8037);
+    glEnable(0x8037u);
     glPolygonOffset(-2.0f, -2.0f);
     glDepthMask(GL_FALSE);
+    EnableState v10(3042);
     DisableState v12(3553);
     BlendFunctionState v13(0x306u, 0x300u);
     glPushMatrix();
     int32_t v9 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
     if (v9 > 0)
       v8 = Tile::tiles[v9];
-    glColor4f(0.65, 0.65, 0.65, 1.0);
+    glColor4f(0.65f, 0.65f, 0.65f, 1.0f);
     glTranslatef(-EntityRenderDispatcher::xOff, -EntityRenderDispatcher::yOff,
                  -EntityRenderDispatcher::zOff);
     Tesselator::instance.begin(0);
@@ -1076,13 +1068,11 @@ void LevelRenderer::renderHitSelect(Player *a2, const HitResult &a3, int32_t a4,
     Tesselator::instance.offset(0.0, 0.0, 0.0);
     glPopMatrix();
     glPolygonOffset(0.0f, 0.0f);
-    glDisable(0x8037);
+    glDisable(0x8037u);
     glDepthMask(GL_TRUE);
   }
 }
 void LevelRenderer::renderNameTags(float a2) {
-  glDepthFunc(GL_ALWAYS);
-
   for (auto &&p : this->field_178) {
     EntityRenderer *er = EntityRenderDispatcher::getInstance()->getRenderer(
         p.second->entityRenderId);
@@ -1090,8 +1080,6 @@ void LevelRenderer::renderNameTags(float a2) {
       er->renderName(p.second, a2);
     }
   }
-
-  glDepthFunc(GL_LEQUAL);
 }
 void LevelRenderer::renderOutlineHitSelect(Player *a2, float a3, Tile *a4,
                                            const HitResult &a5) {
@@ -1741,10 +1729,17 @@ void LevelRenderer::entityAdded(Entity *a2) { a2->isPlayer(); }
 void LevelRenderer::levelEvent(Player *player, int32_t event, int32_t x,
                                int32_t y, int32_t z, int32_t) {
   if (event == 1003) {
-    this->level->playSound((float)x + 0.5, (float)y + 0.5, (float)z + 0.5,
-                           Mth::random() >= 0.5 ? "random.door_close"
-                                                : "random.door_open",
-                           1.0, (float)(level->random.nextFloat() * 0.1) + 0.9);
+    int tid = this->level ? this->level->getTile(x, y, z) : 0;
+    if (Tile::copperDoor && (tid == Tile::copperDoor->blockID || (this->level && this->level->getTile(x, y - 1, z) == Tile::copperDoor->blockID))) {
+      this->level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "block.copper_door.toggle", 1.0f, (float)(level->random.nextFloat() * 0.1f) + 0.9f);
+    } else if (Tile::copperTrapdoor && tid == Tile::copperTrapdoor->blockID) {
+      this->level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, "block.copper_trapdoor.toggle", 1.0f, (float)(level->random.nextFloat() * 0.1f) + 0.9f);
+    } else {
+      this->level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f,
+                             Mth::random() >= 0.5f ? "random.door_close"
+                                                   : "random.door_open",
+                             1.0f, (float)(level->random.nextFloat() * 0.1f) + 0.9f);
+    }
   }
 }
 void LevelRenderer::onAppSuspended() {

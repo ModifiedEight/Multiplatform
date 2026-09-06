@@ -24,15 +24,15 @@ FrogModel::FrogModel()
 	this->head.setPos(0.0f, 20.0f, 3.0f);
 
 	this->croakingBody.setModel(this);
-	this->croakingBody.addBox(-3.5f, -1.0f, -3.0f, 7, 2, 3);
+	this->croakingBody.addBox(-3.5f, -0.1f, -2.9f, 7, 2, 3);
 	this->croakingBody.setPos(0.0f, 21.0f, -1.0f);
 
 	this->leftEye.setModel(this);
-	this->leftEye.addBox(0.5f, -3.5f, -8.0f, 3, 2, 3);
+	this->leftEye.addBox(0.5f, -4.0f, -6.0f, 3, 2, 3);
 	this->leftEye.setPos(0.0f, 20.0f, 3.0f);
 
 	this->rightEye.setModel(this);
-	this->rightEye.addBox(-3.5f, -3.5f, -8.0f, 3, 2, 3);
+	this->rightEye.addBox(-3.5f, -4.0f, -6.0f, 3, 2, 3);
 	this->rightEye.setPos(0.0f, 20.0f, 3.0f);
 
 	this->leftArm.setModel(this);
@@ -72,7 +72,6 @@ void FrogModel::render(Entity* a2, float a3, float a4, float a5, float a6, float
 	this->setupAnim(a3, a4, a5, a6, a7, a8);
 	this->body.render(a8);
 	this->head.render(a8);
-	this->croakingBody.render(a8);
 	this->leftEye.render(a8);
 	this->rightEye.render(a8);
 	this->leftArm.render(a8);

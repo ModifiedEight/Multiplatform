@@ -98,25 +98,45 @@ bool_t ArmorStand::interactWithPlayer(Player* player) {
 	ItemInstance* held = player->inventory->getSelected();
 	if (held && !held->isNull() && held->count > 0) {
 		Item* it = Item::items[held->getId()];
+		// Mob heads cannot be placed on armor stands
 		if (it && it->isArmor()) {
-			ArmorItem* armor = (ArmorItem*)it;
-			int slot = armor->field_48; // 0=helmet, 1=chestplate, 2=leggings, 3=boots
+			int slot = ((ArmorItem*)it)->field_48;
 			if (slot >= 0 && slot < 4) {
-				if (this->armorItems[slot].isNull() || this->armorItems[slot].count <= 0) {
-					this->armorItems[slot] = *held;
-					this->armorItems[slot].count = 1;
-					if (player->inventory->field_20 == 0) {
-						held->count--;
-						if (held->count <= 0) {
-							player->inventory->clearSlot(player->inventory->selectedSlot);
-						}
+				ItemInstance oldItem = this->armorItems[slot];
+				this->armorItems[slot] = *held;
+				this->armorItems[slot].count = 1;
+				if (player->inventory->field_20 == 0) {
+					held->count--;
+					if (held->count <= 0) {
+						player->inventory->clearSlot(player->inventory->selectedSlot);
 					}
-					player->inventory->setContainerChanged();
-					if (this->level) this->level->playSound(this, "mob.armorstand.place", 1.0f, 1.0f);
-					return 1;
 				}
+				if (!oldItem.isNull() && oldItem.count > 0) {
+					player->inventory->add(&oldItem);
+				}
+				player->inventory->setContainerChanged();
+				if (this->level) this->level->playSound(this, "mob.armorstand.place", 1.0f, 1.0f);
+				return 1;
 			}
 		}
+	}
+
+	Vec3 eye(player->posX, player->posY + player->getHeadHeight(), player->posZ);
+	Vec3 look = player->getViewVector(1.0f);
+	HitResult hit = this->boundingBox.clip(eye, Vec3(eye.x + look.x * 6.0f, eye.y + look.y * 6.0f, eye.z + look.z * 6.0f));
+	float hitY = (hit.hitType != 0) ? (hit.hitVec.y - this->posY) : (eye.y - this->posY);
+	int targetSlot = 0;
+	if (hitY >= 1.6f) targetSlot = 0;
+	else if (hitY >= 0.9f) targetSlot = 1;
+	else if (hitY >= 0.4f) targetSlot = 2;
+	else targetSlot = 3;
+
+	if (!this->armorItems[targetSlot].isNull() && this->armorItems[targetSlot].count > 0) {
+		player->inventory->add(&this->armorItems[targetSlot]);
+		this->armorItems[targetSlot] = ItemInstance();
+		player->inventory->setContainerChanged();
+		if (this->level) this->level->playSound(this, "mob.armorstand.place", 1.0f, 1.0f);
+		return 1;
 	}
 
 	for (int i = 0; i < 4; ++i) {

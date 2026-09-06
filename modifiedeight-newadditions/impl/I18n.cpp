@@ -527,10 +527,41 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   if (a1 == "tile.copperSlab.name" || a1 == "item.copperSlab.name" || a1 == "desc.copperSlab" || a1 == "tile.copperSlab") { a2 = "Copper Slab"; return 1; }
   if (a1 == "item.copperDoor.name" || a1 == "tile.copperDoor.name" || a1 == "desc.copperDoor" || a1 == "item.copperDoor" || a1 == "tile.copperDoor") { a2 = "Copper Door"; return 1; }
   if (a1 == "tile.copperTrapdoor.name" || a1 == "item.copperTrapdoor.name" || a1 == "desc.copperTrapdoor" || a1 == "tile.copperTrapdoor") { a2 = "Copper Trapdoor"; return 1; }
+  if (a1 == "tile.copperBulb.name" || a1 == "item.copperBulb.name" || a1 == "desc.copperBulb" || a1 == "tile.copperBulb") { a2 = "Copper Bulb"; return 1; }
+  if (a1 == "tile.copperGrate.name" || a1 == "item.copperGrate.name" || a1 == "desc.copperGrate" || a1 == "tile.copperGrate") { a2 = "Copper Grate"; return 1; }
   if (a1 == "tile.enderChest.name" || a1 == "item.enderChest.name" || a1 == "desc.enderChest" || a1 == "tile.enderChest") { a2 = "Ender Chest"; return 1; }
   if (a1 == "tile.cobbleWall.name" || a1 == "tile.cobbleWall.normal.name" || a1 == "tile.cobbleWall") { a2 = "Cobblestone Wall"; return 1; }
   if (a1 == "tile.cobbleWall.mossy.name") { a2 = "Mossy Cobblestone Wall"; return 1; }
   if (a1 == "tile.stoneWall.name" || a1 == "tile.stoneWall") { a2 = "Stone Wall"; return 1; }
+  if (a1 == "tile.oakWall.name" || a1 == "item.oakWall.name" || a1 == "desc.oakWall" || a1 == "tile.oakWall") { a2 = "Oak Wall"; return 1; }
+  if (a1 == "tile.spruceWall.name" || a1 == "item.spruceWall.name" || a1 == "desc.spruceWall" || a1 == "tile.spruceWall") { a2 = "Spruce Wall"; return 1; }
+  if (a1 == "tile.birchWall.name" || a1 == "item.birchWall.name" || a1 == "desc.birchWall" || a1 == "tile.birchWall") { a2 = "Birch Wall"; return 1; }
+  if (a1 == "tile.jungleWall.name" || a1 == "item.jungleWall.name" || a1 == "desc.jungleWall" || a1 == "tile.jungleWall") { a2 = "Jungle Wall"; return 1; }
+  if (a1 == "tile.brickWall.name" || a1 == "item.brickWall.name" || a1 == "desc.brickWall" || a1 == "tile.brickWall") { a2 = "Brick Wall"; return 1; }
+  if (a1 == "tile.quartzWall.name" || a1 == "item.quartzWall.name" || a1 == "desc.quartzWall" || a1 == "tile.quartzWall") { a2 = "Quartz Wall"; return 1; }
+  if (a1 == "tile.chiseledQuartzWall.name" || a1 == "item.chiseledQuartzWall.name" || a1 == "desc.chiseledQuartzWall" || a1 == "tile.chiseledQuartzWall") { a2 = "Chiseled Quartz Wall"; return 1; }
+  if (a1 == "tile.ironWall.name" || a1 == "item.ironWall.name" || a1 == "desc.ironWall" || a1 == "tile.ironWall") { a2 = "Iron Wall"; return 1; }
+  if (a1 == "tile.sandstoneWall.name" || a1 == "item.sandstoneWall.name" || a1 == "desc.sandstoneWall" || a1 == "tile.sandstoneWall") { a2 = "Sandstone Wall"; return 1; }
+  if (a1 == "tile.stoneBrickWall.name" || a1 == "item.stoneBrickWall.name" || a1 == "desc.stoneBrickWall" || a1 == "tile.stoneBrickWall") { a2 = "Stone Brick Wall"; return 1; }
+  if (a1 == "tile.mossyStoneBrickWall.name" || a1 == "item.mossyStoneBrickWall.name" || a1 == "desc.mossyStoneBrickWall" || a1 == "tile.mossyStoneBrickWall") { a2 = "Mossy Stone Brick Wall"; return 1; }
+  if (a1 == "tile.crackedStoneBrickWall.name" || a1 == "item.crackedStoneBrickWall.name" || a1 == "desc.crackedStoneBrickWall" || a1 == "tile.crackedStoneBrickWall") { a2 = "Cracked Stone Brick Wall"; return 1; }
+  if (a1 == "tile.head_steve.name" || a1 == "item.head_steve.name" || a1 == "tile.head_steve") { a2 = "Steve Head"; return 1; }
+  if (a1 == "tile.head_creeper.name" || a1 == "item.head_creeper.name" || a1 == "tile.head_creeper") { a2 = "Creeper Head"; return 1; }
+  if (a1 == "tile.head_zombie.name" || a1 == "item.head_zombie.name" || a1 == "tile.head_zombie") { a2 = "Zombie Head"; return 1; }
+  if (a1 == "tile.head_skeleton.name" || a1 == "item.head_skeleton.name" || a1 == "tile.head_skeleton") { a2 = "Skeleton Head"; return 1; }
+  if (a1 == "tile.head_spider.name" || a1 == "item.head_spider.name" || a1 == "tile.head_spider") { a2 = "Spider Head"; return 1; }
+  if (a1 == "tile.head_pigzombie.name" || a1 == "item.head_pigzombie.name" || a1 == "tile.head_pigzombie") { a2 = "Zombie Pigman Head"; return 1; }
+  if (a1 == "tile.head_slime.name" || a1 == "item.head_slime.name" || a1 == "tile.head_slime") { a2 = "Slime Head"; return 1; }
+  if (a1 == "tile.head_cow.name" || a1 == "item.head_cow.name" || a1 == "tile.head_cow") { a2 = "Cow Head"; return 1; }
+  if (a1 == "tile.head_pig.name" || a1 == "item.head_pig.name" || a1 == "tile.head_pig") { a2 = "Pig Head"; return 1; }
+  if (a1 == "tile.head_sheep.name" || a1 == "item.head_sheep.name" || a1 == "tile.head_sheep") { a2 = "Sheep Head"; return 1; }
+  if (a1 == "tile.head_chicken.name" || a1 == "item.head_chicken.name" || a1 == "tile.head_chicken") { a2 = "Chicken Head"; return 1; }
+  if (a1 == "tile.head_villager.name" || a1 == "item.head_villager.name" || a1 == "tile.head_villager") { a2 = "Villager Head"; return 1; }
+  if (a1 == "tile.head_zombievillager.name" || a1 == "item.head_zombievillager.name" || a1 == "tile.head_zombievillager") { a2 = "Zombie Villager Head"; return 1; }
+  if (a1 == "tile.head_ocelot.name" || a1 == "item.head_ocelot.name" || a1 == "tile.head_ocelot") { a2 = "Ocelot Head"; return 1; }
+  if (a1 == "tile.head_polarbear.name" || a1 == "item.head_polarbear.name" || a1 == "tile.head_polarbear") { a2 = "Polar Bear Head"; return 1; }
+  if (a1 == "tile.head_turtle.name" || a1 == "item.head_turtle.name" || a1 == "tile.head_turtle") { a2 = "Turtle Head"; return 1; }
+  if (a1 == "tile.head_giant.name" || a1 == "item.head_giant.name" || a1 == "tile.head_giant") { a2 = "Giant Head"; return 1; }
   if (a1 == "tile.doorJungle.name" || a1 == "item.doorJungle.name" || a1 == "desc.doorjungle" || a1 == "desc.doorJungle") { a2 = "Jungle Door"; return 1; }
   if (a1 == "tile.ironTrapdoor.name" || a1 == "item.ironTrapdoor.name" || a1 == "desc.ironTrapdoor" || a1 == "desc.trapdoor.iron") { a2 = "Iron Trapdoor"; return 1; }
   if (a1 == "tile.slimeBlock.name" || a1 == "item.slimeBlock.name" || a1 == "desc.slimeBlock") { a2 = "Slime Block"; return 1; }

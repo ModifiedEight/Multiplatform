@@ -4,6 +4,9 @@
 #include <tile/material/Material.hpp>
 #include <entity/Player.hpp>
 #include <tile/entity/MixedSlabTileEntity.hpp>
+#include <tile/MobHeadTile.hpp>
+#include <tile/entity/MobHeadTileEntity.hpp>
+#include <math/Mth.hpp>
 
 TileItem::TileItem(int32_t id)
 	: Item(id) {
@@ -182,30 +185,11 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 	}
 
 	bool_t canPlace = level->mayPlace(this->blockID, x, yNew, zNew, 0, sideNew);
-	if (v19 && (v19->getRenderShape() == 32 || v19->getRenderShape() == 11)) {
-		if (side != 1 && (faceY >= 0.40f || (player && player->posY > (float)origY))) {
-			if (level->mayPlace(this->blockID, origX, origY + 1, origZ, 0, 1)) {
-				x = origX;
-				yNew = origY + 1;
-				zNew = origZ;
-				sideNew = 1;
-				canPlace = true;
-			}
-		}
-	} else if (!canPlace && side != 1 && (faceY >= 0.45f || (player && player->posY > (float)origY))) {
-		if (level->mayPlace(this->blockID, origX, origY + 1, origZ, 0, 1)) {
-			x = origX;
-			yNew = origY + 1;
-			zNew = origZ;
-			sideNew = 1;
-			canPlace = true;
-		}
-	}
 	if (Tile::seagrass && this->blockID == Tile::seagrass->blockID) {
 		canPlace = Tile::seagrass->mayPlace(level, x, yNew, zNew);
 	}
 	if (!canPlace && (this->blockID == Tile::torch->blockID || this->blockID == Tile::lever->blockID) && side == 1) {
-		if (level->isTopSolidBlocking(x, y, z)) {
+		if (level->isTopSolidBlocking(origX, origY, origZ)) {
 			canPlace = true;
 		}
 	}
@@ -219,15 +203,25 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 	meta = this->getLevelDataForAuxValue(auxValue);
 	v23 = v20->getPlacementDataValue(level, x, yNew, zNew, sideNew, faceX, faceY, faceZ, (Mob*)player, meta);
 	if(level->setTileAndData(x, yNew, zNew, this->blockID, v23, 3)) {
+		if (MobHeadTile::isHeadBlock(this->blockID)) {
+			MobHeadTileEntity* te = (MobHeadTileEntity*)level->getTileEntity(x, yNew, zNew);
+			if (!te) {
+				te = new MobHeadTileEntity(MobHeadTile::getHeadType(this->blockID), 0);
+				level->setTileEntity(x, yNew, zNew, te);
+			}
+			if (te) {
+				te->headType = MobHeadTile::getHeadType(this->blockID);
+				if (player) {
+					te->rotation = (Mth::floor(((player->yaw + 180.0f) * 16.0f / 360.0f) + 0.5f)) & 15;
+				}
+			}
+		}
 		level->playSound((float)x + 0.5, (float)yNew + 0.5, (float)zNew + 0.5, v20->soundType->field_C, (float)(v20->soundType->field_0 + 1.0) * 0.5, v20->soundType->field_4 * 0.8);
 		--item->count;
 	}
 	return 1;
 }
 TextureUVCoordinateSet* TileItem::getIcon(int32_t data, int32_t a3, bool_t inHand) {
-	if (Tile::enderChest && this->blockID == Tile::enderChest->blockID) {
-		return Item::getIcon(data, a3, inHand);
-	}
 	if (this->blockID >= 0 && this->blockID < 256 && Tile::tiles[this->blockID]) {
 		TextureUVCoordinateSet* tex = Tile::tiles[this->blockID]->getCarriedTexture(2, data);
 		if (!tex || (tex->minX == 0.0f && tex->maxX == 0.0f && tex->minY == 0.0f && tex->maxY == 0.0f)) {

@@ -4,6 +4,7 @@
 #include <tile/material/Material.hpp>
 #include <item/Item.hpp>
 #include <item/ItemInstance.hpp>
+#include <nbt/CompoundTag.hpp>
 #include <cmath>
 
 Boat::Boat(Level* level)
@@ -106,14 +107,14 @@ bool_t Boat::interactWithPlayer(Player* player) {
 	return 1;
 }
 
-void Boat::positionRider(Entity* r) {
-	if (!r) return;
-	float forwardOffset = 0.2f;
-	float rad = (this->yaw * 3.14159265f) / 180.0f;
-	float rx = this->posX + std::sin(rad) * forwardOffset;
-	float rz = this->posZ - std::cos(rad) * forwardOffset;
-	float ry = this->posY + this->ridingHeight + 0.35f;
-	r->setPos(rx, ry, rz);
+float Boat::getRideHeight() {
+	return 1.05f;
+}
+
+void Boat::positionRider(bool_t isDead) {
+	if (!this->rider) return;
+	float ry = this->posY + this->getRideHeight();
+	this->rider->setPos(this->posX, ry, this->posZ);
 }
 
 void Boat::tick() {
@@ -155,18 +156,23 @@ void Boat::tick() {
 
 	if (this->rider && this->rider->isPlayer()) {
 		Player* p = (Player*)this->rider;
-		this->yaw = p->yaw;
-		float speed = inWater ? 0.035f : 0.015f;
-		float rad = (this->yaw * 3.14159265f) / 180.0f;
-		float forward = 0.0f;
 		if (p->isSneaking()) {
 			p->ride(0);
 		} else {
-			forward = 1.0f;
-			this->motionX += -std::sin(rad) * speed * forward;
-			this->motionZ += std::cos(rad) * speed * forward;
-			this->rowingTime[0] += 0.25f;
-			this->rowingTime[1] += 0.25f;
+			if (p->moveStrafe > 0.0f) this->yaw -= 3.0f;
+			else if (p->moveStrafe < 0.0f) this->yaw += 3.0f;
+			float forward = p->moveForward;
+			if (forward != 0.0f) {
+				float speed = inWater ? 0.04f : 0.02f;
+				float rad = (this->yaw * 3.14159265f) / 180.0f;
+				this->motionX += -std::sin(rad) * speed * forward;
+				this->motionZ += std::cos(rad) * speed * forward;
+				this->rowingTime[0] += 0.25f;
+				this->rowingTime[1] += 0.25f;
+			} else if (p->moveStrafe != 0.0f) {
+				this->rowingTime[0] += 0.15f;
+				this->rowingTime[1] += 0.15f;
+			}
 		}
 	}
 
@@ -177,14 +183,14 @@ void Boat::tick() {
 	}
 
 	this->move(this->motionX, this->motionY, this->motionZ);
-
-	if (this->rider) {
-		this->positionRider(this->rider);
-	}
 }
 
 void Boat::readAdditionalSaveData(CompoundTag* tag) {
+	if (tag->contains("BoatType")) {
+		this->setBoatType(tag->getInt("BoatType"));
+	}
 }
 
 void Boat::addAdditonalSaveData(CompoundTag* tag) {
+	tag->putInt("BoatType", this->getBoatType());
 }

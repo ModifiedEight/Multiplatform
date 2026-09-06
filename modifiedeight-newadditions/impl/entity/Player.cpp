@@ -67,6 +67,9 @@ void Player::_init() {
 	this->field_B68 = 0;
 	this->field_B6C = 0;
 	this->score = 0;
+	for (int i = 0; i < 27; ++i) {
+		this->enderChestItems[i] = nullptr;
+	}
 }
 void Player::animateRespawn(Player*, Level*) {
 }
@@ -447,6 +450,12 @@ void Player::touch(Entity* a2) {
 
 Player::~Player() {
 	if(this->inventory) delete this->inventory;
+	for (int i = 0; i < 27; ++i) {
+		if (this->enderChestItems[i]) {
+			delete this->enderChestItems[i];
+			this->enderChestItems[i] = nullptr;
+		}
+	}
 }
 void Player::reset() {
 	Mob::reset();
@@ -755,6 +764,28 @@ LABEL_25:
 	if(v25) {
 		this->spawn = {a2->getInt("SpawnX"), a2->getInt("SpawnY"), a2->getInt("SpawnZ")};
 	}
+	if(a2->contains("EnderItems", 9)) {
+		ListTag* list = a2->getList("EnderItems");
+		for (int i = 0; i < 27; ++i) {
+			if (this->enderChestItems[i]) {
+				delete this->enderChestItems[i];
+				this->enderChestItems[i] = nullptr;
+			}
+		}
+		for (size_t i = 0; i < list->value.size(); ++i) {
+			Tag* tg = (Tag*)list->value[i];
+			if (tg->getId() == 10) {
+				CompoundTag* itemTag = (CompoundTag*)tg;
+				int32_t slot = (uint8_t)itemTag->getByte("Slot");
+				if (slot < 27) {
+					ItemInstance* inst = new ItemInstance();
+					inst->load(itemTag);
+					this->enderChestItems[slot] = inst;
+				}
+			}
+		}
+	}
+
 	this->hasRespawnPos = this->spawn.y >= 0;
 	this->abilities.loadSaveData(a2);
 }
@@ -768,6 +799,17 @@ void Player::addAdditonalSaveData(CompoundTag* a2) {
 		v10->add(v11);
 	}
 	a2->put("Armor", v10);
+	ListTag* enderList = new ListTag();
+	for (int32_t i = 0; i < 27; ++i) {
+		ItemInstance* it = this->enderChestItems[i];
+		if (it && !it->isNull() && it->count > 0) {
+			CompoundTag* itemTag = new CompoundTag();
+			itemTag->putByte("Slot", (int8_t)i);
+			it->save(itemTag);
+			enderList->add(itemTag);
+		}
+	}
+	a2->put("EnderItems", enderList);
 	a2->putInt("Dimension", this->dimension);
 	a2->putBoolean("Sleeping", this->isSleeping());
 	a2->putShort("SleepTimer", this->sleepingCounter);
@@ -835,8 +877,8 @@ void Player::travel(float a2, float a3) {
 		float rad = this->yaw * 0.0174532925f;
 		float sinYaw = sinf(rad);
 		float cosYaw = cosf(rad);
-		this->motionX += (a2 * cosYaw - a3 * sinYaw) * 0.045f;
-		this->motionZ += (a3 * cosYaw + a2 * sinYaw) * 0.045f;
+		this->motionX += (a2 * cosYaw - a3 * sinYaw) * 0.075f;
+		this->motionZ += (a3 * cosYaw + a2 * sinYaw) * 0.075f;
 		this->move(this->motionX, this->motionY, this->motionZ);
 		this->motionX *= 0.84f;
 		this->motionY = motionY * 0.6f;

@@ -74,6 +74,20 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Tile::fence, 2), "###", "###", definition<Item*>('#', Item::stick));
 	this->addShapedRecipe(ItemInstance(Tile::cobbleWall, 6, 0), "###", "###", definition<Tile*>('#', Tile::stoneBrick));
 	if (Tile::stoneWall) this->addShapedRecipe(ItemInstance(Tile::stoneWall, 6), "###", "###", definition<Tile*>('#', Tile::rock));
+	if (Tile::oakWall) this->addShapedRecipe(ItemInstance(Tile::oakWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 0)));
+	if (Tile::spruceWall) this->addShapedRecipe(ItemInstance(Tile::spruceWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
+	if (Tile::birchWall) this->addShapedRecipe(ItemInstance(Tile::birchWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	if (Tile::jungleWall) this->addShapedRecipe(ItemInstance(Tile::jungleWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
+	if (Tile::fence_jungle) this->addShapedRecipe(ItemInstance(Tile::fence_jungle, 3), "#W#", "#W#", definition<Item*, ItemInstance>('#', Item::stick, 'W', ItemInstance(Tile::wood, 1, 3)));
+	if (Tile::brickWall) this->addShapedRecipe(ItemInstance(Tile::brickWall, 6), "###", "###", definition<Tile*>('#', Tile::redBrick));
+	if (Tile::quartzWall) this->addShapedRecipe(ItemInstance(Tile::quartzWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 0)));
+	if (Tile::chiseledQuartzWall) this->addShapedRecipe(ItemInstance(Tile::chiseledQuartzWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 1)));
+	if (Tile::ironWall) this->addShapedRecipe(ItemInstance(Tile::ironWall, 6), "###", "###", definition<Tile*>('#', Tile::ironBlock));
+	if (Tile::sandstoneWall) this->addShapedRecipe(ItemInstance(Tile::sandstoneWall, 6), "###", "###", definition<Tile*>('#', Tile::sandStone));
+	if (Tile::stoneBrickWall) this->addShapedRecipe(ItemInstance(Tile::stoneBrickWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::stoneBrickSmooth, 1, 0)));
+	if (Tile::mossyStoneBrickWall) this->addShapedRecipe(ItemInstance(Tile::mossyStoneBrickWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::stoneBrickSmooth, 1, 1)));
+	if (Tile::crackedStoneBrickWall) this->addShapedRecipe(ItemInstance(Tile::crackedStoneBrickWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::stoneBrickSmooth, 1, 2)));
+	if (Tile::copperWall) this->addShapedRecipe(ItemInstance(Tile::copperWall, 6), "###", "###", definition<Tile*>('#', Tile::copperBlock));
 	this->addShapedRecipe(ItemInstance(Tile::fenceGate, 1), "#W#", "#W#", definition<Item*, Tile*>('#', Item::stick, 'W', Tile::wood));
 	this->addShapedRecipe(ItemInstance(Tile::bookshelf, 1), "###", "XXX", "###", definition<Tile*, Item*>('#', Tile::wood, 'X', Item::book) /*inlined*/);
 	this->addShapedRecipe(ItemInstance(Tile::snow, 1), "##", "##", definition<Item*>('#', Item::snowBall));
@@ -108,6 +122,7 @@ Recipes::Recipes() {
 	this->addShapedRecipe(ItemInstance(Tile::trapdoor, 2), "###", "###", definition<Tile*>('#', Tile::wood));
 	this->addShapedRecipe(ItemInstance(Tile::trapdoor_spruce, 2), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
 	this->addShapedRecipe(ItemInstance(Tile::trapdoor_birch, 2), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	if (Tile::trapdoor_jungle) this->addShapedRecipe(ItemInstance(Tile::trapdoor_jungle, 2), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
 	if (Tile::ironTrapdoor) this->addShapedRecipe(ItemInstance(Tile::ironTrapdoor, 1), "##", "##", definition<Item*>('#', Item::ironIngot));
 	if (Item::boat) {
 		this->addShapedRecipe(ItemInstance(Item::boat, 1, 0), "# #", "#S#", "###", definition<ItemInstance, Item*>('#', ItemInstance(Tile::wood, 1, 0), 'S', Item::shovel_wood));
@@ -124,6 +139,33 @@ Recipes::Recipes() {
 	}
 	if (Tile::copperWall && Tile::copperBlock) {
 		this->addShapedRecipe(ItemInstance(Tile::copperWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::copperBlock, 1)));
+	}
+	if (Tile::oakWall && Tile::wood) {
+		this->addShapedRecipe(ItemInstance(Tile::oakWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 0)));
+	}
+	if (Tile::spruceWall && Tile::wood) {
+		this->addShapedRecipe(ItemInstance(Tile::spruceWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 1)));
+	}
+	if (Tile::birchWall && Tile::wood) {
+		this->addShapedRecipe(ItemInstance(Tile::birchWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 2)));
+	}
+	if (Tile::jungleWall && Tile::wood) {
+		this->addShapedRecipe(ItemInstance(Tile::jungleWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::wood, 1, 3)));
+	}
+	if (Tile::brickWall && Tile::redBrick) {
+		this->addShapedRecipe(ItemInstance(Tile::brickWall, 6), "###", "###", definition<Tile*>('#', Tile::redBrick));
+	}
+	if (Tile::quartzWall && Tile::quartzBlock) {
+		this->addShapedRecipe(ItemInstance(Tile::quartzWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 0)));
+	}
+	if (Tile::chiseledQuartzWall && Tile::quartzBlock) {
+		this->addShapedRecipe(ItemInstance(Tile::chiseledQuartzWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::quartzBlock, 1, 1)));
+	}
+	if (Tile::ironWall && Tile::ironBlock) {
+		this->addShapedRecipe(ItemInstance(Tile::ironWall, 6), "###", "###", definition<Tile*>('#', Tile::ironBlock));
+	}
+	if (Tile::sandstoneWall && Tile::sandStone) {
+		this->addShapedRecipe(ItemInstance(Tile::sandstoneWall, 6), "###", "###", definition<ItemInstance>('#', ItemInstance(Tile::sandStone, 1, 0)));
 	}
 	if (Tile::copperStairs && Tile::copperBlock) {
 		this->addShapedRecipe(ItemInstance(Tile::copperStairs, 4), "#  ", "## ", "###", definition<ItemInstance>('#', ItemInstance(Tile::copperBlock, 1)));

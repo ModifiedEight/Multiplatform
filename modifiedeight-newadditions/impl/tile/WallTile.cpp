@@ -1,29 +1,38 @@
 #include <tile/WallTile.hpp>
 #include <level/Level.hpp>
 #include <tile/material/Material.hpp>
+#include <math/HitResult.hpp>
 
-WallTile::WallTile(int32_t id, Tile* a3)
-	: Tile(id, a3->material) {
+WallTile::WallTile(int32_t id, Tile* a3, int32_t aux)
+	: Tile(id, a3 ? a3->material : Material::stone) {
 	this->baseTile = a3;
-	this->setDestroyTime(a3->blockResistance / 3.0);
-	this->setSoundType(*a3->soundType);
+	this->baseAux = aux;
+	if (a3) {
+		this->setDestroyTime(a3->blockResistance / 3.0);
+		if (a3->soundType) this->setSoundType(*a3->soundType);
+	}
 }
 bool_t WallTile::connectsTo(LevelSource* level, int32_t x, int32_t y, int32_t z) {
-	int32_t v6; // r0
-	Tile* v7;	// r4
-
-	v6 = level->getTile(x, y, z);
-	if(v6 == this->blockID || (Tile::tiles[v6] && Tile::tiles[v6]->getRenderShape() == 32) || v6 == Tile::fenceGate->blockID) {
+	if(!level) return 0;
+	int32_t v6 = level->getTile(x, y, z);
+	if(v6 == 0) return 0;
+	if(v6 == this->blockID || (Tile::tiles[v6] && Tile::tiles[v6]->getRenderShape() == 32) || (Tile::fenceGate && v6 == Tile::fenceGate->blockID)) {
 		return 1;
 	}
-	v7 = Tile::tiles[v6];
-	if(!v7) {
+	Tile* v7 = Tile::tiles[v6];
+	if(!v7) return 0;
+	if(v7->material == Material::vegetable || v7->material == Material::leaves || v7->material == Material::plant) {
 		return 0;
 	}
-	if(v7->material->isSolidBlocking() && v7->isCubeShaped()) {
-		return v7->material != Material::vegetable;
+	if(v7->material->isSolidBlocking() || (Tile::mixedSlab && v6 == Tile::mixedSlab->blockID) || v7->material->isSolid()) {
+		return 1;
 	}
 	return 0;
+}
+
+HitResult WallTile::clip(Level* level, int32_t x, int32_t y, int32_t z, const Vec3& a6, const Vec3& a7) {
+	this->updateShape(level, x, y, z);
+	return Tile::clip(level, x, y, z, a6, a7);
 }
 
 WallTile::~WallTile() {
@@ -56,9 +65,13 @@ TextureUVCoordinateSet* WallTile::getTexture(int32_t a2, int32_t a3) {
 		return Tile::stoneBrick->getTexture(a2);
 	}
 	if(this->baseTile) {
-		return this->baseTile->getTexture(a2, a3);
+		return this->baseTile->getTexture(a2, this->baseAux != 0 ? this->baseAux : a3);
 	}
 	return Tile::stoneBrick->getTexture(a2);
+}
+TextureUVCoordinateSet* WallTile::getTexture(LevelSource* level, int32_t x, int32_t y, int32_t z, int32_t a6) {
+	int32_t aux = (level ? level->getData(x, y, z) : 0);
+	return this->getTexture(a6, this->baseAux != 0 ? this->baseAux : aux);
 }
 AABB* WallTile::getAABB(Level* level, int32_t x, int32_t y, int32_t z) {
 	this->updateShape(level, x, y, z);
