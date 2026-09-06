@@ -402,6 +402,13 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct RotateHe
 }
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct MovePlayerPacket* a3) {
 	if(this->level) {
+		if (this->minecraft && this->minecraft->player && this->minecraft->player->entityId == a3->eid) {
+			this->minecraft->player->setPos(a3->x, a3->y, a3->z);
+			this->minecraft->player->resetPos(1);
+			this->minecraft->player->yaw = a3->yaw;
+			this->minecraft->player->pitch = a3->pitch;
+			return;
+		}
 		Mob* mob = this->level->getMob(a3->eid);
 		if(mob) {
 			mob->lerpTo(a3->x, a3->y, a3->z, a3->yaw, a3->pitch, 3);
@@ -580,9 +587,15 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct PlayerEq
 }
 
 static void _D663005E(Player* a1, int32_t id, int32_t slot) {
-	if(id >= 0) {
-		ItemInstance a3(id + 256, 1, 0);
-		a1->setArmor(slot, &a3);
+	uint8_t uid = (uint8_t)id;
+	if(uid != 0xFF) {
+		if(uid >= 100 && Tile::tiles[uid]) {
+			ItemInstance a3(Tile::tiles[uid], 1, 0);
+			a1->setArmor(slot, &a3);
+		} else {
+			ItemInstance a3(uid + 256, 1, 0);
+			a1->setArmor(slot, &a3);
+		}
 	} else {
 		a1->setArmor(slot, 0);
 	}

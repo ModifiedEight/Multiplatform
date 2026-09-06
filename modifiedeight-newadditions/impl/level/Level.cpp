@@ -1986,11 +1986,6 @@ LABEL_17:
 				}
 			}
 		}
-		TimeS = getTimeS();
-		if(TimeS - this->field_B64_ >= 30.0) {
-			this->saveLevelData();
-			this->field_B64_ = TimeS;
-		}
 	}
 }
 void Level::tickEntities() {
@@ -2107,6 +2102,11 @@ void Level::tickEntities() {
 			}
 		}
 		this->field_50.clear();
+	}
+	float TimeS = getTimeS();
+	if(TimeS - this->field_B64_ >= 30.0) {
+		this->saveLevelData();
+		this->field_B64_ = TimeS;
 	}
 }
 void Level::tickTemporaryPointers() {
@@ -2397,22 +2397,24 @@ void Level::tick() {
 		}
 	} else {
 		int32_t newTime = this->getTime() + 1;
-		if(this->setTime(newTime) > 255) {
+		if(this->setTime(newTime) > 40) {
 			this->_syncTime(newTime);
 			this->prevTimeSent = this->getTime();
 		}
 	}
 	this->gameTickCounter++;
 	int32_t prevWType = this->weatherType;
-	if (--this->weatherTicks <= 0) {
-		if (this->weatherType == 0) {
-			this->weatherType = (this->random.genrand_int32() % 4 == 0) ? 2 : 1;
-			this->isRainFrogs = (this->weatherType == 1 && (this->random.genrand_int32() % 100 == 0));
-			this->weatherTicks = 12000 + (this->random.genrand_int32() % 12000);
-		} else {
-			this->weatherType = 0;
-			this->isRainFrogs = false;
-			this->weatherTicks = 12000 + (this->random.genrand_int32() % 24000);
+	if (!this->isClientMaybe) {
+		if (--this->weatherTicks <= 0) {
+			if (this->weatherType == 0) {
+				this->weatherType = (this->random.genrand_int32() % 4 == 0) ? 2 : 1;
+				this->isRainFrogs = (this->weatherType == 1 && (this->random.genrand_int32() % 100 == 0));
+				this->weatherTicks = 12000 + (this->random.genrand_int32() % 12000);
+			} else {
+				this->weatherType = 0;
+				this->isRainFrogs = false;
+				this->weatherTicks = 12000 + (this->random.genrand_int32() % 24000);
+			}
 		}
 	}
 	if (this->weatherType != 0) {
@@ -2427,7 +2429,7 @@ void Level::tick() {
 			}
 		}
 	}
-	if (!this->isClientMaybe && (prevWType != this->weatherType || this->gameTickCounter % 120 == 0)) {
+	if (!this->isClientMaybe && (prevWType != this->weatherType || this->gameTickCounter % 40 == 0)) {
 		this->levelEvent(0, 9810, (int16_t)this->weatherType, (int16_t)(this->rainLevel * 1000.0f), (int16_t)g_morningFogTicks, this->weatherTicks);
 	}
 

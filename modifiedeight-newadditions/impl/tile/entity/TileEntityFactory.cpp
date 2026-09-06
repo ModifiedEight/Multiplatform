@@ -5,6 +5,7 @@
 #include <tile/entity/SignTileEntity.hpp>
 #include <tile/entity/MixedSlabTileEntity.hpp>
 #include <tile/entity/EnderChestTileEntity.hpp>
+#include <tile/entity/MobHeadTileEntity.hpp>
 
 TileEntity* TileEntityFactory::createTileEntity(int32_t type) {
 	switch(type) {
@@ -20,6 +21,8 @@ TileEntity* TileEntityFactory::createTileEntity(int32_t type) {
 			return new MixedSlabTileEntity();
 		case 6:
 			return new EnderChestTileEntity();
+		case 7:
+			return new MobHeadTileEntity();
 		default:
 			return 0;
 	}

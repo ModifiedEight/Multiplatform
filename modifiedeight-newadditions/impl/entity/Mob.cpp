@@ -1,4 +1,5 @@
 #include <entity/Mob.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 #include <nbt/CompoundTag.hpp>
 #include <level/Level.hpp>
 #include <item/Item.hpp>
@@ -825,6 +826,37 @@ void Mob::die(Entity* a2) {
 		if(!this->isBaby()) {
 			this->dropDeathLoot();
 		}
+		if(a2 && a2->getEntityTypeId() == 33 && a2 != this) {
+			Tile* headToDrop = nullptr;
+			if(this->isPlayer()) headToDrop = Tile::head_steve;
+			else {
+				int32_t etype = this->getEntityTypeId();
+				switch(etype) {
+					case 10: headToDrop = Tile::head_chicken; break;
+					case 11: headToDrop = Tile::head_cow; break;
+					case 12: headToDrop = Tile::head_pig; break;
+					case 13: headToDrop = Tile::head_sheep; break;
+					case 14: headToDrop = Tile::head_wolf; break;
+					case 15:
+					case 120: headToDrop = Tile::head_villager; break;
+					case 22: headToDrop = Tile::head_ocelot; break;
+					case 26: headToDrop = Tile::head_polarbear; break;
+					case 32: headToDrop = Tile::head_zombie; break;
+					case 33: headToDrop = Tile::head_creeper; break;
+					case 34: headToDrop = Tile::head_skeleton; break;
+					case 35: headToDrop = Tile::head_spider; break;
+					case 36: headToDrop = Tile::head_pigzombie; break;
+					case 37: headToDrop = Tile::head_slime; break;
+					case 39: headToDrop = Tile::head_turtle; break;
+					case 46: headToDrop = Tile::head_fox; break;
+					case 53: headToDrop = Tile::head_giant; break;
+					default: break;
+				}
+			}
+			if(headToDrop) {
+				this->spawnAtLocation(headToDrop->blockID, 1, 0);
+			}
+		}
 		this->level->broadcastEntityEvent(this, 3);
 	}
 }
@@ -847,6 +879,17 @@ bool_t Mob::onLadder() {
 				int32_t tid = this->level->getTile(x, y, z);
 				if (tid == Tile::ladder->blockID || (Tile::vine && tid == Tile::vine->blockID)) {
 					return 1;
+				}
+				if (Tile::slimeBlock && tid == Tile::slimeBlock->blockID) {
+					return 1;
+				}
+				if (Tile::mixedSlab && tid == Tile::mixedSlab->blockID && Tile::slimeBlock) {
+					MixedSlabTileEntity* te = (MixedSlabTileEntity*)this->level->getTileEntity(x, y, z);
+					if (te && (te->mode == 1 || te->mode == 2)) {
+						if (te->bottomTileId == Tile::slimeBlock->blockID || te->topTileId == Tile::slimeBlock->blockID) {
+							return 1;
+						}
+					}
 				}
 			}
 		}

@@ -2,9 +2,14 @@
 #include <network/PacketIds.h>
 #include <entity/Player.hpp>
 #include <network/NetEventCallback.hpp>
+#include <tile/Tile.hpp>
 static void _D6602FA2_armorId(int8_t* res, ItemInstance* it) {
-	if(it) {
-		*res = it->getId();
+	if(it && !it->isNull()) {
+		if (it->tileClass) {
+			*res = (int8_t)it->tileClass->blockID;
+		} else {
+			*res = (int8_t)(it->getId() - 256);
+		}
 	} else {
 		*res = -1;
 	}

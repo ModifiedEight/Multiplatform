@@ -3,10 +3,12 @@
 #include <DiscordRPC.hpp>
 #include <NinecraftApp.hpp>
 #include <_AssetFile.hpp>
+#include <cmath>
 #include <entity/LocalPlayer.hpp>
 #include <input/ControllerHandler.hpp>
 #include <input/ControllerLayout.hpp>
 #include <input/Gamepad.hpp>
+#include <gui/Screen.hpp>
 #include <input/Keyboard.hpp>
 #include <input/KeyboardInput.hpp>
 #include <input/Mouse.hpp>
@@ -192,7 +194,7 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
     return 1;
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight Classic 1.6.5pre3", 0);
+  SDL_WM_SetCaption("ModifiedEight Classic 1.6.5pre4", 0);
 
   {
     int w, h, ch;
@@ -226,6 +228,8 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
   if (!this->sdl_surface) {
     return 0;
   }
+  SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+  SDL_JoystickEventState(SDL_ENABLE);
 #ifndef USEGLES
   initGlFuncs();
 #endif
@@ -456,7 +460,7 @@ void AppPlatform_sdl::init() {
         DiscordRPC::init("1516425667376451594");
         DiscordRPC::update(
             "Modified MCPE Alpha 0.8.1 client with new stuff", "icon",
-            "ModifiedEight Classic 1.6.5pre3",
+            "ModifiedEight Classic 1.6.5pre4",
             {{"Get Client", "https://modifiedeight.github.io/"}});
       }
     }
@@ -506,7 +510,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight Classic 1.6.5pre3",
+              details, "icon", "ModifiedEight Classic 1.6.5pre4",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }
@@ -664,45 +668,122 @@ void AppPlatform_sdl::init() {
       }
     }
 
-    static SDL_Joystick *s_joystick = nullptr;
-    static int s_joystickIndex = -1;
-    static int s_numAxes = 0;
-    static int s_numButtons = 0;
-    static int s_numHats = 0;
-
-    if (!s_joystick) {
-      if (SDL_NumJoysticks() > 0) {
-        s_joystick = SDL_JoystickOpen(0);
-        if (s_joystick) {
-          s_joystickIndex = 0;
-          s_numAxes = SDL_JoystickNumAxes(s_joystick);
-          s_numButtons = SDL_JoystickNumButtons(s_joystick);
-          s_numHats = SDL_JoystickNumHats(s_joystick);
-          Gamepad::reset();
-          Gamepad::setConnected(1);
+    static SDL_Joystick *s_gameControllers[8] = {nullptr};
+    static int s_numOpenedControllers = 0;
+    static bool s_wasConnected = false;
+    int curNumJoysticks = SDL_NumJoysticks();
+    if (curNumJoysticks > 8) curNumJoysticks = 8;
+    if (curNumJoysticks < s_numOpenedControllers) {
+      for (int i = curNumJoysticks; i < s_numOpenedControllers; i++) {
+        if (s_gameControllers[i]) {
+          SDL_JoystickClose(s_gameControllers[i]);
+          s_gameControllers[i] = nullptr;
         }
-      } else if (Gamepad::connected) {
-        Gamepad::setConnected(0);
       }
-    } else if (s_joystickIndex >= 0 && !SDL_JoystickOpened(s_joystickIndex)) {
-      s_joystick = nullptr;
-      s_joystickIndex = -1;
-      s_numAxes = 0;
-      s_numButtons = 0;
-      s_numHats = 0;
-      Gamepad::setConnected(0);
+      s_numOpenedControllers = curNumJoysticks;
+    }
+    if (s_numOpenedControllers < curNumJoysticks) {
+      for (int i = s_numOpenedControllers; i < curNumJoysticks; i++) {
+        s_gameControllers[i] = SDL_JoystickOpen(i);
+      }
+      s_numOpenedControllers = curNumJoysticks;
     }
 
-    if (s_joystick) {
+    SDL_Joystick *activeJoy = nullptr;
+    for (int i = 0; i < s_numOpenedControllers; i++) {
+      SDL_Joystick *j = s_gameControllers[i];
+      if (!j) continue;
+      int numButtons = SDL_JoystickNumButtons(j);
+      int numAxes = SDL_JoystickNumAxes(j);
+      for (int b = 0; b < numButtons; b++) {
+        if (SDL_JoystickGetButton(j, b)) {
+          activeJoy = j;
+          break;
+        }
+      }
+      if (activeJoy) break;
+      if (numAxes >= 2) {
+        if (abs(SDL_JoystickGetAxis(j, 0)) > 9000 || abs(SDL_JoystickGetAxis(j, 1)) > 9000) {
+          activeJoy = j;
+          break;
+        }
+      }
+      if (SDL_JoystickNumHats(j) > 0 && SDL_JoystickGetHat(j, 0) != 0) {
+        activeJoy = j;
+        break;
+      }
+    }
+    if (!activeJoy) {
+      for (int i = 0; i < s_numOpenedControllers; i++) {
+        SDL_Joystick *j = s_gameControllers[i];
+        if (j && SDL_JoystickNumButtons(j) >= 4 && SDL_JoystickNumAxes(j) >= 2) {
+          activeJoy = j;
+          break;
+        }
+      }
+    }
+
+    if (!activeJoy) {
+      if (s_wasConnected) {
+        Gamepad::setConnected(0);
+        s_wasConnected = false;
+      }
+    } else {
+      if (!s_wasConnected) {
+        Gamepad::reset();
+        Gamepad::setConnected(1);
+        s_wasConnected = true;
+      }
       SDL_JoystickUpdate();
 
-      int rxAxis = (s_numAxes >= 5) ? 3 : 2;
-      int ryAxis = (s_numAxes >= 5) ? 4 : 3;
+      int s_numAxes = SDL_JoystickNumAxes(activeJoy);
+      int s_numButtons = SDL_JoystickNumButtons(activeJoy);
+      int s_numHats = SDL_JoystickNumHats(activeJoy);
 
-      float lx = (s_numAxes > 0) ? (float)SDL_JoystickGetAxis(s_joystick, 0) / 32767.0f : 0.0f;
-      float ly = (s_numAxes > 1) ? (float)SDL_JoystickGetAxis(s_joystick, 1) / 32767.0f : 0.0f;
-      float rx = (s_numAxes > rxAxis) ? (float)SDL_JoystickGetAxis(s_joystick, rxAxis) / 32767.0f : 0.0f;
-      float ry = (s_numAxes > ryAxis) ? (float)SDL_JoystickGetAxis(s_joystick, ryAxis) / 32767.0f : 0.0f;
+      const char *jname = SDL_JoystickName(SDL_JoystickIndex(activeJoy));
+      std::string nameStr = jname ? jname : "";
+      for (auto &c : nameStr) c = (char)tolower((unsigned char)c);
+      bool isSony = (nameStr.find("sony") != std::string::npos ||
+                     nameStr.find("dualshock") != std::string::npos ||
+                     nameStr.find("dualsense") != std::string::npos ||
+                     nameStr.find("playstation") != std::string::npos ||
+                     nameStr.find("ps4") != std::string::npos ||
+                     nameStr.find("ps5") != std::string::npos ||
+                     nameStr.find("wireless controller") != std::string::npos);
+
+      int rxAxis = -1, ryAxis = -1, ltAxis = -1, rtAxis = -1, trigAxis = -1;
+      if (isSony) {
+        if (s_numAxes >= 6) {
+          rxAxis = 2;
+          ryAxis = 5;
+          ltAxis = 3;
+          rtAxis = 4;
+        } else if (s_numAxes >= 4) {
+          rxAxis = 2;
+          ryAxis = 3;
+        }
+      } else {
+        if (s_numAxes >= 6) {
+          rxAxis = 3;
+          ryAxis = 4;
+          ltAxis = 2;
+          rtAxis = 5;
+        } else if (s_numAxes == 5) {
+          rxAxis = 3;
+          ryAxis = 4;
+          trigAxis = 2;
+        } else if (s_numAxes == 4) {
+          rxAxis = 2;
+          ryAxis = 3;
+        } else if (s_numAxes == 3) {
+          trigAxis = 2;
+        }
+      }
+
+      float lx = (s_numAxes > 0) ? (float)SDL_JoystickGetAxis(activeJoy, 0) / 32767.0f : 0.0f;
+      float ly = (s_numAxes > 1) ? (float)SDL_JoystickGetAxis(activeJoy, 1) / 32767.0f : 0.0f;
+      float rx = (rxAxis >= 0) ? (float)SDL_JoystickGetAxis(activeJoy, rxAxis) / 32767.0f : 0.0f;
+      float ry = (ryAxis >= 0) ? (float)SDL_JoystickGetAxis(activeJoy, ryAxis) / 32767.0f : 0.0f;
 
       Gamepad::feedAxis(GP_AXIS_LX, lx, 0);
       Gamepad::feedAxis(GP_AXIS_LY, ly, 1);
@@ -711,33 +792,33 @@ void AppPlatform_sdl::init() {
 
       float lt = 0.0f;
       float rt = 0.0f;
-      if (s_numAxes >= 6) {
-        lt = (float)SDL_JoystickGetAxis(s_joystick, 2) / 32767.0f;
-        rt = (float)SDL_JoystickGetAxis(s_joystick, 5) / 32767.0f;
+      if (ltAxis >= 0 && rtAxis >= 0) {
+        lt = (float)SDL_JoystickGetAxis(activeJoy, ltAxis) / 32767.0f;
+        rt = (float)SDL_JoystickGetAxis(activeJoy, rtAxis) / 32767.0f;
         if (lt < 0.0f) lt = 0.0f;
         if (rt < 0.0f) rt = 0.0f;
-      } else if (s_numAxes >= 3 && s_numAxes < 5) {
-        float trig = (float)SDL_JoystickGetAxis(s_joystick, 2) / 32767.0f;
+      } else if (trigAxis >= 0) {
+        float trig = (float)SDL_JoystickGetAxis(activeJoy, trigAxis) / 32767.0f;
         if (trig > 0.0f) rt = trig;
         if (trig < 0.0f) lt = -trig;
       }
-      Gamepad::feedAxis(GP_AXIS_LT, lt, 2);
-      Gamepad::feedAxis(GP_AXIS_RT, rt, (s_numAxes >= 6) ? 5 : 2);
+      Gamepad::feedAxis(GP_AXIS_LT, lt, (ltAxis >= 0) ? ltAxis : trigAxis);
+      Gamepad::feedAxis(GP_AXIS_RT, rt, (rtAxis >= 0) ? rtAxis : trigAxis);
 
       for (int i = 0; i < s_numButtons; ++i) {
         int mapped = Gamepad::mapSdlButton(i, s_numButtons, s_numAxes);
         if (mapped >= 0) {
-          Gamepad::feedButton(mapped, SDL_JoystickGetButton(s_joystick, i) != 0, i);
+          Gamepad::feedButton(mapped, SDL_JoystickGetButton(activeJoy, i) != 0, i);
         }
       }
 
       if (s_numHats > 0) {
-        uint8_t hat = SDL_JoystickGetHat(s_joystick, 0);
+        uint8_t hat = SDL_JoystickGetHat(activeJoy, 0);
         Gamepad::feedHat((hat & SDL_HAT_UP) != 0, (hat & SDL_HAT_DOWN) != 0,
                          (hat & SDL_HAT_LEFT) != 0, (hat & SDL_HAT_RIGHT) != 0);
       } else if (s_numAxes >= 8) {
-        float hatX = (float)SDL_JoystickGetAxis(s_joystick, 6) / 32767.0f;
-        float hatY = (float)SDL_JoystickGetAxis(s_joystick, 7) / 32767.0f;
+        float hatX = (float)SDL_JoystickGetAxis(activeJoy, 6) / 32767.0f;
+        float hatY = (float)SDL_JoystickGetAxis(activeJoy, 7) / 32767.0f;
         Gamepad::feedHat(hatY < -0.5f, hatY > 0.5f, hatX < -0.5f, hatX > 0.5f);
       }
 

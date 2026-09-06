@@ -250,52 +250,19 @@ float Entity::setupLighting(bool_t a2, float a3) {
 	if (this->isOnFire()) bright = 1.0f;
 	float clampedBright = bright;
 	if (clampedBright > 1.0f) clampedBright = 1.0f;
-	if (clampedBright < 0.04f) clampedBright = 0.04f;
+	if (clampedBright < 0.2f) clampedBright = 0.2f;
 
 	if (a2) {
-		int32_t isSky = this->isSkyLit();
-		Vec3 result = isSky ? this->level->getSunlightDirection(a3) : Vec3(0.5f, 1.0f, 0.5f).normalized();
-		if (this->isOnFire()) {
-			result = Vec3::NEG_UNIT_Y;
-		}
+		float diff = clampedBright * 0.6f;
+		float amb = clampedBright * 0.4f;
 
-		if (this->field_78 == 0.0f && this->field_7C == 0.0f && this->field_80 == 0.0f) {
-			this->field_78 = result.x;
-			this->field_7C = result.y;
-			this->field_80 = result.z;
-		} else {
-			this->field_78 += (result.x - this->field_78) * 0.1f;
-			this->field_7C += (result.y - this->field_7C) * 0.1f;
-			this->field_80 += (result.z - this->field_80) * 0.1f;
-		}
-		Vec3 normDir = Vec3(this->field_78, this->field_7C, this->field_80).normalized();
-		float posParams[4] = { normDir.x, normDir.y, normDir.z, 0.0f };
+		float posParams[4] = { 0.2f, 1.0f, -0.7f, 0.0f };
 		glLightfv(0x4000u, 0x1203u, posParams);
 
-		float diff = clampedBright * 0.65f;
-		float amb = clampedBright * 0.40f;
-
-		Color4 skyCol(1.0f, 1.0f, 1.0f, 1.0f);
-		if (isSky && this->level) {
-			Color4 sc = this->level->getSkyColor(this, a3);
-			Color4 sr = this->level->getSunriseColor(a3);
-			skyCol = Color4::lerp(sc, sr, sr.a);
-		}
-
-		float diffParams[4] = {
-			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.r)),
-			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.g)),
-			std::min(1.0f, diff * (0.8f + 0.2f * skyCol.b)),
-			1.0f
-		};
+		float diffParams[4] = { diff, diff, diff, 1.0f };
 		glLightfv(0x4000u, 0x1201u, diffParams);
 
-		float ambParams[4] = {
-			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.r)),
-			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.g)),
-			std::min(1.0f, amb * (0.85f + 0.15f * skyCol.b)),
-			1.0f
-		};
+		float ambParams[4] = { amb, amb, amb, 1.0f };
 		glLightfv(0x4000u, 0x1200u, ambParams);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1211,6 +1178,10 @@ void Entity::push(Entity* a2) {
 	float v17;	// s17
 
 	if(a2->rider != this && a2->ridingAt != this) {
+		if ((this->isPlayer() && a2 && (a2->getEntityTypeId() == 15 || a2->getEntityTypeId() == 120)) ||
+			((this->getEntityTypeId() == 15 || this->getEntityTypeId() == 120) && a2 && a2->isPlayer())) {
+			return;
+		}
 		v4 = a2->posX - this->posX;
 		posZ = this->posZ;
 		v6 = a2->posZ - posZ;

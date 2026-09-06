@@ -11,6 +11,8 @@
 #include <rendering/states/EnableClientState.hpp>
 #include <string.h>
 #include <tile/Tile.hpp>
+#include <tile/MobHeadTile.hpp>
+#include <rendering/tileentity/MobHeadRenderer.hpp>
 
 Touch::InventoryPane::InventoryPane(Touch::IInventoryPaneCallback* a2, Minecraft* a3, const IntRectangle& a4, int32_t a5, float a6, int32_t a7, int32_t a8, int32_t a9, bool_t a10)
 	: ScrollingPane(1537, a4, {0, 0, a8, a8}, 0, a7, Gui::GuiScale, {0, 0, 0, 0}) {
@@ -46,6 +48,9 @@ void Touch::InventoryPane::buildInventoryItemsChunk(ItemRenderChunkType a2) {
 	for(uint32_t i = 0; i < v10.size(); ++i) {
 		const ItemInstance* v5 = v10[i];
 		if(v5) {
+			if(v5->tileClass && MobHeadTile::isHeadBlock(v5->tileClass->blockID)) {
+				continue;
+			}
 			float v6 = (float)this->field_4C.height * (float)(i / this->field_8);
 			float v7 = Gui::floorAlignToScreenPixel((float)((float)((float)this->field_264 + (float)((float)this->field_4C.width * (float)(i % this->field_8))) + 4.0) + (float)this->field_228.minX);
 			float v8 = Gui::floorAlignToScreenPixel((float)((float)(v6 + (float)this->field_264) + 4.0) + (float)this->field_228.minY);
@@ -95,7 +100,22 @@ void Touch::InventoryPane::renderSelectedItem(std::vector<ScrollingPane::GridIte
 				v17 = Gui::floorAlignToScreenPixel((float)((float)(v15 + (float)this->field_264) + 4.0) + (float)this->field_228.minY);
 				tileClass = v14->tileClass;
 				v19 = (float)(-15 * this->invTicker + 255) / 255.0;
-				if(tileClass && (Tile::enderChest ? tileClass != Tile::enderChest : true)) {
+				if(tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
+					int ht = MobHeadTile::getHeadType(tileClass->blockID);
+					if(MobHeadRenderer::instance) {
+						glPushMatrix();
+						glTranslatef((float)v16 + 8.0f, (float)(int32_t)v17 + 11.5f, -8.0f);
+						glScalef(16.0f, 16.0f, 16.0f);
+						glRotatef(200.0f, 1.0f, 0.0f, 0.0f);
+						glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+						MobHeadRenderer::instance->renderHead(ht, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
+						glPopMatrix();
+					}
+					a4.voidBeginAndEndCalls(0);
+					a4.endOverrideAndDraw();
+					return;
+				}
+				if(tileClass) {
 					v20 = tileClass->getRenderShape();
 					TileRenderer::canRender(v20);
 					this->minecraft->texturesPtr->loadAndBindTexture("terrain-atlas.tga");
@@ -169,6 +189,26 @@ void Touch::InventoryPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2,
 		this->field_294.render();
 		this->minecraft->texturesPtr->loadAndBindTexture("items-opaque.png");
 		this->field_2BC.render();
+		for(int v12 = 0; v12 < a2.size(); ++v12) {
+			ScrollingPane::GridItem* v13 = &a2[v12];
+			if(v13->field_0 >= 0 && v13->field_0 < (int32_t)v40.size() && v40[v13->field_0]) {
+				const ItemInstance* inst = v40[v13->field_0];
+				if(inst->tileClass && MobHeadTile::isHeadBlock(inst->tileClass->blockID)) {
+					int ht = MobHeadTile::getHeadType(inst->tileClass->blockID);
+					float v32 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_C) + 4.0);
+					float v14 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_10) + 4.0);
+					if(MobHeadRenderer::instance) {
+						glPushMatrix();
+						glTranslatef(v32 + 8.0f, v14 + 11.5f, -8.0f);
+						glScalef(16.0f, 16.0f, 16.0f);
+						glRotatef(200.0f, 1.0f, 0.0f, 0.0f);
+						glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+						MobHeadRenderer::instance->renderHead(ht, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
+						glPopMatrix();
+					}
+				}
+			}
+		}
 		this->renderSelectedItem(a2, v40, Tesselator::instance, v35, v36, v37);
 		glPopMatrix();
 	}

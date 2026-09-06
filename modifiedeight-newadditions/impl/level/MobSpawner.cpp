@@ -404,9 +404,12 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
               continue;
           } else if (isCreature) {
             int tileBelow = level->getTile(sx, sy - 1, sz);
-            if (tileBelow != Tile::grass->blockID && tileBelow != Tile::snow->blockID && tileBelow != Tile::ice->blockID && tileBelow != Tile::topSnow->blockID)
+            if (tileBelow != Tile::grass->blockID && tileBelow != Tile::snow->blockID &&
+                tileBelow != Tile::ice->blockID && tileBelow != Tile::topSnow->blockID &&
+                tileBelow != Tile::sand->blockID && tileBelow != Tile::dirt->blockID &&
+                tileBelow != Tile::leaves->blockID && tileBelow != Tile::rock->blockID)
               continue;
-            if (spawnData.mobtype != 37 && level->getRawBrightness(sx, sy, sz) < 9)
+            if (spawnData.mobtype != 37 && spawnData.mobtype != 40 && level->getRawBrightness(sx, sy, sz) < 7)
               continue;
           }
 

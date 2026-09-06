@@ -425,7 +425,7 @@ void Touch::StartMenuScreen::render(int32_t a2, int32_t a3, float a4) {
   this->field_150 = v17;
 
   this->font->drawTransformed(
-      gSplashes[Touch::StartMenuScreen::currentSplash], v15 * 0.71, v16 - 15,
+      gSplashes[Touch::StartMenuScreen::currentSplash], v15 * 0.95, v16 - 5,
       0xFFFFFF00, -20, (float)(powf(sin(v17 * 3.14 * 2.3), 4.0) * 0.06) + 1.3,
       1, (float)this->width * 0.3125);
   Screen::render(a2, a3, a4);
@@ -486,7 +486,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->playOnRealmsButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
   this->field_138 =
-      "\x0fMojang AB, ModifiedEight New Additions 1.6.5.1pre3 by eqozqq";
+      "\x0fMojang AB, ModifiedEight New Additions 1.6.5.1pre4 by eqozqq";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;
@@ -498,9 +498,9 @@ void Touch::StartMenuScreen::setupPositions() {
   if (data) {
     this->minecraft->texturesPtr->loadAndBindTexture("gui/title.png");
     int32_t width = this->width;
-    float v8 = data->width;
-    int32_t td_height = data->height;
-    this->field_144 = 12;
+    float v8 = 280.0f;
+    int32_t td_height = 36;
+    this->field_144 = 24;
     float v10 = v8 * 0.5;
     if (width * 0.5 <= v8 * 0.5) {
       v10 = width * 0.5;

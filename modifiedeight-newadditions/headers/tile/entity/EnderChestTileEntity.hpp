@@ -1,10 +1,7 @@
 #pragma once
 #include <tile/entity/ChestTileEntity.hpp>
-#include <vector>
 
 struct EnderChestTileEntity: ChestTileEntity {
-	static std::vector<ItemInstance*> s_enderInventory;
-
 	EnderChestTileEntity();
 	virtual ~EnderChestTileEntity();
 	bool_t canPairWith(TileEntity*);
@@ -15,3 +12,4 @@ struct EnderChestTileEntity: ChestTileEntity {
 	virtual std::string getName() override { return "Ender Chest"; }
 	void openBy(Player*);
 };
+

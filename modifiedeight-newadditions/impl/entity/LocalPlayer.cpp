@@ -2,6 +2,7 @@
 #include <level/LevelHeight.hpp>
 #include <Minecraft.hpp>
 #include <entity/LocalPlayer.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 #include <entity/player/User.hpp>
 #include <gui/screens/ChestScreen.hpp>
 #include <gui/screens/FurnaceScreen.hpp>
@@ -279,11 +280,43 @@ void LocalPlayer::tick() {
     this->minecraft->rakNetInstance->send(v24);
   }
 
-  if (this->level && Tile::slimeBlock && this->onGround) {
-    int bx = (int)floor(this->posX);
-    int by = (int)floor(this->boundingBox.minY - 0.2f);
-    int bz = (int)floor(this->posZ);
-    if (this->level->getTile(bx, by, bz) == Tile::slimeBlock->blockID) {
+  if (this->level && Tile::slimeBlock) {
+    bool onSlime = false;
+    if (this->onGround) {
+      int bx = (int)floor(this->posX);
+      int by = (int)floor(this->boundingBox.minY - 0.2f);
+      int bz = (int)floor(this->posZ);
+      int tid = this->level->getTile(bx, by, bz);
+      if (tid == Tile::slimeBlock->blockID) {
+        onSlime = true;
+      } else if (Tile::mixedSlab && tid == Tile::mixedSlab->blockID) {
+        MixedSlabTileEntity* te = (MixedSlabTileEntity*)this->level->getTileEntity(bx, by, bz);
+        if (te && (te->bottomTileId == Tile::slimeBlock->blockID || te->topTileId == Tile::slimeBlock->blockID)) {
+          onSlime = true;
+        }
+      }
+    }
+    if (!onSlime && Tile::mixedSlab) {
+      int32_t minX = Mth::floor(this->boundingBox.minX - 0.1f);
+      int32_t maxX = Mth::floor(this->boundingBox.maxX + 0.1f);
+      int32_t minY = Mth::floor(this->boundingBox.minY);
+      int32_t maxY = Mth::floor(this->boundingBox.maxY);
+      int32_t minZ = Mth::floor(this->boundingBox.minZ - 0.1f);
+      int32_t maxZ = Mth::floor(this->boundingBox.maxZ + 0.1f);
+      for (int32_t x = minX; x <= maxX && !onSlime; ++x) {
+        for (int32_t y = minY; y <= maxY && !onSlime; ++y) {
+          for (int32_t z = minZ; z <= maxZ && !onSlime; ++z) {
+            if (this->level->getTile(x, y, z) == Tile::mixedSlab->blockID) {
+              MixedSlabTileEntity* te = (MixedSlabTileEntity*)this->level->getTileEntity(x, y, z);
+              if (te && (te->bottomTileId == Tile::slimeBlock->blockID || te->topTileId == Tile::slimeBlock->blockID)) {
+                onSlime = true;
+              }
+            }
+          }
+        }
+      }
+    }
+    if (onSlime) {
       this->motionX *= 0.25f;
       this->motionZ *= 0.25f;
     }
@@ -506,10 +539,10 @@ void LocalPlayer::aiStep() {
         this->field_B7C = 0.75;
       }
       if (this->moveInput->flyUpPressed) {
-        this->motionY = this->motionY + 0.15;
+        this->motionY = this->motionY + 0.22;
       }
       if (this->moveInput->flyDownPressed) {
-        this->motionY = this->motionY - 0.15;
+        this->motionY = this->motionY - 0.22;
       }
     }
   }

@@ -8,6 +8,7 @@
 #include <gui/buttons/Touch_TButton.hpp>
 #include <network/RakNetInstance.hpp>
 #include <network/packet/MessagePacket.hpp>
+#include <network/packet/MovePlayerPacket.hpp>
 #include <java/JavaBridge.hpp>
 #include <rendering/Font.hpp>
 #include <util/Util.hpp>
@@ -235,6 +236,7 @@ static bool resolveItem(const std::string& rawName, int& outId, std::string& out
 }
 
 static bool executeCommand(Minecraft* mc, const std::string& line) {
+	if (!mc || !mc->level || mc->isOnlineClient() || (mc->level && mc->level->isClientMaybe) || JavaBridge::isActive()) return false;
 	if (line.empty() || line[0] != '/') return false;
 
 	std::stringstream ss(line.substr(1));
@@ -248,63 +250,66 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 
 	for (auto& c : cmd) c = tolower(c);
 
+	if (cmd == "xyz" || cmd == "pos" || cmd == "coords" || cmd == "where") {
+		if (mc->player) {
+			float px = mc->player->posX;
+			float py = mc->player->posY;
+			float pz = mc->player->posZ;
+			char buf[128];
+			snprintf(buf, sizeof(buf), "XYZ: %.1f / %.1f / %.1f (Block: %d, %d, %d)", px, py, pz, (int)floorf(px), (int)floorf(py), (int)floorf(pz));
+			mc->gui.addMessage("", buf, 200);
+		} else {
+			mc->gui.addMessage("", "Player not available", 200);
+		}
+		return true;
+	}
+
 	if (cmd == "tp") {
-		if (args.size() == 3) {
-			try {
-				float px = (args[0] == "~") ? mc->player->posX : parseF(args[0]);
-				float py = (args[1] == "~") ? mc->player->posY : parseF(args[1]);
-				float pz = (args[2] == "~") ? mc->player->posZ : parseF(args[2]);
-				mc->player->setPos(px, py, pz);
-				mc->player->resetPos(1);
-				mc->gui.addMessage("", "Teleported to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
-			} catch (...) {
-				mc->gui.addMessage("", "Invalid coordinates", 200);
-			}
-			return true;
-		}
-		if (args.size() == 4) {
-			Player* target = nullptr;
-			if (mc->player && mc->player->username == args[0]) {
-				target = mc->player;
-			} else if (mc->level) {
-				for (auto* p : mc->level->playersMaybe) {
-					if (p && p->username == args[0]) {
-						target = p;
-						break;
-					}
-				}
-			}
-			if (!target) {
-				mc->gui.addMessage("", "Player not found: " + args[0], 200);
-				return true;
-			}
-			try {
-				float px = (args[1] == "~") ? target->posX : parseF(args[1]);
-				float py = (args[2] == "~") ? target->posY : parseF(args[2]);
-				float pz = (args[3] == "~") ? target->posZ : parseF(args[3]);
-				target->setPos(px, py, pz);
-				target->resetPos(1);
-				mc->gui.addMessage("", "Teleported " + args[0] + " to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
-			} catch (...) {
-				mc->gui.addMessage("", "Invalid coordinates", 200);
-			}
-			return true;
-		}
-		if (args.size() == 2) {
-			Player* p1 = nullptr;
-			Player* p2 = nullptr;
+		auto findPlayer = [&](const std::string& name) -> Player* {
+			std::string lower = name;
+			for (auto& c : lower) c = tolower(c);
 			if (mc->player) {
-				if (mc->player->username == args[0]) p1 = mc->player;
-				if (mc->player->username == args[1]) p2 = mc->player;
+				std::string pName = mc->player->username;
+				for (auto& c : pName) c = tolower(c);
+				if (pName == lower) return mc->player;
 			}
 			if (mc->level) {
 				for (auto* p : mc->level->playersMaybe) {
 					if (p) {
-						if (p->username == args[0]) p1 = p;
-						if (p->username == args[1]) p2 = p;
+						std::string pName = p->username;
+						for (auto& c : pName) c = tolower(c);
+						if (pName == lower) return p;
 					}
 				}
 			}
+			return nullptr;
+		};
+
+		auto teleportPlayer = [&](Player* p, float x, float y, float z) {
+			if (!p) return;
+			p->setPos(x, y, z);
+			p->resetPos(1);
+			if (mc->rakNetInstance) {
+				MovePlayerPacket pk(p->entityId, x, y, z, p->pitch, p->yaw, p->headYaw);
+				mc->rakNetInstance->send(pk);
+			}
+		};
+
+		if (args.size() == 1) {
+			Player* target = findPlayer(args[0]);
+			if (!target) {
+				mc->gui.addMessage("", "Player not found: " + args[0], 200);
+				return true;
+			}
+			if (mc->player) {
+				teleportPlayer(mc->player, target->posX, target->posY, target->posZ);
+				mc->gui.addMessage("", "Teleported to " + target->username, 200);
+			}
+			return true;
+		}
+		if (args.size() == 2) {
+			Player* p1 = findPlayer(args[0]);
+			Player* p2 = findPlayer(args[1]);
 			if (!p1) {
 				mc->gui.addMessage("", "Player not found: " + args[0], 200);
 				return true;
@@ -313,12 +318,40 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 				mc->gui.addMessage("", "Player not found: " + args[1], 200);
 				return true;
 			}
-			p1->setPos(p2->posX, p2->posY, p2->posZ);
-			p1->resetPos(1);
-			mc->gui.addMessage("", "Teleported " + args[0] + " to " + args[1], 200);
+			teleportPlayer(p1, p2->posX, p2->posY, p2->posZ);
+			mc->gui.addMessage("", "Teleported " + p1->username + " to " + p2->username, 200);
 			return true;
 		}
-		mc->gui.addMessage("", "Usage: /tp [player] <x> <y> <z> or /tp <player1> <player2>", 200);
+		if (args.size() == 3) {
+			try {
+				float px = (args[0] == "~") ? mc->player->posX : parseF(args[0]);
+				float py = (args[1] == "~") ? mc->player->posY : parseF(args[1]);
+				float pz = (args[2] == "~") ? mc->player->posZ : parseF(args[2]);
+				teleportPlayer(mc->player, px, py, pz);
+				mc->gui.addMessage("", "Teleported to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
+			} catch (...) {
+				mc->gui.addMessage("", "Invalid coordinates", 200);
+			}
+			return true;
+		}
+		if (args.size() == 4) {
+			Player* target = findPlayer(args[0]);
+			if (!target) {
+				mc->gui.addMessage("", "Player not found: " + args[0], 200);
+				return true;
+			}
+			try {
+				float px = (args[1] == "~") ? target->posX : parseF(args[1]);
+				float py = (args[2] == "~") ? target->posY : parseF(args[2]);
+				float pz = (args[3] == "~") ? target->posZ : parseF(args[3]);
+				teleportPlayer(target, px, py, pz);
+				mc->gui.addMessage("", "Teleported " + target->username + " to " + toStr((int)px) + ", " + toStr((int)py) + ", " + toStr((int)pz), 200);
+			} catch (...) {
+				mc->gui.addMessage("", "Invalid coordinates", 200);
+			}
+			return true;
+		}
+		mc->gui.addMessage("", "Usage: /tp <player> or /tp [player] <x> <y> <z> or /tp <player1> <player2>", 200);
 		return true;
 	}
 
@@ -733,11 +766,14 @@ void ChatScreen::sendChatMessage() {
 		 * MCPE servers and single player keep the original behaviour.
 		 */
 		if(JavaBridge::sendChat(this->field_54)) {
-		} else if (this->minecraft->isOnlineClient()) {
+		} else if (this->minecraft->isOnlineClient() || (this->minecraft->level && this->minecraft->level->isClientMaybe)) {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);
 		} else if (this->field_54[0] == '/') {
-			executeCommand(this->minecraft, this->field_54);
+			if (!executeCommand(this->minecraft, this->field_54)) {
+				MessagePacket v7(this->field_54, this->minecraft->player->username);
+				this->minecraft->rakNetInstance->send(v7);
+			}
 		} else {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);

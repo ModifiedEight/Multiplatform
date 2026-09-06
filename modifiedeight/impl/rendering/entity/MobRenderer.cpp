@@ -131,6 +131,7 @@ void MobRenderer::render(Entity* a2_, float a3, float a4, float a5, float a6, fl
 	}
 	this->bindTexture(*a2->getTexture());
 	this->model->prepareMobModel(a2, this->field_8, this->field_C, a7);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	this->model->render(a2, this->field_8, this->field_C, this->field_10, this->field_14 - this->field_18, this->field_1C, this->field_20);
 	for(i = 0; i != 4; ++i) {
 		if(this->prepareArmor(a2, i, a7) >= 0) {

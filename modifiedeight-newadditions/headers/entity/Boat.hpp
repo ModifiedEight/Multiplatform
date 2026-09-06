@@ -17,7 +17,8 @@ struct Boat : Entity {
 	virtual bool_t isPushable();
 	virtual bool_t hurt(Entity*, int32_t);
 	virtual bool_t interactWithPlayer(Player*);
-	virtual void positionRider(Entity*);
+	virtual void positionRider(bool_t isDead = false) override;
+	virtual float getRideHeight() override;
 	virtual int32_t getEntityTypeId() const;
 	virtual void readAdditionalSaveData(CompoundTag*);
 	virtual void addAdditonalSaveData(CompoundTag*);
