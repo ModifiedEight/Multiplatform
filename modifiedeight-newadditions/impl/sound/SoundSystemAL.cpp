@@ -25,6 +25,12 @@ bool_t SoundSystemAL::checkErr(uint32_t a2) {
 	return 0;
 }
 void SoundSystemAL::destroy(void) {
+	for(int i = 0; i < MAX_PLAYED; ++i) {
+		alSourceStop(this->sources[i]);
+		alSourcei(this->sources[i], AL_BUFFER, 0);
+	}
+	alDeleteSources(MAX_PLAYED, this->sources);
+	alDeleteBuffers(MAX_PLAYED, this->buffers);
 	if(this->context) {
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext(this->context);
@@ -34,9 +40,6 @@ void SoundSystemAL::destroy(void) {
 		alcCloseDevice(this->device);
 		this->device = 0;
 	}
-
-	alDeleteBuffers(MAX_PLAYED, this->buffers);
-	alDeleteSources(MAX_PLAYED, this->sources);
 }
 
 void SoundSystemAL::init(void) {
@@ -120,7 +123,11 @@ void SoundSystemAL::playAt(const struct SoundDesc& a2, float a3, float a4, float
 				alSource3f(this->sources[i], AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 				alSourcef(this->sources[i], AL_REFERENCE_DISTANCE, 5.0f);
 				alSourcef(this->sources[i], AL_MAX_DISTANCE, 16.0f);
-				alBufferData(this->buffers[i], to_al_format(a2.channels, a2.bytesPerSample * 8), a2.field_0, a2.field_4, a2.sampleRate);
+				alSourceStop(this->sources[i]);
+				alSourcei(this->sources[i], AL_BUFFER, 0);
+				ALenum fmt = to_al_format(a2.channels, a2.bytesPerSample * 8);
+				if(fmt == (ALenum)-1 || !a2.field_0 || a2.field_4 <= 0) break;
+				alBufferData(this->buffers[i], fmt, a2.field_0, a2.field_4, a2.sampleRate);
 				alSourcei(this->sources[i], AL_BUFFER, this->buffers[i]);
 				alSourcePlay(this->sources[i]);
 				break;

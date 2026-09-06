@@ -17,8 +17,20 @@
 #include <rendering/entity/ItemRenderer.hpp>
 #include <rendering/entity/MobRenderer.hpp>
 #include <rendering/TextureAtlasTextureItem.hpp>
-#include <utils.h>
 #include <gui/NinePatchFactory.hpp>
+#include <tile/Tile.hpp>
+#include <utils.h>
+
+static bool isHeadTile(Tile* t) {
+	if (!t) return false;
+	return t == Tile::head_steve || t == Tile::head_creeper || t == Tile::head_zombie ||
+	       t == Tile::head_skeleton || t == Tile::head_spider || t == Tile::head_pigzombie ||
+	       t == Tile::head_slime || t == Tile::head_cow || t == Tile::head_pig ||
+	       t == Tile::head_sheep || t == Tile::head_chicken || t == Tile::head_villager ||
+	       t == Tile::head_ocelot || t == Tile::head_polarbear ||
+	       t == Tile::head_turtle || t == Tile::head_giant || t == Tile::head_wolf ||
+	       t == Tile::head_fox;
+}
 
 ArmorScreen::ArmorScreen()
 	: Screen()
@@ -50,8 +62,11 @@ ArmorScreen::ArmorScreen()
 }
 bool_t ArmorScreen::canMoveToSlot(int32_t a2, const ItemInstance* a3) {
 	if(ItemInstance::isArmorItem(a3)) {
-		ArmorItem* it = (ArmorItem*)a3->itemClass; //TODO uses a3->field_48
+		ArmorItem* it = (ArmorItem*)a3->itemClass;
 		return it->field_48 == a2;
+	}
+	if(a2 == 0 && a3 && a3->tileClass && isHeadTile(a3->tileClass)) {
+		return 1;
 	}
 	return 0;
 }
@@ -236,11 +251,23 @@ void ArmorScreen::updateItems() {
 			Item::helmet_diamond, Item::chestplate_diamond, Item::leggings_diamond, Item::boots_diamond,
 			Item::helmet_gold, Item::chestplate_gold, Item::leggings_gold, Item::boots_gold
 		};
+		static const Tile* creativeHeads[] = {
+			Tile::head_steve, Tile::head_villager, Tile::head_zombie, Tile::head_skeleton,
+			Tile::head_creeper, Tile::head_spider, Tile::head_pigzombie, Tile::head_slime,
+			Tile::head_cow, Tile::head_pig, Tile::head_sheep, Tile::head_chicken,
+			Tile::head_ocelot, Tile::head_polarbear,
+			Tile::head_turtle, Tile::head_giant, Tile::head_wolf, Tile::head_fox
+		};
 		static std::vector<ItemInstance> creativeArmorInstances;
 		creativeArmorInstances.clear();
 		for (const Item* it : creativeArmors) {
 			if (it) {
 				creativeArmorInstances.emplace_back((Item*)it, 1, 0);
+			}
+		}
+		for (const Tile* th : creativeHeads) {
+			if (th) {
+				creativeArmorInstances.emplace_back((Tile*)th, 1, 0);
 			}
 		}
 		for (size_t i = 0; i < creativeArmorInstances.size(); ++i) {
@@ -249,7 +276,7 @@ void ArmorScreen::updateItems() {
 	} else {
 		for(int32_t i = 9; i < this->minecraft->player->inventory->getContainerSize(); ++i) {
 			ItemInstance* v5 = this->minecraft->player->inventory->getItem(i);
-			if(ItemInstance::isArmorItem(v5)) {
+			if(ItemInstance::isArmorItem(v5) || (v5 && v5->tileClass && isHeadTile(v5->tileClass))) {
 				this->field_1E0.emplace_back(v5);
 			}
 		}
@@ -430,10 +457,31 @@ bool_t ArmorScreen::addItem(const Touch::InventoryPane* a2, int32_t a3) {
 		}
 		ItemInstance* armor = this->player->getArmor(((ArmorItem*)v5->itemClass)->field_48);
 		ItemInstance v15;
-		if(ItemInstance::isArmorItem(armor)) {
+		if(armor && !armor->isNull()) {
 			v15 = *armor;
 		}
 		this->player->setArmor(((ArmorItem*)v5->itemClass)->field_48, v5);
+		this->player->inventory->removeItemInstance(v5);
+		this->field_1E0[a3] = 0;
+		if(!v15.isNull() && !this->player->inventory->add(&v15)) {
+			this->player->drop(&v15, 0);
+		}
+		this->performUpdate = 1;
+		return 1;
+	} else if (v5 && v5->tileClass && isHeadTile(v5->tileClass)) {
+		if (this->minecraft && this->minecraft->soundEngine) {
+			this->minecraft->soundEngine->playUI("armor.equip_generic", 1.0f, 1.0f);
+		}
+		if (this->minecraft->gameMode && this->minecraft->gameMode->isCreativeType()) {
+			this->player->setArmor(0, v5);
+			return 1;
+		}
+		ItemInstance* armor = this->player->getArmor(0);
+		ItemInstance v15;
+		if(armor && !armor->isNull()) {
+			v15 = *armor;
+		}
+		this->player->setArmor(0, v5);
 		this->player->inventory->removeItemInstance(v5);
 		this->field_1E0[a3] = 0;
 		if(!v15.isNull() && !this->player->inventory->add(&v15)) {

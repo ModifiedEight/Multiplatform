@@ -7,12 +7,14 @@
 #include <Minecraft.hpp>
 #include <rendering/tileentity/ChestRenderer.hpp>
 #include <rendering/tileentity/SignRenderer.hpp>
+#include <rendering/tileentity/MobHeadRenderer.hpp>
 
 TileEntityRenderDispatcher::TileEntityRenderDispatcher() {
 	this->textures = 0;
 	this->level = 0; //TODO this thing is not here
 	this->rednerers.insert({TER_CHEST, new ChestRenderer()});
 	this->rednerers.insert({TER_SIGN, new SignRenderer()});
+	this->rednerers.insert({TER_SKULL, new MobHeadRenderer()});
 	for(auto& r: this->rednerers) {
 		r.second->init(this);
 	}

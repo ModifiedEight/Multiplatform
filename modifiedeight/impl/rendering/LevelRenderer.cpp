@@ -741,6 +741,10 @@ void LevelRenderer::renderEntities(Vec3 a2, FrustumCuller* a3, bool_t a4, float 
 		{
 			this->renderShadows(this->field_178, this->field_190, a5);
 		}
+		glDisable(GL_LIGHTING);
+		glDisable(0x4000u);
+		glDisable(GL_BLEND);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	else
 	{
@@ -820,10 +824,13 @@ void LevelRenderer::renderHit(Player* a2, const HitResult& a3, int32_t df, void*
 
 	if(!df && this->destroyProgress > 0.0) {
 		v8 = 0;
+		EnableState vBlend(3042);
 		BlendFunctionState v17(0x306u, 0);
 		glPushMatrix();
 		{
 			EnableState v16(32823);
+			glPolygonOffset(-3.0f, -3.0f);
+			glDepthMask(GL_FALSE);
 			this->textures->loadAndBindTexture("terrain-atlas.tga");
 			v10 = this->level->getTile(a3.field_4, a3.field_8, a3.field_C);
 			if(v10 > 0) {
@@ -841,10 +848,10 @@ void LevelRenderer::renderHit(Player* a2, const HitResult& a3, int32_t df, void*
 			v14 = a3.field_C;
 			this->field_70->tesselateInWorld(v8, v11, v12, v14, *this->destroyTexture.getUV((int32_t)(float)(this->destroyProgress * 10.0)));
 			Tesselator::instance.draw(1);
-			//EnableState::~EnableState((EnableState*)&v16);
+			glPolygonOffset(0.0f, 0.0f);
+			glDepthMask(GL_TRUE);
 		}
 		glPopMatrix();
-		//BlendFunctionState::~BlendFunctionState((BlendFunctionState *)&v17);
 	}
 }
 void LevelRenderer::renderHitOutline(Player* a2, const HitResult& a3, int32_t a4, void*, float a6) {
@@ -887,6 +894,7 @@ void LevelRenderer::renderHitSelect(Player* a2, const HitResult& a3, int32_t a4,
 		glPolygonOffset(-2.0f, -2.0f);
 		glDepthMask(GL_FALSE);
 		glDepthFunc(GL_LEQUAL);
+		EnableState v10(3042);
 		DisableState v12(3553);
 		BlendFunctionState v13(0x306u, 0x300u);
 		glPushMatrix();
@@ -909,16 +917,12 @@ void LevelRenderer::renderHitSelect(Player* a2, const HitResult& a3, int32_t a4,
 	}
 }
 void LevelRenderer::renderNameTags(float a2) {
-	glDepthFunc(GL_ALWAYS);
-
 	for(auto&& p: this->field_178) {
 		EntityRenderer* er = EntityRenderDispatcher::getInstance()->getRenderer(p.second->entityRenderId);
 		if(er) {
 			er->renderName(p.second, a2);
 		}
 	}
-
-	glDepthFunc(GL_LEQUAL);
 }
 void LevelRenderer::renderOutlineHitSelect(Player* a2, float a3, Tile* a4, const HitResult& a5) {
 	DisableState v7(0xDE1u);

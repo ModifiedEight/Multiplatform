@@ -399,6 +399,13 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct RotateHe
 }
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, struct MovePlayerPacket* a3) {
 	if(this->level) {
+		if (this->minecraft && this->minecraft->player && this->minecraft->player->entityId == a3->eid) {
+			this->minecraft->player->setPos(a3->x, a3->y, a3->z);
+			this->minecraft->player->resetPos(1);
+			this->minecraft->player->yaw = a3->yaw;
+			this->minecraft->player->pitch = a3->pitch;
+			return;
+		}
 		Mob* mob = this->level->getMob(a3->eid);
 		if(mob) {
 			mob->lerpTo(a3->x, a3->y, a3->z, a3->yaw, a3->pitch, 3);

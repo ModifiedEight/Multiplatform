@@ -137,24 +137,24 @@ static const int16_t gJavaToM8Block[256] = {
 	/* 123 redstone_lamp       */ 123,
 	/* 124 lit_redstone_lamp   */ 124,
 	/* 125 double_wooden_slab  */ 157,       // m8 125 is a coloured log
-	/* 126 wooden_slab         */ 158,       // m8 126 is the activator rail
+	/* 126 wooden_slab         */ 158,
 	/* 127 cocoa               */ 0,
 	/* 128 sandstone_stairs    */ 128,
-	/* 129 emerald_ore         */ 56,        // m8 has no emerald ore
-	/* 130 ender_chest         */ 54,
+	/* 129 emerald_ore         */ 56,
+	/* 130 ender_chest         */ 130,
 	/* 131 tripwire_hook       */ 0,
 	/* 132 tripwire            */ 0,
 	/* 133 emerald_block       */ 57,
 	/* 134 spruce_stairs       */ 134,
 	/* 135 birch_stairs        */ 135,
 	/* 136 jungle_stairs       */ 136,
-	/* 137 command_block       */ 4,         // m8 137 is a coloured log
+	/* 137 command_block       */ 4,
 	/* 138 beacon              */ 20,
 	/* 139 cobblestone_wall    */ 139,
-	/* 140 flower_pot          */ 0,
+	/* 140 flower_pot          */ 140,
 	/* 141 carrots             */ 141,
 	/* 142 potatoes            */ 142,
-	/* 143 wooden_button       */ 0,         // 143-166 are m8 coloured brick stairs
+	/* 143 wooden_button       */ 0,
 	/* 144 skull               */ 0,
 	/* 145 anvil               */ 42,
 	/* 146 trapped_chest       */ 54,
@@ -162,53 +162,53 @@ static const int16_t gJavaToM8Block[256] = {
 	/* 148 heavy_weighted_pp   */ 0,
 	/* 149 unpowered_comparator*/ 0,
 	/* 150 powered_comparator  */ 0,
-	/* 151 daylight_detector   */ 158,
+	/* 151 daylight_detector   */ 151,
 	/* 152 redstone_block      */ 45,
 	/* 153 quartz_ore          */ 87,
 	/* 154 hopper              */ 42,
 	/* 155 quartz_block        */ 155,
 	/* 156 quartz_stairs       */ 156,
-	/* 157 activator_rail      */ 126,       // m8 157 is the wooden slab
-	/* 158 dropper             */ 61,        // m8 158 is the wooden half slab
-	/* 159 stained_hardened_cl */ 238,       // -> m8 coloured bricks
+	/* 157 activator_rail      */ 126,
+	/* 158 dropper             */ 61,
+	/* 159 stained_hardened_cl */ 238,
 	/* 160 stained_glass_pane  */ 196,
 	/* 161 leaves2             */ SPECIAL,
 	/* 162 log2                */ SPECIAL,
 	/* 163 acacia_stairs       */ 53,
 	/* 164 dark_oak_stairs     */ 134,
-	/* 165 slime               */ 20,
-	/* 166 barrier             */ 95,       // m8 95 is invisible_bedrock: invisible, solid, unbreakable
-	/* 167 iron_trapdoor       */ 96,
+	/* 165 slime               */ 165,
+	/* 166 barrier             */ 95,
+	/* 167 iron_trapdoor       */ 167,
 	/* 168 prismarine          */ 98,
 	/* 169 sea_lantern         */ 89,
 	/* 170 hay_block           */ 170,
 	/* 171 carpet              */ 171,
 	/* 172 hardened_clay       */ 45,
 	/* 173 coal_block          */ 173,
-	/* 174 packed_ice          */ 79,        // 174-189 are m8 coloured fences
+	/* 174 packed_ice          */ 174,
 	/* 175 double_plant        */ 190,
 	/* 176 standing_banner     */ 0,
 	/* 177 wall_banner         */ 0,
-	/* 178 daylight_det_inv    */ 158,
-	/* 179 red_sandstone       */ 24,
-	/* 180 red_sandstone_stairs*/ 128,
-	/* 181 double_stone_slab2  */ SPECIAL,
-	/* 182 stone_slab2         */ SPECIAL,
-	/* 183 spruce_fence_gate   */ 107,
+	/* 178 daylight_det_inv    */ 178,
+	/* 179 red_sandstone       */ 179,
+	/* 180 red_sandstone_stairs*/ 180,
+	/* 181 double_stone_slab2  */ 181,
+	/* 182 stone_slab2         */ 182,
+	/* 183 spruce_fence_gate   */ 183,
 	/* 184 birch_fence_gate    */ 107,
 	/* 185 jungle_fence_gate   */ 107,
 	/* 186 dark_oak_fence_gate */ 107,
 	/* 187 acacia_fence_gate   */ 107,
 	/* 188 spruce_fence        */ 197,
 	/* 189 birch_fence         */ 198,
-	/* 190 jungle_fence        */ 85,        // m8 190 is the double plant
-	/* 191 dark_oak_fence      */ 197,       // m8 191 is a flower
-	/* 192 acacia_fence        */ 85,        // m8 192 is a flower
+	/* 190 jungle_fence        */ 85,
+	/* 191 dark_oak_fence      */ 197,
+	/* 192 acacia_fence        */ 85,
 	/* 193 spruce_door         */ 193,
 	/* 194 birch_door          */ 194,
-	/* 195 jungle_door         */ 64,        // m8 195 is stained glass
-	/* 196 acacia_door         */ 64,        // m8 196 is stained glass pane
-	/* 197 dark_oak_door       */ 193,
+	/* 195 jungle_door         */ 199,
+	/* 196 acacia_door         */ 200,
+	/* 197 dark_oak_door       */ 202,
 	/* 198..255 unused in 1.8  */ 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -586,76 +586,86 @@ int32_t JavaIdMap::m8ItemToJava(int32_t m8ItemId) {
 
 int32_t JavaIdMap::javaMobToM8(int32_t javaType) {
 	switch(javaType) {
+		case 14: return 14;  // wolf
+		case 15: return 15;  // villager
+		case 17: return 17;  // squid
+		case 22: return 22;  // ocelot
+		case 26: return 26;  // polar bear
+		case 27: return 27;  // cod
+		case 28: return 28;  // salmon
+		case 29: return 29;  // pufferfish
+		case 30: return 30;  // tropical fish
+		case 37: return 37;  // slime
+		case 38: return 38;  // fox
+		case 39: return 39;  // turtle
+		case 40: return 40;  // frog
 		case 50: return 33;  // creeper
 		case 51: return 34;  // skeleton
 		case 52: return 35;  // spider
-		case 53: return 32;  // giant       -> zombie
+		case 53: return 53;  // giant
 		case 54: return 32;  // zombie
-		case 55: return 33;  // slime       -> creeper
-		case 56: return 33;  // ghast       -> creeper
+		case 55: return 37;  // slime
+		case 56: return 33;  // ghast
 		case 57: return 36;  // zombie pigman
-		case 58: return 32;  // enderman    -> zombie
+		case 58: return 32;  // enderman
 		case 59: return 35;  // cave spider
-		case 60: return 35;  // silverfish  -> spider
-		case 61: return 34;  // blaze       -> skeleton
-		case 62: return 33;  // magma cube  -> creeper
-		case 63: return 35;  // ender dragon-> spider
-		case 64: return 34;  // wither      -> skeleton
-		case 65: return 10;  // bat         -> chicken
-		case 66: return 32;  // witch       -> zombie
-		case 67: return 35;  // endermite   -> spider
-		case 68: return 35;  // guardian    -> spider
+		case 60: return 35;  // silverfish
+		case 61: return 34;  // blaze
+		case 62: return 37;  // magma cube -> slime
+		case 63: return 35;  // ender dragon
+		case 64: return 34;  // wither
+		case 65: return 10;  // bat
+		case 66: return 32;  // witch
+		case 67: return 35;  // endermite
+		case 68: return 35;  // guardian
 		case 90: return 12;  // pig
 		case 91: return 13;  // sheep
 		case 92: return 11;  // cow
 		case 93: return 10;  // chicken
-		case 94: return 35;  // squid       -> spider
-		case 95: return 12;  // wolf        -> pig
-		case 96: return 11;  // mooshroom   -> cow
-		case 97: return 13;  // snow golem  -> sheep
-		case 98: return 12;  // ocelot      -> pig
-		case 99: return 32;  // iron golem  -> zombie
-		case 100: return 12; // horse       -> pig
-		case 101: return 10; // rabbit      -> chicken
-		case 120: return 36; // villager    -> zombie pigman (neutral humanoid)
+		case 94: return 17;  // squid
+		case 95: return 14;  // wolf
+		case 96: return 11;  // mooshroom
+		case 97: return 13;  // snow golem
+		case 98: return 22;  // ocelot
+		case 99: return 32;  // iron golem
+		case 100: return 12; // horse
+		case 101: return 10; // rabbit
+		case 102: return 26; // polar bear
+		case 107: return 39; // turtle
+		case 109: return 27; // cod
+		case 110: return 28; // salmon
+		case 111: return 29; // pufferfish
+		case 112: return 30; // tropical fish
+		case 120: return 15; // villager
+		case 121: return 38; // fox
 		default: return 0;
 	}
 }
 
-/*
- * The numbers here are EntityTrackerEntry.createSpawnPacket()'s, not the ones
- * the wiki tables tend to imply - 70 is a falling block and 71 is an item
- * frame, and paintings and XP orbs never travel in a Spawn Object packet at
- * all (they have their own 0x10 and 0x11).  Getting this off by one slot is
- * how a falling sand block used to arrive as a Painting with no motive, which
- * crashed PaintingRenderer the moment it came into view.
- *
- * Anything with no plausible stand-in returns 0, and spawnObject() then skips
- * it: an entity that is invisible is a cosmetic loss, an entity whose renderer
- * dereferences a field m8 never filled in is a crash.
- */
 int32_t JavaIdMap::javaObjectToM8(int32_t javaObjectType) {
 	switch(javaObjectType) {
-		case 1:  return 84; // boat            -> minecart
+		case 1:  return 40; // boat
 		case 2:  return 64; // dropped item
 		case 10: return 84; // minecart
+		case 40: return 40; // boat
+		case 41: return 40; // boat
 		case 50: return 65; // primed tnt
-		case 51: return 0;  // ender crystal   -> nothing close enough
+		case 51: return 0;  // ender crystal
 		case 60: return 80; // arrow
 		case 61: return 81; // snowball
 		case 62: return 82; // thrown egg
-		case 63: return 81; // ghast fireball  -> snowball
-		case 64: return 81; // blaze fireball  -> snowball
-		case 65: return 81; // ender pearl     -> snowball
-		case 66: return 81; // wither skull    -> snowball
-		case 70: return 66; // falling block   (data is a Java block state id)
-		case 71: return 0;  // item frame      -> m8 has none
-		case 72: return 81; // eye of ender    -> snowball
-		case 73: return 81; // thrown potion   -> snowball
-		case 75: return 81; // xp bottle       -> snowball
-		case 76: return 81; // firework        -> snowball
+		case 63: return 81; // ghast fireball
+		case 64: return 81; // blaze fireball
+		case 65: return 81; // ender pearl
+		case 66: return 81; // wither skull
+		case 70: return 66; // falling block
+		case 71: return 71; // item frame
+		case 72: return 81; // eye of ender
+		case 73: return 81; // thrown potion
+		case 75: return 81; // xp bottle
+		case 76: return 81; // firework
 		case 77: return 0;  // leash knot
-		case 78: return 0;  // armor stand
+		case 78: return 78; // armor stand
 		case 90: return 0;  // fishing bobber
 		default: return 0;
 	}

@@ -126,7 +126,7 @@ void RenderChunk::rebuild(void) {
 		p_tessellator = &this->tessellator;
 		Region v30(this->level, xPos - 1, v23 - 1, zPos - 1, xMax + 1, yMax + 1, zPos + zSize + 1);
 		TileRenderer v32(&v30);
-		bool_t v29[] = {1, 1, 1, 1};
+		bool_t v29[] = {1, 0, 0, 0};
 
 		for(MeshBuffer& v10: this->meshBuffers) {
 			v10.reset();

@@ -44,6 +44,7 @@ struct Player : Mob{
 	int8_t field_D4E;
 	bool_t isDestroying;
 	struct FishingHook* fishing;
+	ItemInstance* enderChestItems[27];
 
 	Player(Level*, bool_t);
 	void _init();

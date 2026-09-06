@@ -22,6 +22,7 @@ void TileEntity::initTileEntities() {
 	TileEntity::setId(4, "Sign");
 	TileEntity::setId(5, "MixedSlab");
 	TileEntity::setId(6, "EnderChest");
+	TileEntity::setId(7, "Skull");
 }
 void TileEntity::teardownTileEntities() {
 }

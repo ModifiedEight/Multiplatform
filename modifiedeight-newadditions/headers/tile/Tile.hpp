@@ -60,6 +60,7 @@ struct Tile{
 	static Tile* fence_birch;
 	static Tile* trapdoor_spruce;
 	static Tile* trapdoor_birch;
+	static Tile* trapdoor_jungle;
 	static Tile* ironTrapdoor;
 	static Tile* coloredBeds[16];
 	static Tile* deadBush;
@@ -196,12 +197,46 @@ struct Tile{
 	static Tile* copperBlock;
 	static Tile* copperFence;
 	static Tile* copperWall;
+	static Tile* oakWall;
+	static Tile* spruceWall;
+	static Tile* birchWall;
+	static Tile* jungleWall;
+	static Tile* brickWall;
+	static Tile* quartzWall;
+	static Tile* chiseledQuartzWall;
+	static Tile* ironWall;
+	static Tile* sandstoneWall;
+	static Tile* stoneBrickWall;
+	static Tile* mossyStoneBrickWall;
+	static Tile* crackedStoneBrickWall;
 	static Tile* copperStairs;
 	static Tile* copperSlabHalf;
 	static Tile* copperSlab;
+	static Tile* fence_jungle;
 	static Tile* copperDoor;
 	static Tile* copperTrapdoor;
+	static Tile* copperBulb;
+	static Tile* copperBulbLit;
+	static Tile* copperGrate;
 	static Tile* enderChest;
+	static Tile* head_steve;
+	static Tile* head_creeper;
+	static Tile* head_zombie;
+	static Tile* head_skeleton;
+	static Tile* head_spider;
+	static Tile* head_pigzombie;
+	static Tile* head_slime;
+	static Tile* head_cow;
+	static Tile* head_pig;
+	static Tile* head_sheep;
+	static Tile* head_chicken;
+	static Tile* head_villager;
+	static Tile* head_ocelot;
+	static Tile* head_polarbear;
+	static Tile* head_turtle;
+	static Tile* head_giant;
+	static Tile* head_wolf;
+	static Tile* head_fox;
 
 	static Tile::SoundType SOUND_NORMAL;
 	static Tile::SoundType SOUND_WOOD;
@@ -214,6 +249,12 @@ struct Tile{
 	static Tile::SoundType SOUND_SAND;
 	static std::string WOOD_NAMES[];
 	static Tile::SoundType SOUND_SILENT;
+	static Tile::SoundType SOUND_SLIME;
+	static Tile::SoundType SOUND_COPPER_DOOR;
+	static Tile::SoundType SOUND_COPPER_TRAPDOOR;
+	static Tile::SoundType SOUND_COPPER_BULB;
+	static Tile::SoundType SOUND_COPPER_GRATE;
+	static Tile::SoundType SOUND_COPPER;
 
 	static std::string TILE_DESCRIPTION_PREFIX;
 

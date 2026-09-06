@@ -18,6 +18,8 @@
 #include <rendering/states/DisableState.hpp>
 #include <rendering/states/EnableState.hpp>
 #include <tile/Tile.hpp>
+#include <tile/MobHeadTile.hpp>
+#include <rendering/tileentity/MobHeadRenderer.hpp>
 #include <utils.h>
 #include <rendering/TextureTesselator.hpp>
 
@@ -55,7 +57,7 @@ RenderCall* ItemInHandRenderer::rebuildItem(struct Mob* a2, ItemInstance& a3) {
 	RenderCall* v7 = new RenderCall();
 	this->field_90[fid].reset(v7);
 
-	if(a3.tileClass && (Tile::enderChest ? a3.tileClass != Tile::enderChest : true)) {
+	if(a3.tileClass && !MobHeadTile::isHeadBlock(a3.tileClass->blockID)) {
 		int v12 = a3.tileClass->getRenderShape();
 		if(TileRenderer::canRender(v12) && a3.tileClass->getRenderShape() != 22) {
 			Tesselator::instance.begin(0);
@@ -519,7 +521,15 @@ void ItemInHandRenderer::renderItem(struct Mob* a2, ItemInstance* a3) {
 	unsigned int frameId; // r0
 
 	tileClass = a3->tileClass;
-	if(tileClass && tileClass->getRenderShape() == 22) {
+	if(tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
+		int htype = MobHeadTile::getHeadType(tileClass->blockID);
+		if(MobHeadRenderer::instance) {
+			glPushMatrix();
+			glTranslatef(0.5f, 0.25f, 0.5f);
+			MobHeadRenderer::instance->renderHead(htype, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
+			glPopMatrix();
+		}
+	} else if(tileClass && tileClass->getRenderShape() == 22) {
 		EntityTileRenderer::instance->render(tileClass, a3->getAuxValue(), 1.0);
 	} else {
 		frameId = this->_getFrameID(a2, a3);

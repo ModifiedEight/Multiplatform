@@ -316,7 +316,6 @@ void Item::initItems(std::shared_ptr<TextureAtlas> a2){
 	if (Tile::sweetBerryBush && !Item::items[Tile::sweetBerryBush->blockID]) new TileItem(Tile::sweetBerryBush->blockID - 256);
 	if (Tile::musicPlayer && !Item::items[Tile::musicPlayer->blockID]) new TileItem(Tile::musicPlayer->blockID - 256);
 	if (Tile::slimeBlock && !Item::items[Tile::slimeBlock->blockID]) new TileItem(Tile::slimeBlock->blockID - 256);
-	if (Tile::enderChest && Item::items[Tile::enderChest->blockID]) Item::items[Tile::enderChest->blockID]->setIcon("ender_chest", 0);
 	
 	if (Item::items[Tile::stainedGlass->blockID])
 		Item::items[Tile::stainedGlass->blockID]->setStackedByData(true);

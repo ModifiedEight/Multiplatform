@@ -8,6 +8,48 @@
 #include <cmath>
 #include <algorithm>
 
+#include <rendering/Tesselator.hpp>
+#include <rendering/Textures.hpp>
+#include <unigl.h>
+
+static void renderTransparentBtn(Minecraft* mc, Font* font, int32_t x, int32_t y, int32_t w, int32_t h, const std::string& text, bool hov, bool enabled = true) {
+	mc->texturesPtr->loadAndBindTexture("gui/gui.png");
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (!enabled) {
+		glColor4f(0.5f, 0.5f, 0.5f, 0.3f);
+	} else if (hov) {
+		glColor4f(0.75f, 0.75f, 0.75f, 0.85f);
+	} else {
+		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+	}
+	float u0 = 236.0f * 0.00390625f;
+	float v0 = 64.0f * 0.00390625f;
+	float u1 = (236.0f + 18.0f) * 0.00390625f;
+	float v1 = (64.0f + 18.0f) * 0.00390625f;
+	Tesselator& t = Tesselator::instance;
+	t.begin(4);
+	t.vertexUV((float)x, (float)(y + h), 0.0f, u0, v1);
+	t.vertexUV((float)(x + w), (float)(y + h), 0.0f, u1, v1);
+	t.vertexUV((float)(x + w), (float)y, 0.0f, u1, v0);
+	t.vertexUV((float)x, (float)y, 0.0f, u0, v0);
+	t.draw(1);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+	int32_t tw = font->width(text);
+	int32_t tx = x + (w - tw) / 2;
+	int32_t ty = y + (h - 8) / 2;
+	if (text == "✕") {
+		tx = x + (w - tw + 1) / 2;
+	} else if (text == "▲") {
+		ty = y + (h - 8) / 2 - 1;
+	} else if (text == "▼") {
+		ty = y + (h - 8) / 2 + 1;
+	}
+	uint32_t col = !enabled ? 0x888888 : (hov ? 0xFFFFA0 : 0xFFFFFF);
+	font->drawShadow(text, tx, ty, col);
+}
+
 MusicPlayerScreen::MusicPlayerScreen(int32_t x, int32_t y, int32_t z)
 	: blockX(x), blockY(y), blockZ(z), scrollOffset(0),
 	  dialogX(0), dialogY(0), dialogW(260), dialogH(210) {
@@ -119,7 +161,7 @@ void MusicPlayerScreen::mouseClicked(int32_t mx, int32_t my, int32_t btn) {
 	}
 
 	if (this->scrollOffset + visibleCount < totalTracks) {
-		int32_t downY = listY + listH - 16;
+		int32_t downY = listY + visibleCount * itemH - 16;
 		if (mx >= scrollX && mx <= scrollX + 16 && my >= downY && my <= downY + 16) {
 			this->scrollOffset++;
 			return;
@@ -169,13 +211,10 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 	int32_t tw = this->font->width(title);
 	this->font->drawShadow(title, x0 + (this->dialogW - tw) / 2, y0 + 6, 0xFFFFFFFF);
 
-	int32_t closeX = x1 - 19;
-	int32_t closeY = y0 + 5;
-	bool closeHov = (mx >= closeX && mx <= closeX + 14 && my >= closeY && my <= closeY + 14);
-	this->fill(closeX, closeY, closeX + 14, closeY + 14, closeHov ? 0xFF882222 : 0xFF333333);
-	this->fill(closeX, closeY, closeX + 14, closeY + 1, closeHov ? 0xFFAA3333 : 0xFF444444);
-	int32_t xw = this->font->width("x");
-	this->font->drawShadow("x", closeX + (14 - xw) / 2, closeY + 3, 0xFFFFFFFF);
+	int32_t closeX = x1 - 20;
+	int32_t closeY = y0 + 4;
+	bool closeHov = (mx >= closeX && mx <= closeX + 16 && my >= closeY && my <= closeY + 16);
+	renderTransparentBtn(this->minecraft, this->font, closeX, closeY, 16, 16, "✕", closeHov);
 
 	bool isThisPlaying = MusicPlayerManager::instance.isPlayingAt(this->blockX, this->blockY, this->blockZ);
 	bool isPaused = MusicPlayerManager::instance.isPaused;
@@ -294,18 +333,12 @@ void MusicPlayerScreen::render(int32_t mx, int32_t my, float a4) {
 		int32_t upY = listY;
 		bool canUp = (this->scrollOffset > 0);
 		bool upHov = (canUp && mx >= scrollX && mx <= scrollX + 16 && my >= upY && my <= upY + 16);
-		this->fill(scrollX, upY, scrollX + 16, upY + 16, upHov ? 0xFF4A4A5A : (canUp ? 0xFF2E2E35 : 0xFF1D1D20));
-		this->fill(scrollX, upY, scrollX + 16, upY + 1, upHov ? 0xFF65657E : (canUp ? 0xFF40404C : 0xFF2A2A2E));
-		int32_t uw = this->font->width("^");
-		this->font->drawShadow("^", scrollX + (16 - uw) / 2, upY + 4, canUp ? 0xFFFFFFFF : 0xFF555555);
+		renderTransparentBtn(this->minecraft, this->font, scrollX, upY, 16, 16, "▲", upHov, canUp);
 
-		int32_t downY = listY + listH - 16;
+		int32_t downY = listY + visibleCount * itemH - 16;
 		bool canDown = (this->scrollOffset + visibleCount < totalTracks);
 		bool downHov = (canDown && mx >= scrollX && mx <= scrollX + 16 && my >= downY && my <= downY + 16);
-		this->fill(scrollX, downY, scrollX + 16, downY + 16, downHov ? 0xFF4A4A5A : (canDown ? 0xFF2E2E35 : 0xFF1D1D20));
-		this->fill(scrollX, downY, scrollX + 16, downY + 1, downHov ? 0xFF65657E : (canDown ? 0xFF40404C : 0xFF2A2A2E));
-		int32_t dw = this->font->width("v");
-		this->font->drawShadow("v", scrollX + (16 - dw) / 2, downY + 4, canDown ? 0xFFFFFFFF : 0xFF555555);
+		renderTransparentBtn(this->minecraft, this->font, scrollX, downY, 16, 16, "▼", downHov, canDown);
 
 		int32_t trackTop = upY + 18;
 		int32_t trackBottom = downY - 2;
