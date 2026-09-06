@@ -2,6 +2,7 @@
 #include <Options.hpp>
 #include <entity/Player.hpp>
 #include <entity/LocalPlayer.hpp>
+#include <input/ControllerHandler.hpp>
 
 KeyboardInput::KeyboardInput(Options* a2) {
 	this->strafeInput = 0;
@@ -68,6 +69,7 @@ void KeyboardInput::tick(Player* a2) {
 	if(this->inputs[6]) {
 		a2->startCrafting((int32_t)a2->posX, (int32_t)a2->posY, (int32_t)a2->posZ, 0);
 	}
+	ControllerHandler::applyMove(this, a2);
 }
 void KeyboardInput::setKey(int32_t a2, bool_t a3) {
 	Options* options; // r4

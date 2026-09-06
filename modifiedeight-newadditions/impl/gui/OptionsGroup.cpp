@@ -1,6 +1,7 @@
 #include <gui/OptionsGroup.hpp>
 #include <I18n.hpp>
 #include <Minecraft.hpp>
+#include <gui/ControllerLayoutOption.hpp>
 #include <gui/LoginOption.hpp>
 #include <gui/buttons/OptionButton.hpp>
 #include <gui/elements/OptionsItem.hpp>
@@ -18,6 +19,11 @@ OptionsGroup::OptionsGroup(std::string a2)
 void OptionsGroup::addLoginItem(Minecraft* a2) {
 	this->addChild(std::shared_ptr<LoginOption>(new LoginOption(a2)));
 	this->setupPositions();
+}
+OptionsGroup* OptionsGroup::addControllerLayoutItem(Minecraft* a2, bool_t a3) {
+	this->addChild(std::shared_ptr<ControllerLayoutOption>(new ControllerLayoutOption(a2, a3)));
+	this->setupPositions();
+	return this;
 }
 void OptionsGroup::createTextBox(const Options::Option* a2, Minecraft* a3) {
 	std::shared_ptr<TextBox> v13(new TextBox(a3, a2, I18n::get(a2->name)));

@@ -1,6 +1,7 @@
 #include <Config.hpp>
 #include <Minecraft.hpp>
 #include <entity/LocalPlayer.hpp>
+#include <input/ControllerHandler.hpp>
 #include <input/Multitouch.hpp>
 #include <input/TouchscreenInput.hpp>
 #include <math/Mth.hpp>
@@ -475,6 +476,7 @@ void TouchscreenInput::tick(Player *a2) {
       lp->setSprinting(false);
     }
   }
+  ControllerHandler::applyMove(this, a2);
 }
 void TouchscreenInput::render(float a2) {
   this->minecraft->texturesPtr->loadAndBindTexture("gui/gui.png");

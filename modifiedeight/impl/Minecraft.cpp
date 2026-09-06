@@ -9,6 +9,8 @@
 #include <gui/screens/DeathScreen.hpp>
 #include <gui/screens/PauseScreen.hpp>
 #include <input/BuildActionIntention.hpp>
+#include <input/ControllerHandler.hpp>
+#include <input/ControllerLayout.hpp>
 #include <input/ControllerTurnInput.hpp>
 #include <input/CustomInputHolder.hpp>
 #include <input/Keyboard.hpp>
@@ -436,6 +438,7 @@ void Minecraft::init(void) {
 	this->supportsNonTouchScreen = !this->platform()->supportsTouchscreen();
 	this->options.init(this, this->field_D00);
 	this->options.update();
+	ControllerLayout::init(this->field_D00);
 	this->externalServerFile = std::shared_ptr<ExternalServerFile>(new ExternalServerFile(this->field_D00));
 	this->externalServerFile->load();
 	this->checkGLError("Init enter");
@@ -1224,6 +1227,7 @@ void Minecraft::unlockControl(void) {
 
 void Minecraft::update(void) {
 	this->cmutex->lock();
+	ControllerHandler::tick(this);
 	if(this->field_16C && this->level) {
 		float v14 = this->timer.field_8;
 		this->timer.advanceTime();

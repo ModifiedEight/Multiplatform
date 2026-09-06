@@ -14,6 +14,7 @@
 
 #include "EAGLView.h"
 #include "AppPlatform_iOS.hpp"
+#include "GamepadMFi.h"
 
 static void MCPEConfigureAudioSession(void) {
 	Class sessionClass = NSClassFromString(@"AVAudioSession");
@@ -158,6 +159,7 @@ static MCPEViewController* g_viewController = nil;
 		g_app->setSize(_glView.backingWidth, _glView.backingHeight);
 	}
 
+	GamepadMFi_poll();
 	g_app->update();
 
 	[_glView presentFramebuffer];

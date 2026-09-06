@@ -52,6 +52,18 @@ NBCraft-style Linux cross-compile path for an iOS build of MCPE 0.8.1.
   excluded on iOS (no libcurl in the public SDK); `CreateJob` returns the
   stubbed job like Android. Re-implementing networking is a TODO.
 
+## MFi gamepad support (`GamepadMFi.h/.mm`, shared by both trees)
+- `main.mm` calls `GamepadMFi_poll()` every `tick:` before `g_app->update()`,
+  feeding the shared `Gamepad` state (same canonical indices as the SDL/Android
+  backends): A/B/X/Y → 0..3, shoulders → 4/5, L3/R3 → 8/9, sticks → axes 0..3
+  (Y negated to match SDL sign), analog triggers → axes 4/5, D-pad → hat,
+  menu button (via `controllerPausedHandler`) → momentary START (7).
+- Bindings UI, `ControllerHandler` and `controller_layout.txt` work unchanged.
+- Only iOS 7/8-era `GameController` APIs are used (extended profile only, no
+  `buttonMenu`/`microGamepad`); `GameController.framework` is linked in both
+  trees' `MCPE_IOS` CMake blocks. New `.mm` files are picked up automatically
+  by the existing `file(GLOB IOS_PLATFORM_SRC ...)` in both trees.
+
 ## App shell — DONE (it links + produces an ipa)
 The Objective-C++ shell now exists in this directory and matches THIS decomp's
 API:

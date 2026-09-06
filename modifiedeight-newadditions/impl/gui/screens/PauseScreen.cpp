@@ -127,6 +127,12 @@ void PauseScreen::tick() {
 bool_t PauseScreen::renderGameBehind() {
 	return 1;
 }
+bool_t PauseScreen::handleBackEvent(bool_t a2) {
+	if(!a2) {
+		this->minecraft->setScreen(0);
+	}
+	return 1;
+}
 void PauseScreen::buttonClicked(Button* a2) {
 	if(a2->buttonID == this->backToGameButton->buttonID) {
 		this->minecraft->setScreen(0);

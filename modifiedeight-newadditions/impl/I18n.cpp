@@ -514,7 +514,19 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
   if (a1 == "options.realism.cavelighting") { a2 = "Atmospheric Caves"; return 1; }
   if (a1 == "options.realism.softshadows") { a2 = "Soft Shadows"; return 1; }
   if (a1 == "options.extendedinventory") { a2 = "Extended Inventory"; return 1; }
-  if (a1 == "options.controllersupport") { a2 = "Controller Support"; return 1; }
+  if (a1 == "options.controllersensitivity") { a2 = "Controller Sensitivity"; return 1; }
+  if (a1 == "options.controllercursorsensitivity") { a2 = "Controller Cursor Sensitivity"; return 1; }
+  if (a1 == "options.controllerlayout") { a2 = "Controller Layout"; return 1; }
+  if (a1 == "options.controllerlayout.customize") { a2 = "Customize"; return 1; }
+  if (a1 == "options.controllerlayout.actions") { a2 = "Actions"; return 1; }
+  if (a1 == "options.controllerlayout.bindings") { a2 = "Bindings"; return 1; }
+  if (a1 == "options.controllerlayout.press") { a2 = "> Press... <"; return 1; }
+  if (a1 == "options.controllerlayout.unbound") { a2 = "Unbound"; return 1; }
+  if (a1 == "options.controllerlayout.hint") { a2 = "Press a controller button or move a stick"; return 1; }
+  if (a1 == "options.controllerlayout.nogamepad") { a2 = "No controller detected"; return 1; }
+  if (a1 == "gui.save") { a2 = "Save"; return 1; }
+  if (a1 == "gui.reset") { a2 = "Reset"; return 1; }
+  if (a1 == "gui.cancel") { a2 = "Cancel"; return 1; }
   if (a1 == "options.realism.ssao") { a2 = "SSAO Occlusion"; return 1; }
   if (a1 == "options.realism.ssl") { a2 = "Screen-Space Lighting"; return 1; }
   if (a1 == "options.realism.bloom") { a2 = "Light Bloom"; return 1; }
@@ -641,6 +653,8 @@ std::string I18n::get(const std::string &a2) {
     return "ModifiedEight New Additions Options";
   if (a2 == "options.clientmode")
     return "Client mode";
+  if (a2 == "options.controllersensitivity") return "Controller Sensitivity";
+  if (a2 == "options.controllercursorsensitivity") return "Controller Cursor Sensitivity";
   if (a2 == "options.sprint")
     return "Sprint";
   if (a2 == "options.sprint.desc")
@@ -757,7 +771,17 @@ std::string I18n::get(const std::string &a2) {
   if (a2 == "options.realism.cavelighting") return "Atmospheric Caves";
   if (a2 == "options.realism.bloom") return "Bloom Effect";
   if (a2 == "options.extendedinventory") return "Extended Inventory";
-  if (a2 == "options.controllersupport") return "Controller Support";
+  if (a2 == "options.controllerlayout") return "Controller Layout";
+  if (a2 == "options.controllerlayout.customize") return "Customize";
+  if (a2 == "options.controllerlayout.actions") return "Actions";
+  if (a2 == "options.controllerlayout.bindings") return "Bindings";
+  if (a2 == "options.controllerlayout.press") return "> Press... <";
+  if (a2 == "options.controllerlayout.unbound") return "Unbound";
+  if (a2 == "options.controllerlayout.hint") return "Press a controller button or move a stick";
+  if (a2 == "options.controllerlayout.nogamepad") return "No controller detected";
+  if (a2 == "gui.save") return "Save";
+  if (a2 == "gui.reset") return "Reset";
+  if (a2 == "gui.cancel") return "Cancel";
   if (a2 == "options.realism.ssao") return "SSAO Occlusion";
   if (a2 == "options.realism.ssl") return "Screen-Space Lighting";
   if (a2 == "options.realism.bloom") return "Light Bloom";

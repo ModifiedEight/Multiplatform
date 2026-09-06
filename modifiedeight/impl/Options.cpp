@@ -14,6 +14,9 @@ Options::Option Options::Option::MUSIC{1, "options.music", 0};
 Options::Option Options::Option::SOUND{1, "options.sound", 1};
 Options::Option Options::Option::INVERT_MOUSE{0, "options.invertMouse", 2};
 Options::Option Options::Option::SENSITIVITY{1, "options.sensitivity", 3};
+Options::Option Options::Option::CONTROLLER_SENSITIVITY{1, "options.controllersensitivity", 60};
+Options::Option Options::Option::CONTROLLER_CURSOR_SENSITIVITY{1, "options.controllercursorsensitivity", 61};
+
 Options::Option Options::Option::RENDER_DISTANCE{3, "options.renderDistance", 4};
 Options::Option Options::Option::VIEW_BOBBING{0, "options.viewBobbing", 5};
 Options::Option Options::Option::LIMIT_FRAMERATE{0, "options.limitFramerate", 7};
@@ -73,6 +76,16 @@ void Options::update() {
 				float v12;
 				if(this->readFloat(v13[i + 1], v12)) {
 					this->sensitity = (float)(powf(v12 * 1.1, 1.3) * 0.42) + 0.3;
+				}
+			} else if(v13[i] == "options.controllersensitivity") {
+				float v12;
+				if(this->readFloat(v13[i + 1], v12)) {
+					this->controllerSensitivity = v12;
+				}
+			} else if(v13[i] == "options.controllercursorsensitivity") {
+				float v12;
+				if(this->readFloat(v13[i + 1], v12)) {
+					this->controllerCursorSensitivity = v12;
 				}
 			} else {
 				if(v13[i] == OptionStrings::Controls_InvertMouse) {
@@ -310,6 +323,10 @@ void Options::set(const Options::Option* a2, float a3) {
 		this->fov = a3;
 	} else if(a2 == &Options::Option::SENSITIVITY) {
 		this->sensitity = a3;
+	} else if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		this->controllerSensitivity = a3;
+	} else if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		this->controllerCursorSensitivity = a3;
 	} else if(a2 == &Options::Option::PIXELS_PER_MILLIMETER) {
 		this->pixelDensity = a3;
 	}
@@ -323,6 +340,8 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_PixelsPerMilimeter, this->pixelDensity);
 	this->addOptionToSaveOutput(v4, OptionStrings::Multiplayer_ServerVisible, this->serverVisible);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_Sensitivity, this->sensitity);
+	this->addOptionToSaveOutput(v4, "options.controllersensitivity", this->controllerSensitivity);
+	this->addOptionToSaveOutput(v4, "options.controllercursorsensitivity", this->controllerCursorSensitivity);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_InvertMouse, this->invertMouse);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_IsLefthanded, this->leftHanded);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_UseTouchScreen, this->useTouchscreen);
@@ -453,6 +472,8 @@ void Options::initDefaultValues(void) {
 	this->soundVolume = 1.0;
 	this->invertMouse = 0;
 	this->sensitity = 0.5;
+	this->controllerSensitivity = 40.0f;
+	this->controllerCursorSensitivity = 2.25f;
 	this->limitFramerate = 0;
 	this->renderDistance = 2;
 	this->useTouchscreen = this->minecraft->supportNonTouchscreen();
@@ -551,6 +572,9 @@ float Options::getProgrssMin(const Options::Option* a2) {
 	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY) {
 		return 0;
 	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY || a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return 0;
+	}
 	if(a2 == &Options::Option::FOV) {
 		return 30.0f;
 	}
@@ -562,6 +586,12 @@ float Options::getProgrssMin(const Options::Option* a2) {
 float Options::getProgrssMax(const Options::Option* a2) {
 	if(a2 == &Options::Option::MUSIC || a2 == &Options::Option::SOUND || a2 == &Options::Option::SENSITIVITY) {
 		return 1;
+	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return 80;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return 4.5f;
 	}
 	if(a2 == &Options::Option::FOV) {
 		return 110.0f;
@@ -581,6 +611,13 @@ float Options::getProgressValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::SENSITIVITY) {
 		return this->sensitity;
 	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return this->controllerSensitivity;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return this->controllerCursorSensitivity;
+	}
+
 	if(a2 == &Options::Option::FOV) {
 		return this->fov;
 	}
@@ -633,6 +670,12 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 		std::string modes[] = {"Tiny", "Short", "Normal", "Far", "Very Far", "Ultra", "Extreme"};
 		int idx = 3 - this->renderDistance;
 		if(idx >= 0 && idx < 7) return a4 + ": " + modes[idx];
+	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return a4;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return a4;
 	}
 	return a4;
 }

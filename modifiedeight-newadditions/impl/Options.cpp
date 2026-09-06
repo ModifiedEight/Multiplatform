@@ -18,6 +18,8 @@ Options::Option Options::Option::MUSIC{1, "options.music", 0};
 Options::Option Options::Option::SOUND{1, "options.sound", 1};
 Options::Option Options::Option::INVERT_MOUSE{0, "options.invertMouse", 2};
 Options::Option Options::Option::SENSITIVITY{1, "options.sensitivity", 3};
+Options::Option Options::Option::CONTROLLER_SENSITIVITY{1, "options.controllersensitivity", 60};
+Options::Option Options::Option::CONTROLLER_CURSOR_SENSITIVITY{1, "options.controllercursorsensitivity", 61};
 Options::Option Options::Option::RENDER_DISTANCE{3, "options.renderDistance", 4};
 Options::Option Options::Option::VIEW_BOBBING{0, "options.viewBobbing", 5};
 Options::Option Options::Option::LIMIT_FRAMERATE{0, "options.limitFramerate", 7};
@@ -70,7 +72,6 @@ Options::Option Options::Option::REALISM_SSAO{0, "options.realism.ssao", 54};
 Options::Option Options::Option::REALISM_SCREEN_SPACE_LIGHTING{0, "options.realism.ssl", 55};
 Options::Option Options::Option::REALISM_BLOOM{0, "options.realism.bloom", 56};
 Options::Option Options::Option::EXTENDED_INVENTORY{0, "options.extendedinventory", 57};
-Options::Option Options::Option::CONTROLLER_SUPPORT{0, "options.controllersupport", 60};
 Options::Option Options::Option::MORNING_FOG{0, "options.morningfog", 58};
 Options::Option Options::Option::SUN_GLOW{0, "options.sunglow", 59};
 std::vector<int32_t> Options::DIFFICULTY_LEVELS = {0, 2};
@@ -98,6 +99,16 @@ void Options::update() {
 				float v12;
 				if(this->readFloat(v13[i + 1], v12)) {
 					this->sensitity = (float)(powf(v12 * 1.1, 1.3) * 0.42) + 0.3;
+				}
+			} else if(v13[i] == "options.controllersensitivity") {
+				float v12;
+				if(this->readFloat(v13[i + 1], v12)) {
+					this->controllerSensitivity = v12;
+				}
+			} else if(v13[i] == "options.controllercursorsensitivity") {
+				float v12;
+				if(this->readFloat(v13[i + 1], v12)) {
+					this->controllerCursorSensitivity = v12;
 				}
 			} else {
 				if(v13[i] == OptionStrings::Controls_InvertMouse) {
@@ -176,8 +187,6 @@ void Options::update() {
 							this->readBool(v13[i + 1], this->swapJumpAndSneak);
 						} else if(v13[i] == "options.extendedinventory") {
 							this->readBool(v13[i + 1], this->extendedInventory);
-						} else if(v13[i] == "options.controllersupport") {
-							this->readBool(v13[i + 1], this->controllerSupport);
 						} else if(v13[i] == "options.chatcolor") {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
@@ -351,8 +360,6 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->realismBloom ^= 1u;
 	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
 		this->extendedInventory ^= 1u;
-	} else if(a2 == &Options::Option::CONTROLLER_SUPPORT || (a2 && a2->name == "options.controllersupport")) {
-		this->controllerSupport ^= 1u;
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = (this->panoramaAngle + a3 + 7) % 7;
 	} else if(a2 == &Options::Option::LIMIT_FRAMERATE) {
@@ -409,6 +416,10 @@ void Options::set(const Options::Option* a2, float a3) {
 		this->fov = a3;
 	} else if(a2 == &Options::Option::SENSITIVITY) {
 		this->sensitity = a3;
+	} else if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		this->controllerSensitivity = a3;
+	} else if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		this->controllerCursorSensitivity = a3;
 	} else if(a2 == &Options::Option::BRIGHTNESS) {
 		this->brightness = a3;
 		if(this->minecraft && this->minecraft->level && this->minecraft->level->dimensionPtr) {
@@ -431,6 +442,8 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_PixelsPerMilimeter, this->pixelDensity);
 	this->addOptionToSaveOutput(v4, OptionStrings::Multiplayer_ServerVisible, this->serverVisible);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_Sensitivity, this->sensitity);
+	this->addOptionToSaveOutput(v4, "options.controllersensitivity", this->controllerSensitivity);
+	this->addOptionToSaveOutput(v4, "options.controllercursorsensitivity", this->controllerCursorSensitivity);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_InvertMouse, this->invertMouse);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_IsLefthanded, this->leftHanded);
 	this->addOptionToSaveOutput(v4, OptionStrings::Controls_UseTouchScreen, this->useTouchscreen);
@@ -466,7 +479,6 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.sunglow", this->sunGlow);
 	this->addOptionToSaveOutput(v4, "options.swapjumpandsneak", this->swapJumpAndSneak);
 	this->addOptionToSaveOutput(v4, "options.extendedinventory", this->extendedInventory);
-	this->addOptionToSaveOutput(v4, "options.controllersupport", this->controllerSupport);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
@@ -576,7 +588,6 @@ void Options::initDefaultValues(void) {
 	this->realismSSL = 1;
 	this->realismBloom = 1;
 	this->extendedInventory = 0;
-	this->controllerSupport = 1;
 	this->chatColor = 0;
 	this->chatBgColor = 0;
 	this->panoramaAngle = 0;
@@ -591,6 +602,8 @@ void Options::initDefaultValues(void) {
 	this->soundVolume = 1.0;
 	this->invertMouse = 0;
 	this->sensitity = 0.5;
+	this->controllerSensitivity = 40.0f;
+	this->controllerCursorSensitivity = 2.25f;
 	this->limitFramerate = 0;
 	this->renderDistance = 2;
 	this->useTouchscreen = this->minecraft->supportNonTouchscreen();
@@ -702,6 +715,9 @@ float Options::getProgrssMin(const Options::Option* a2) {
 	if(a2 == &Options::Option::PIXELS_PER_MILLIMETER) {
 		return 3;
 	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY || a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return 0;
+	}
 	return 0;
 }
 float Options::getProgrssMax(const Options::Option* a2) {
@@ -714,6 +730,12 @@ float Options::getProgrssMax(const Options::Option* a2) {
 	if(a2 == &Options::Option::PIXELS_PER_MILLIMETER) {
 		return 12;
 	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return 80;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return 4.5f;
+	}
 	return 1;
 }
 float Options::getProgressValue(const Options::Option* a2) {
@@ -725,6 +747,12 @@ float Options::getProgressValue(const Options::Option* a2) {
 	}
 	if(a2 == &Options::Option::SENSITIVITY) {
 		return this->sensitity;
+	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return this->controllerSensitivity;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return this->controllerCursorSensitivity;
 	}
 	if(a2 == &Options::Option::BRIGHTNESS) {
 		return this->brightness;
@@ -804,6 +832,12 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 		char_t v9[16];
 		sprintf(v9, "%d", percent);
 		return a4 + ": +" + v9 + "%";
+	}
+	if(a2 == &Options::Option::CONTROLLER_SENSITIVITY) {
+		return a4;
+	}
+	if(a2 == &Options::Option::CONTROLLER_CURSOR_SENSITIVITY) {
+		return a4;
 	}
 	return a4;
 }
@@ -914,8 +948,6 @@ bool_t Options::getBooleanValue(const Options::Option* a2) {
 		return this->realismBloom;
 	} else if(a2 == &Options::Option::EXTENDED_INVENTORY || (a2 && a2->name == "options.extendedinventory")) {
 		return this->extendedInventory;
-	} else if(a2 == &Options::Option::CONTROLLER_SUPPORT || (a2 && a2->name == "options.controllersupport")) {
-		return this->controllerSupport;
 	}
 	if(a2 == &Options::Option::GRAPHICS) {
 		return this->graphics;

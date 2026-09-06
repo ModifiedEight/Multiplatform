@@ -104,6 +104,7 @@ elseif(MCPE_IOS)
         "-framework OpenGLES"
         "-framework OpenAL"
         "-framework AVFoundation"
+        "-framework GameController"
     )
     set_target_properties(modifiedeight-newadditions PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"
