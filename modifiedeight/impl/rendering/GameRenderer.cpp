@@ -3,6 +3,7 @@
 #include <entity/LocalPlayer.hpp>
 #include <entity/player/gamemode/GameMode.hpp>
 #include <gui/Screen.hpp>
+#include <input/ControllerHandler.hpp>
 #include <input/IInputHolder.hpp>
 #include <input/KeyboardInput.hpp>
 #include <input/Mouse.hpp>
@@ -576,6 +577,15 @@ LABEL_34:
 
 	if(this->minecraft->currentScreen) {
 		this->minecraft->currentScreen->render(mx, my, pt);
+		if(ControllerHandler::cursorVisible()) {
+			int32_t gx = (int32_t)(ControllerHandler::cursorX * Gui::InvGuiScale);
+			int32_t gy = (int32_t)(ControllerHandler::cursorY * Gui::InvGuiScale);
+			Screen* scr = this->minecraft->currentScreen;
+			scr->fill(gx - 5, gy - 1, gx + 6, gy + 2, 0xFF000000);
+			scr->fill(gx - 1, gy - 5, gx + 2, gy + 6, 0xFF000000);
+			scr->fill(gx - 4, gy, gx + 5, gy + 1, 0xFFFFFFFF);
+			scr->fill(gx, gy - 4, gx + 1, gy + 5, 0xFFFFFFFF);
+		}
 	}
 }
 void GameRenderer::renderItemInHand(float a2, int32_t a3) {

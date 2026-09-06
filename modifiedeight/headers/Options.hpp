@@ -16,6 +16,8 @@ struct Options{
 		static Options::Option FANCY_SKIES;
 		static Options::Option LEFT_HANDED;
 		static Options::Option SENSITIVITY;
+		static Options::Option CONTROLLER_SENSITIVITY;
+		static Options::Option CONTROLLER_CURSOR_SENSITIVITY;
 		static Options::Option INVERT_MOUSE;
 		static Options::Option THIRD_PERSON;
 		static Options::Option VIEW_BOBBING;
@@ -61,6 +63,8 @@ struct Options{
 	float musicVolume;
 	float soundVolume;
 	float sensitity;
+	float controllerSensitivity;
+	float controllerCursorSensitivity;
 	bool_t invertMouse;
 	char_t field_D;
 	char_t field_E;

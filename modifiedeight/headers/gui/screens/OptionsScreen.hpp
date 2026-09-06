@@ -10,6 +10,8 @@ struct NinePatchLayer;
 struct ImageButton;
 struct OptionsScreen: Screen
 {
+	static int32_t lastCategory;
+
 	Touch::THeader* headerOptions;
 	Touch::TButton* buttonBack;
 	ImageButton* field_5C;

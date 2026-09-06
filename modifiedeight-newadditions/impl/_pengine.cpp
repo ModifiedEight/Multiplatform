@@ -6,6 +6,8 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 #include <input/Controller.hpp>
+#include <input/ControllerHandler.hpp>
+#include <input/Gamepad.hpp>
 #include <input/Keyboard.hpp>
 #include <input/Mouse.hpp>
 #include <input/Multitouch.hpp>
@@ -126,7 +128,82 @@ void engine_term_display(ENGINE* a1) {
 //         //67//       //
 static int _d6715384[] = {4, 0x13, 0x14, 0x15, 0x16, 0x17, 0x52, 0x63, 0x64, 0x66, 0x67, 0x6C, 0x6D};
 static char _D67153B8[] = {0xD, 8};
+
+static bool _isGamepadSource(int32_t source) {
+	if((source & AINPUT_SOURCE_JOYSTICK) == AINPUT_SOURCE_JOYSTICK) return true;
+	if((source & AINPUT_SOURCE_GAMEPAD) == AINPUT_SOURCE_GAMEPAD) return true;
+	return false;
+}
+
+static bool _isGamepadKeyCode(int32_t keyCode) {
+	if(keyCode >= 96 && keyCode <= 110) return true;
+	if(keyCode >= 188 && keyCode <= 202) return true;
+	return false;
+}
+
+static void _feedGamepadMotion(AInputEvent* event) {
+	Gamepad::setConnected(1);
+
+	float lx = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X, 0);
+	float ly = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y, 0);
+	Gamepad::feedAxis(GP_AXIS_LX, lx, AMOTION_EVENT_AXIS_X);
+	Gamepad::feedAxis(GP_AXIS_LY, ly, AMOTION_EVENT_AXIS_Y);
+
+	float rx = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Z, 0);
+	float ry = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RZ, 0);
+	int32_t rxRaw = AMOTION_EVENT_AXIS_Z;
+	int32_t ryRaw = AMOTION_EVENT_AXIS_RZ;
+	if(rx == 0.0f && ry == 0.0f) {
+		rx = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX, 0);
+		ry = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY, 0);
+		rxRaw = AMOTION_EVENT_AXIS_RX;
+		ryRaw = AMOTION_EVENT_AXIS_RY;
+	}
+	Gamepad::feedAxis(GP_AXIS_RX, rx, rxRaw);
+	Gamepad::feedAxis(GP_AXIS_RY, ry, ryRaw);
+
+	float lt = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_LTRIGGER, 0);
+	float rt = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RTRIGGER, 0);
+	int32_t ltRaw = AMOTION_EVENT_AXIS_LTRIGGER;
+	int32_t rtRaw = AMOTION_EVENT_AXIS_RTRIGGER;
+	if(lt == 0.0f) {
+		lt = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_BRAKE, 0);
+		ltRaw = AMOTION_EVENT_AXIS_BRAKE;
+	}
+	if(rt == 0.0f) {
+		rt = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_GAS, 0);
+		rtRaw = AMOTION_EVENT_AXIS_GAS;
+	}
+	if(lt < 0.0f) lt = 0.0f;
+	if(rt < 0.0f) rt = 0.0f;
+	Gamepad::feedAxis(GP_AXIS_LT, lt, ltRaw);
+	Gamepad::feedAxis(GP_AXIS_RT, rt, rtRaw);
+
+	float hatX = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X, 0);
+	float hatY = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y, 0);
+	Gamepad::feedHat(hatY < -0.5f, hatY > 0.5f, hatX < -0.5f, hatX > 0.5f);
+
+	Gamepad::syncDerivedButtons();
+}
+
 int engine_handle_input(struct android_app* app, struct AInputEvent* event) {
+	int32_t evSource = AInputEvent_getSource(event);
+	if(AInputEvent_getType(event) == 2 && _isGamepadSource(evSource) && evSource != 0x100008) {
+		_feedGamepadMotion(event);
+		return 1;
+	}
+	if(AInputEvent_getType(event) == 1) {
+		int32_t gpKeyCode = AKeyEvent_getKeyCode(event);
+		if(_isGamepadKeyCode(gpKeyCode) || (_isGamepadSource(evSource) && gpKeyCode >= 19 && gpKeyCode <= 23)) {
+			Gamepad::setConnected(1);
+			int32_t mapped = Gamepad::mapRawButton(gpKeyCode, -1);
+			if(mapped >= 0) {
+				Gamepad::feedButton(mapped, AKeyEvent_getAction(event) == 0, gpKeyCode);
+				Gamepad::syncDerivedButtons();
+				return 1;
+			}
+		}
+	}
 	if(AInputEvent_getType(event) != 1) {
 		if(((ENGINE*)app->userData)->minecraft->useTouchscreen()) {
 			if(AInputEvent_getType(event) == 2 && AInputEvent_getSource(event) != 0x100008) {

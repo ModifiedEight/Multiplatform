@@ -1,9 +1,6 @@
 #pragma once
 #include <gui/buttons/Button.hpp>
-struct Options
-{
-	struct Option;
-};
+#include <Options.hpp>
 
 
 struct SmallButton: Button

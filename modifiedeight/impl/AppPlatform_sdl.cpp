@@ -4,6 +4,9 @@
 #include <NinecraftApp.hpp>
 #include <_AssetFile.hpp>
 #include <entity/LocalPlayer.hpp>
+#include <input/ControllerHandler.hpp>
+#include <input/ControllerLayout.hpp>
+#include <input/Gamepad.hpp>
 #include <input/Keyboard.hpp>
 #include <input/KeyboardInput.hpp>
 #include <input/Mouse.hpp>
@@ -217,6 +220,8 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_EnableUNICODE(1);
+  SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+  SDL_JoystickEventState(SDL_ENABLE);
   this->sdl_surface = this->setSDLVideoMode();
   if (!this->sdl_surface) {
     return 0;
@@ -561,6 +566,9 @@ void AppPlatform_sdl::init() {
           break;
         _mx = appPlatform.sdl_event.motion.x;
         _my = appPlatform.sdl_event.motion.y;
+        if (appPlatform.sdl_event.motion.xrel != 0 || appPlatform.sdl_event.motion.yrel != 0) {
+          ControllerHandler::hideCursor();
+        }
         Mouse::feed(0, 0, _mx, _my, appPlatform.sdl_event.motion.xrel,
                     appPlatform.sdl_event.motion.yrel);
         break;
@@ -654,6 +662,86 @@ void AppPlatform_sdl::init() {
                            appPlatform.sdl_event.type == SDL_KEYDOWN);
         break;
       }
+    }
+
+    static SDL_Joystick *s_joystick = nullptr;
+    static int s_joystickIndex = -1;
+    static int s_numAxes = 0;
+    static int s_numButtons = 0;
+    static int s_numHats = 0;
+
+    if (!s_joystick) {
+      if (SDL_NumJoysticks() > 0) {
+        s_joystick = SDL_JoystickOpen(0);
+        if (s_joystick) {
+          s_joystickIndex = 0;
+          s_numAxes = SDL_JoystickNumAxes(s_joystick);
+          s_numButtons = SDL_JoystickNumButtons(s_joystick);
+          s_numHats = SDL_JoystickNumHats(s_joystick);
+          Gamepad::reset();
+          Gamepad::setConnected(1);
+        }
+      } else if (Gamepad::connected) {
+        Gamepad::setConnected(0);
+      }
+    } else if (s_joystickIndex >= 0 && !SDL_JoystickOpened(s_joystickIndex)) {
+      s_joystick = nullptr;
+      s_joystickIndex = -1;
+      s_numAxes = 0;
+      s_numButtons = 0;
+      s_numHats = 0;
+      Gamepad::setConnected(0);
+    }
+
+    if (s_joystick) {
+      SDL_JoystickUpdate();
+
+      int rxAxis = (s_numAxes >= 5) ? 3 : 2;
+      int ryAxis = (s_numAxes >= 5) ? 4 : 3;
+
+      float lx = (s_numAxes > 0) ? (float)SDL_JoystickGetAxis(s_joystick, 0) / 32767.0f : 0.0f;
+      float ly = (s_numAxes > 1) ? (float)SDL_JoystickGetAxis(s_joystick, 1) / 32767.0f : 0.0f;
+      float rx = (s_numAxes > rxAxis) ? (float)SDL_JoystickGetAxis(s_joystick, rxAxis) / 32767.0f : 0.0f;
+      float ry = (s_numAxes > ryAxis) ? (float)SDL_JoystickGetAxis(s_joystick, ryAxis) / 32767.0f : 0.0f;
+
+      Gamepad::feedAxis(GP_AXIS_LX, lx, 0);
+      Gamepad::feedAxis(GP_AXIS_LY, ly, 1);
+      Gamepad::feedAxis(GP_AXIS_RX, rx, rxAxis);
+      Gamepad::feedAxis(GP_AXIS_RY, ry, ryAxis);
+
+      float lt = 0.0f;
+      float rt = 0.0f;
+      if (s_numAxes >= 6) {
+        lt = (float)SDL_JoystickGetAxis(s_joystick, 2) / 32767.0f;
+        rt = (float)SDL_JoystickGetAxis(s_joystick, 5) / 32767.0f;
+        if (lt < 0.0f) lt = 0.0f;
+        if (rt < 0.0f) rt = 0.0f;
+      } else if (s_numAxes >= 3 && s_numAxes < 5) {
+        float trig = (float)SDL_JoystickGetAxis(s_joystick, 2) / 32767.0f;
+        if (trig > 0.0f) rt = trig;
+        if (trig < 0.0f) lt = -trig;
+      }
+      Gamepad::feedAxis(GP_AXIS_LT, lt, 2);
+      Gamepad::feedAxis(GP_AXIS_RT, rt, (s_numAxes >= 6) ? 5 : 2);
+
+      for (int i = 0; i < s_numButtons; ++i) {
+        int mapped = Gamepad::mapSdlButton(i, s_numButtons, s_numAxes);
+        if (mapped >= 0) {
+          Gamepad::feedButton(mapped, SDL_JoystickGetButton(s_joystick, i) != 0, i);
+        }
+      }
+
+      if (s_numHats > 0) {
+        uint8_t hat = SDL_JoystickGetHat(s_joystick, 0);
+        Gamepad::feedHat((hat & SDL_HAT_UP) != 0, (hat & SDL_HAT_DOWN) != 0,
+                         (hat & SDL_HAT_LEFT) != 0, (hat & SDL_HAT_RIGHT) != 0);
+      } else if (s_numAxes >= 8) {
+        float hatX = (float)SDL_JoystickGetAxis(s_joystick, 6) / 32767.0f;
+        float hatY = (float)SDL_JoystickGetAxis(s_joystick, 7) / 32767.0f;
+        Gamepad::feedHat(hatY < -0.5f, hatY > 0.5f, hatX < -0.5f, hatX > 0.5f);
+      }
+
+      Gamepad::syncDerivedButtons();
     }
 
     // TODO engine stuff

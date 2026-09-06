@@ -16,6 +16,8 @@ struct Options{
 		static Options::Option FANCY_SKIES;
 		static Options::Option LEFT_HANDED;
 		static Options::Option SENSITIVITY;
+		static Options::Option CONTROLLER_SENSITIVITY;
+		static Options::Option CONTROLLER_CURSOR_SENSITIVITY;
 		static Options::Option INVERT_MOUSE;
 		static Options::Option THIRD_PERSON;
 		static Options::Option VIEW_BOBBING;
@@ -70,7 +72,6 @@ struct Options{
 		static Options::Option REALISM_SCREEN_SPACE_LIGHTING;
 		static Options::Option REALISM_BLOOM;
 		static Options::Option EXTENDED_INVENTORY;
-		static Options::Option CONTROLLER_SUPPORT;
 	};
 
 	static Options* instance;
@@ -79,6 +80,8 @@ struct Options{
 	float soundVolume;
 	float brightness;
 	float sensitity;
+	float controllerSensitivity;
+	float controllerCursorSensitivity;
 	bool_t invertMouse;
 	char_t field_D;
 	char_t field_E;
@@ -162,7 +165,6 @@ struct Options{
 	bool_t realismSSL;
 	bool_t realismBloom;
 	bool_t extendedInventory;
-	bool_t controllerSupport;
 	char_t field_109;
 	char_t field_10A;
 	char_t field_10B;

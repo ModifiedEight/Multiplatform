@@ -11,6 +11,8 @@
 #include <util/IntRectangle.hpp>
 #include <cpputils.hpp>
 
+int32_t OptionsScreen::lastCategory = 0;
+
 OptionsScreen::OptionsScreen(bool_t a2) {
 	this->isInWorld = a2;
 	this->headerOptions = 0;
@@ -69,7 +71,7 @@ void OptionsScreen::generateOptionScreens(void) {
 
 	this->optionPanes[0]->createOptionsGroup("options.group.game")->addOptionItem(&Options::Option::NAME, this->minecraft)->addOptionItem(&Options::Option::DIFFICULTY, this->minecraft)->addOptionItem(&Options::Option::THIRD_PERSON, this->minecraft)->addOptionItem(&Options::Option::SERVER_VISIBLE, this->minecraft)->addOptionItem(&Options::Option::SHOW_COORDINATES, this->minecraft)->addOptionItem(&Options::Option::DEBUG_SCREEN, this->minecraft)->addOptionItem(&Options::Option::HUD_CAMERA_BUTTON, this->minecraft);
 	this->optionPanes[0]->createOptionsGroup("options.group.realms")->addLoginItem(this->minecraft);
-	this->optionPanes[1]->createOptionsGroup("options.group.input")->addOptionItem(&Options::Option::SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::INVERT_MOUSE, this->minecraft)->addOptionItem(&Options::Option::LEFT_HANDED, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCHSCREEN, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCH_JOYPAD, this->minecraft)->addOptionItem(&Options::Option::PIXELS_PER_MILLIMETER, this->minecraft)->addOptionItem(&Options::Option::SPRINT, this->minecraft)->addOptionItem(&Options::Option::AUTO_JUMP, this->minecraft)->addOptionItem(&Options::Option::SWAP_JUMP_AND_SNEAK, this->minecraft);
+	this->optionPanes[1]->createOptionsGroup("options.group.input")->addOptionItem(&Options::Option::SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::INVERT_MOUSE, this->minecraft)->addOptionItem(&Options::Option::LEFT_HANDED, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCHSCREEN, this->minecraft)->addOptionItem(&Options::Option::USE_TOUCH_JOYPAD, this->minecraft)->addOptionItem(&Options::Option::PIXELS_PER_MILLIMETER, this->minecraft)->addControllerLayoutItem(this->minecraft, this->isInWorld)->addOptionItem(&Options::Option::CONTROLLER_SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::CONTROLLER_CURSOR_SENSITIVITY, this->minecraft)->addOptionItem(&Options::Option::SPRINT, this->minecraft)->addOptionItem(&Options::Option::AUTO_JUMP, this->minecraft)->addOptionItem(&Options::Option::SWAP_JUMP_AND_SNEAK, this->minecraft);
 	if(this->minecraft->platform()->supportsVibration()) {
 		this->optionPanes[1]->createOptionsGroup("options.group.feedback")->addOptionItem(&Options::Option::DESTROY_VIBRATION, this->minecraft);
 	}
@@ -100,6 +102,7 @@ void OptionsScreen::selectCategory(int32_t a2) {
 	}
 	if(a2 < this->optionPanes.size()) {
 		this->selectedCategory = this->optionPanes[a2];
+		OptionsScreen::lastCategory = a2;
 	}
 }
 
@@ -215,7 +218,9 @@ void OptionsScreen::setupPositions() {
 			p->setupPositions();
 		}
 	}
-	this->selectCategory(0);
+	int32_t startCategory = OptionsScreen::lastCategory;
+	if(startCategory < 0 || startCategory >= (int32_t)this->optionPanes.size()) startCategory = 0;
+	this->selectCategory(startCategory);
 }
 bool_t OptionsScreen::handleBackEvent(bool_t a2) {
 	if(!a2) {

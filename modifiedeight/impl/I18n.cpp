@@ -93,6 +93,19 @@ bool_t I18n::get(const std::string& a1, std::string& a2) {
 	if (a1 == "options.animatefire") { a2 = "Animated Fire"; return 1; }
 	if (a1 == "options.smoothchunks") { a2 = "Smooth Chunk Loading"; return 1; }
 	if (a1 == "options.smoothchunks.desc") { a2 = "Smooths chunk rebuilds to eliminate frame drops"; return 1; }
+	if (a1 == "options.controllersensitivity") { a2 = "Controller Sensitivity"; return 1; }
+	if (a1 == "options.controllercursorsensitivity") { a2 = "Controller Cursor Sensitivity"; return 1; }
+	if (a1 == "options.controllerlayout") { a2 = "Controller Layout"; return 1; }
+	if (a1 == "options.controllerlayout.customize") { a2 = "Customize"; return 1; }
+	if (a1 == "options.controllerlayout.actions") { a2 = "Actions"; return 1; }
+	if (a1 == "options.controllerlayout.bindings") { a2 = "Bindings"; return 1; }
+	if (a1 == "options.controllerlayout.press") { a2 = "> Press... <"; return 1; }
+	if (a1 == "options.controllerlayout.unbound") { a2 = "Unbound"; return 1; }
+	if (a1 == "options.controllerlayout.hint") { a2 = "Press a controller button or move a stick"; return 1; }
+	if (a1 == "options.controllerlayout.nogamepad") { a2 = "No controller detected"; return 1; }
+	if (a1 == "gui.save") { a2 = "Save"; return 1; }
+	if (a1 == "gui.reset") { a2 = "Reset"; return 1; }
+	if (a1 == "gui.cancel") { a2 = "Cancel"; return 1; }
 
 	auto&& v3 = I18n::_strings.find(a1);
 	if(v3 == I18n::_strings.end()) return 0;
@@ -130,6 +143,19 @@ std::string I18n::get(const std::string& a2) {
 	if (a2 == "options.showfps") return "Show FPS";
 	if (a2 == "options.debugscreen") return "Debug Screen";
 	if (a2 == "options.discordrpc") return "Discord Integration";
+	if (a2 == "options.controllersensitivity") return "Controller Sensitivity";
+	if (a2 == "options.controllercursorsensitivity") return "Controller Cursor Sensitivity";
+	if (a2 == "options.controllerlayout") return "Controller Layout";
+	if (a2 == "options.controllerlayout.customize") return "Customize";
+	if (a2 == "options.controllerlayout.actions") return "Actions";
+	if (a2 == "options.controllerlayout.bindings") return "Bindings";
+	if (a2 == "options.controllerlayout.press") return "> Press... <";
+	if (a2 == "options.controllerlayout.unbound") return "Unbound";
+	if (a2 == "options.controllerlayout.hint") return "Press a controller button or move a stick";
+	if (a2 == "options.controllerlayout.nogamepad") return "No controller detected";
+	if (a2 == "gui.save") return "Save";
+	if (a2 == "gui.reset") return "Reset";
+	if (a2 == "gui.cancel") return "Cancel";
 
 	auto&& v3 = I18n::_strings.find(a2);
 	if(v3 == I18n::_strings.end()) return a2 + '<';
