@@ -128,8 +128,8 @@ bool_t SpruceFeature::place(Level* level, Random* random, int32_t x, int32_t y, 
 				if ( v22 != v31 || !v31 )
 				{
 LABEL_58:
-					if ( !Tile::solid[level->getTile(v20, a4, v21)] )
-					{
+					int32_t t_existing = level->getTile(v20, a4, v21);
+					if (t_existing == 0) {
 						this->placeBlock(level, v20, a4, v21, Tile::leaves->blockID, 1);
 					}
 				}

@@ -44,7 +44,7 @@ void MegaJungleTreeFeature::placeLeafCluster(Level* level, int32_t cx, int32_t c
 					int32_t lz = cz + dz;
 					if (ly > 0 && ly < 128) {
 						int32_t cur = level->getTile(lx, ly, lz);
-						if (cur == 0 || cur == Tile::leaves->blockID) {
+						if (cur == 0) {
 							this->placeBlock(level, lx, ly, lz, Tile::leaves->blockID, this->leavesMeta);
 						}
 					}
@@ -128,7 +128,7 @@ bool_t MegaJungleTreeFeature::place(Level* level, Random* random, int32_t x, int
 					}
 					if (ly > 0 && ly < 128) {
 						int32_t cur = level->getTile(lx, ly, lz);
-						if (cur == 0 || cur == Tile::leaves->blockID) {
+						if (cur == 0) {
 							this->placeBlock(level, lx, ly, lz, Tile::leaves->blockID, this->leavesMeta);
 						}
 					}

@@ -108,7 +108,7 @@ bool_t PineFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 				}
 				if(v24 != v22 || !v22) {
 LABEL_61:
-					if(!Tile::solid[level->getTile(j, a4, a5)]) {
+					if(level->getTile(j, a4, a5) == 0) {
 						this->placeBlock(level, j, a4, a5, Tile::leaves->blockID, 1);
 					}
 				}

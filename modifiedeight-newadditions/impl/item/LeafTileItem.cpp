@@ -1,5 +1,7 @@
 #include <item/LeafTileItem.hpp>
 #include <tile/Tile.hpp>
+#include <I18n.hpp>
+
 LeafTileItem::LeafTileItem(int32_t id)
 	: TileItem(id) {
 	this->setMaxDamage(0);
@@ -8,8 +10,16 @@ LeafTileItem::LeafTileItem(int32_t id)
 LeafTileItem::~LeafTileItem() {
 }
 TextureUVCoordinateSet* LeafTileItem::getIcon(int32_t a2, int32_t, bool_t) {
-	return Tile::leaves->getTexture(0, a2);
+	return Tile::leaves->getTexture(0, a2 & 3);
 }
 int32_t LeafTileItem::getLevelDataForAuxValue(int32_t a2) {
-	return a2 | 8;
+	return (a2 & 3) | 8;
+}
+std::string LeafTileItem::getName(const ItemInstance* a3) {
+	return I18n::get(this->getDescriptionId(a3) + ".name");
+}
+std::string LeafTileItem::getDescriptionId(const ItemInstance* a3) {
+	int32_t meta = a3 ? a3->getAuxValue() : 0;
+	int32_t v6 = meta & 3;
+	return TileItem::getDescriptionId() + "." + Tile::WOOD_NAMES[v6];
 }

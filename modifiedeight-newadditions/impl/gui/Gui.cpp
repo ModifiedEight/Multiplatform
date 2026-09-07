@@ -468,8 +468,8 @@ void Gui::render(float a2, bool_t a3, int32_t a4, int32_t a5) {
             }
 
             char_t dbgText1[128];
-            sprintf(dbgText1,
-                    "ModifiedEight New Additions 1.6.5.1pre6 (%d fps)", fps);
+            sprintf(dbgText1, "ModifiedEight New Additions 1.6.5.1 (%d fps)",
+                    fps);
             font->drawShadow(dbgText1, 2.0f, startY, 0xFFFFFFFF);
             startY += 10.0f;
 

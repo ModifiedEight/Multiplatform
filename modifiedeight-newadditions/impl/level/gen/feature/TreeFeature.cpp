@@ -83,7 +83,7 @@ bool_t TreeFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 			while(a5 <= z + v17) {
 				if(abs(m - x) != v17 || abs(a5 - z) != v17 || (random->genrand_int32() & 1) != 0 && k != v28) {
 					int32_t t = level->getTile(m, k, a5);
-					if(t == 0 || !Tile::solid[t]) {
+					if(t == 0) {
 						this->placeBlock(level, m, k, a5, Tile::leaves->blockID, woodMeta);
 					}
 				}
