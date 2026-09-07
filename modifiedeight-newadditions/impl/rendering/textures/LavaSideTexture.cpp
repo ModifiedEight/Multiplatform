@@ -30,28 +30,28 @@ LavaSideTexture::~LavaSideTexture() {
 	if(this->field_40) delete[] this->field_40;
 }
 void LavaSideTexture::tick(){
-	int32_t v1;	  // r7
-	int32_t v3;	  // r3
-	float v4;	  // s21
-	float v5;	  // r0
-	int32_t v6;	  // s21
-	int32_t v7;	  // r2
-	float v8;	  // s15
-	int32_t i;	  // r1
-	int32_t v10;  // r11
-	int32_t v11;  // r6
-	float* v12;	  // r2
-	float* v13;	  // r3
-	int32_t v14;  // r5
-	int32_t v15;  // r8
-	int32_t v16;  // r9
-	float v17;	  // s19
-	float* v18;	  // r3
-	int32_t v19;  // r6
-	int32_t v20;  // r5
-	float* v21;	  // r3
-	float v22;	  // s15
-	uint8_t* v23; // r3
+	int32_t v1;
+	int32_t v3;
+	float v4;
+	float v5;
+	int32_t v6;
+	int32_t v7;
+	float v8;
+	int32_t i;
+	int32_t v10;
+	int32_t v11;
+	float* v12;
+	float* v13;
+	int32_t v14;
+	int32_t v15;
+	int32_t v16;
+	float v17;
+	float* v18;
+	int32_t v19;
+	int32_t v20;
+	float* v21;
+	float v22;
+	uint8_t* v23;
 
 	v1 = 0;
 	++this->field_30;

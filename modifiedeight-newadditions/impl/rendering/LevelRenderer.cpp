@@ -577,6 +577,11 @@ int32_t LevelRenderer::renderChunks(int32_t a2, float a3, bool_t a4) {
     EnableState v17(
         LevelRenderer::getLayerFeature(a2, this->minecraft->options.graphics));
     EnableState v18(a4 ? 2912 : 0);
+    glEnable(0x0B44);
+    glCullFace(0x0405);
+    if (a2 == 1 || a2 == 3) {
+      glAlphaFunc(0x0204, 0.5f);
+    }
     v10 = 0;
     Mob *ve = this->minecraft->viewEntityMaybe;
     glTranslatef(
@@ -930,9 +935,6 @@ int32_t LevelRenderer::renderFarChunks(float a2) {
         glPopMatrix();
       }
     }
-    // EnableState::~EnableState((EnableState*)&v13);
-    // EnableClientState::~EnableClientState(&v12);
-    // EnableClientState::~EnableClientState(&v11);
   }
   glPopMatrix();
   return v4;
@@ -1904,7 +1906,8 @@ void LevelRenderer::renderRainSnow(float partialTicks) {
   }
 
   glDepthMask(GL_TRUE);
-  glEnable(0x0B44);  // GL_CULL_FACE
-  glDisable(0x0BE2); // GL_BLEND
-  glDisable(0x0BC0); // GL_ALPHA_TEST
+  glEnable(0x0B44);
+  glDisable(0x0BE2);
+  glDisable(0x0BC0);
+  glAlphaFunc(0x0204, 0.5f);
 }

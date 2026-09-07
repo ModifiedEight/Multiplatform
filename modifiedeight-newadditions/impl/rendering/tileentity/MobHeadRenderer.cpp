@@ -8,6 +8,7 @@
 #include <unigl.h>
 
 #include <rendering/Tesselator.hpp>
+#include <NinecraftApp.hpp>
 
 MobHeadRenderer *MobHeadRenderer::instance = nullptr;
 
@@ -64,10 +65,13 @@ void MobHeadRenderer::render2DFace(Textures* textures, int32_t headType, float x
   float drawX = x + (size - drawW) * 0.5f;
   float drawY = y + (size - drawH) * 0.5f;
 
+  GLboolean blendWas = glIsEnabled(GL_BLEND);
+  GLboolean alphaTestWas = glIsEnabled(GL_ALPHA_TEST);
+
   glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
+  if (!blendWas) glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_ALPHA_TEST);
+  if (!alphaTestWas) glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER, 0.1f);
   glColor4f(1.0f, 1.0f, 1.0f, alpha);
 
@@ -89,6 +93,11 @@ void MobHeadRenderer::render2DFace(Textures* textures, int32_t headType, float x
     t.vertexUV(drawX,         drawY,         0.0f, f.hat_u0, f.hat_v0);
     t.draw(1);
   }
+
+  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  if (!alphaTestWas) glDisable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER, 0.5f);
+  if (!blendWas) glDisable(GL_BLEND);
 }
 
 MobHeadRenderer::MobHeadRenderer() : TileEntityRenderer() {
@@ -198,6 +207,25 @@ MobHeadRenderer::MobHeadRenderer() : TileEntityRenderer() {
 
 MobHeadRenderer::~MobHeadRenderer() {}
 
+void MobHeadRenderer::renderGuiHead(Textures* textures, int32_t headType, float x, float y, float scale, float alpha) {
+  if (headType < 0 || headType >= 18)
+    headType = 0;
+  if (!instance)
+    return;
+  glPushMatrix();
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_RESCALE_NORMAL);
+  glTranslatef(x + 8.0f * scale, y + 11.5f * scale, 10.0f);
+  glScalef(12.0f * scale, 12.0f * scale, 12.0f * scale);
+  glRotatef(20.0f, 1.0f, 0.0f, 0.0f);
+  glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+  glColor4f(1.0f, 1.0f, 1.0f, alpha);
+  instance->renderHead(headType, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_RESCALE_NORMAL);
+  glPopMatrix();
+}
+
 void MobHeadRenderer::renderHead(int32_t headType, float x, float y, float z,
                                  float rotAngle, float scale) {
   if (headType < 0 || headType >= 18)
@@ -212,16 +240,36 @@ void MobHeadRenderer::renderHead(int32_t headType, float x, float y, float z,
   } else if (EntityRenderer::entityRenderDispatcher &&
              EntityRenderer::entityRenderDispatcher->textures) {
     EntityRenderer::entityRenderDispatcher->textures->loadAndBindTexture(tex);
+  } else if (NinecraftApp::instance && NinecraftApp::instance->texturesPtr) {
+    NinecraftApp::instance->texturesPtr->loadAndBindTexture(tex);
   }
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_ALPHA_TEST);
+  GLboolean lightingWas = glIsEnabled(GL_LIGHTING);
+  GLboolean cullWas = glIsEnabled(GL_CULL_FACE);
+  GLboolean blendWas = glIsEnabled(GL_BLEND);
+  GLboolean alphaTestWas = glIsEnabled(GL_ALPHA_TEST);
+  GLboolean depthTestWas = glIsEnabled(GL_DEPTH_TEST);
+  GLboolean textureWas = glIsEnabled(GL_TEXTURE_2D);
+
+  if (!textureWas) glEnable(GL_TEXTURE_2D);
+  if (!blendWas) glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  if (!alphaTestWas) glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER, 0.1f);
-  GLboolean depthWas = glIsEnabled(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
+  if (cullWas) glDisable(GL_CULL_FACE);
+
   headParts[headType].render(scale);
-  glEnable(GL_CULL_FACE);
-  if (!depthWas)
-    glDisable(GL_DEPTH_TEST);
+
+  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  if (cullWas) glEnable(GL_CULL_FACE);
+  else glDisable(GL_CULL_FACE);
+  if (!alphaTestWas) glDisable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER, 0.5f);
+  if (!blendWas) glDisable(GL_BLEND);
+  if (!depthTestWas) glDisable(GL_DEPTH_TEST);
+  if (!textureWas) glDisable(GL_TEXTURE_2D);
+  if (lightingWas) glEnable(GL_LIGHTING);
+  else glDisable(GL_LIGHTING);
+
   glPopMatrix();
 }
 

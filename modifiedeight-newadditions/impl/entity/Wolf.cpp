@@ -1,6 +1,7 @@
 #include <entity/Wolf.hpp>
 #include <level/Level.hpp>
 #include <level/biome/Biome.hpp>
+#include <tile/Tile.hpp>
 #include <math/Mth.hpp>
 #include <cmath>
 
@@ -78,14 +79,18 @@ bool_t Wolf::canSpawn() {
 	int32_t z = Mth::floor(this->posZ);
 	if (y <= 1 || y >= 127) return 0;
 	int32_t tileBelow = this->level->getTile(x, y - 1, z);
-	if (tileBelow == 78 || tileBelow == 80) { // topSnow or snow
+	if (tileBelow == 78 || tileBelow == 80 || tileBelow == 79) {
 		this->wolfType = 1;
 	}
 	Biome* b = this->level->getBiome(x, z);
 	if (b == Biome::taiga || b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert) {
 		this->wolfType = 1;
 	}
-	return (tileBelow == 2 || tileBelow == 78 || tileBelow == 80) && PathfinderMob::canSpawn();
+	return (tileBelow == 2 || tileBelow == 3 || tileBelow == 78 || tileBelow == 79 || tileBelow == 80 || tileBelow == Tile::grass->blockID || tileBelow == Tile::dirt->blockID || tileBelow == Tile::snow->blockID || tileBelow == Tile::topSnow->blockID || tileBelow == Tile::ice->blockID) && Mob::canSpawn();
+}
+
+bool_t Wolf::removeWhenFarAway() {
+	return !this->isTame;
 }
 
 Mob* Wolf::getBreedOffspring(Animal*) {

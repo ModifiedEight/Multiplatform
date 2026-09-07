@@ -10,7 +10,7 @@ struct HangingEntity: Entity
 	HangingEntity(Level*, int32_t, int32_t, int32_t, int32_t);
 	void init();
 	float offs(int32_t);
-	void setDir(int32_t);
+	virtual void setDir(int32_t);
 	void setPosition(int32_t, int32_t, int32_t);
 
 	virtual ~HangingEntity();

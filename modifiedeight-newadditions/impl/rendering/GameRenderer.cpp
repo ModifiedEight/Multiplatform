@@ -778,6 +778,7 @@ void GameRenderer::renderLevel(float a2) {
 		DisableState v21(3042);
 		glShadeModel(0x1D01u);
 		this->minecraft->texturesPtr->loadAndBindTexture("terrain-atlas.tga");
+		glAlphaFunc(0x204u, 0.5f);
 		levelRenderer->renderChunks(0, a2, this->field_150);
 		levelRenderer->renderChunks(1, a2, this->field_150);
 		levelRenderer->renderChunks(3, a2, this->field_150);

@@ -14,5 +14,6 @@ struct TreeTile : RotatedPillarTile{
 	virtual std::string getTypeDescriptionId(int32_t);
 	virtual int32_t getSpawnResourcesAuxValue(int32_t);
 	virtual TextureUVCoordinateSet* getDirTexture(int32_t, int32_t);
+	virtual int32_t getColor(LevelSource*, int32_t, int32_t, int32_t);
 
 };

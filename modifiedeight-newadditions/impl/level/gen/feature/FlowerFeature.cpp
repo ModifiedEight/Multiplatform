@@ -11,14 +11,14 @@ FlowerFeature::FlowerFeature(int32_t id)
 FlowerFeature::~FlowerFeature() {
 }
 bool_t FlowerFeature::place(Level* level, Random* random, int32_t x, int32_t y, int32_t z){
-	int32_t v9;	 // r6
-	int32_t v10; // r9
-	int32_t v11; // r9
-	int32_t v12; // r8
-	int32_t v13; // r8
-	int32_t v14; // r7
-	int32_t v15; // r7
-	Tile* v16;	 // r0
+	int32_t v9;
+	int32_t v10;
+	int32_t v11;
+	int32_t v12;
+	int32_t v13;
+	int32_t v14;
+	int32_t v15;
+	Tile* v16;
 
 	v9 = 64;
 	do {
@@ -31,7 +31,13 @@ bool_t FlowerFeature::place(Level* level, Random* random, int32_t x, int32_t y, 
 		if(level->isEmptyTile(v11, v13, v15)) {
 			v16 = Tile::tiles[this->id];
 			if(v16->canSurvive(level, v11, v13, v15)) {
-				level->setTileNoUpdate(v11, v13, v15, this->id);
+				int32_t r = random->genrand_int32() % 10;
+				int32_t flowerData = 0;
+				if (r < 4) flowerData = 0;
+				else if (r < 7) flowerData = 1;
+				else if (r < 9) flowerData = 2;
+				else flowerData = 3;
+				level->setTileAndDataNoUpdate(v11, v13, v15, this->id, flowerData);
 			}
 		}
 		--v9;

@@ -7,4 +7,5 @@ struct FlowerTile : Bush{
 
 	virtual ~FlowerTile();
 	virtual bool_t onFertilized(Level*, int32_t, int32_t, int32_t);
+	virtual void spawnResources(Level*, int32_t, int32_t, int32_t, int32_t, float);
 };

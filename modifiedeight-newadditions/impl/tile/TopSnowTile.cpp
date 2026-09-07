@@ -49,16 +49,19 @@ bool_t TopSnowTile::isSolidRender() {
 	return 0;
 }
 bool_t TopSnowTile::mayPlace(Level* level, int32_t x, int32_t y, int32_t z) {
+	Material* curMat = level->getMaterial(x, y, z);
+	if (curMat && curMat->isLiquid()) return 0;
 	int32_t id = level->getTile(x, y - 1, z);
 	if(!id) {
 		return 0;
 	}
+	Material* mat = level->getMaterial(x, y - 1, z);
+	if (mat && mat->isLiquid()) return 0;
 	Tile* t = Tile::tiles[id];
 	if (!t) return 0;
 	if (t->isSolidRender()) return 1;
 	if (id == 44 || id == 126 || (id >= 180 && id <= 210)) return 1;
 	if (t->getRenderShape() == 10 || t->getRenderShape() == 40) return 1;
-	Material* mat = level->getMaterial(x, y - 1, z);
 	return mat && mat->blocksMotion();
 }
 

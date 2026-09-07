@@ -6,6 +6,8 @@
 #include <level/Level.hpp>
 #include <nbt/CompoundTag.hpp>
 #include <tile/Tile.hpp>
+#include <math/Mth.hpp>
+#include <cmath>
 
 Animal::Animal(Level* a2)
 	: AgableMob(a2) {
@@ -142,38 +144,14 @@ void Animal::aiStep() {
 	}
 }
 bool_t Animal::canSpawn() {
-	float posX;	  // s15
-	int32_t v3;	  // r7
-	bool_t v4;	  // fnf
-	float minY;	  // s15
-	int32_t v6;	  // r6
-	bool_t v7;	  // fnf
-	float posZ;	  // s15
-	Level* level; // r0
-	int32_t v11;  // r5
-
-	posX = this->posX;
-	v3 = (int32_t)posX;
-	v4 = posX < (float)(int32_t)posX;
-	minY = this->boundingBox.minY;
-	v6 = (int32_t)minY;
-	if(v4) {
-		--v3;
-	}
-	v7 = minY < (float)(int32_t)minY;
-	posZ = this->posZ;
-	level = this->level;
-	v11 = (int32_t)posZ;
-	if(v7) {
-		--v6;
-	}
-	if(posZ < (float)(int32_t)posZ) {
-		--v11;
-	}
-	return level->getTile(v3, v6 - 1, v11) == Tile::grass->blockID && this->level->getRawBrightness(v3, v6, v11) > 8 && PathfinderMob::canSpawn();
+	int32_t v3 = (int32_t)floorf(this->posX);
+	int32_t v6 = (int32_t)floorf(this->boundingBox.minY);
+	int32_t v11 = (int32_t)floorf(this->posZ);
+	int32_t tBelow = this->level->getTile(v3, v6 - 1, v11);
+	return (tBelow == Tile::grass->blockID || tBelow == Tile::snow->blockID || tBelow == Tile::topSnow->blockID || tBelow == Tile::dirt->blockID || tBelow == Tile::sand->blockID || tBelow == Tile::leaves->blockID || tBelow == Tile::ice->blockID) && this->level->getRawBrightness(v3, v6, v11) >= 4 && Mob::canSpawn();
 }
 bool_t Animal::removeWhenFarAway() {
-	return 0;
+	return !this->isBaby();
 }
 float Animal::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
 	int tCur = this->level->getTile(x, y, z);
@@ -181,7 +159,7 @@ float Animal::getWalkTargetValue(int32_t x, int32_t y, int32_t z) {
 	if (tCur == 8 || tCur == 9 || tBelow == 8 || tBelow == 9) {
 		return -100.0f;
 	}
-	if(tBelow == Tile::grass->blockID) {
+	if (tBelow == Tile::grass->blockID || tBelow == Tile::snow->blockID || tBelow == Tile::topSnow->blockID || tBelow == Tile::leaves->blockID || tBelow == Tile::dirt->blockID || tBelow == Tile::sand->blockID || tBelow == Tile::ice->blockID) {
 		return 10.0f;
 	} else {
 		return this->level->getBrightness(x, y, z) - 0.5f;

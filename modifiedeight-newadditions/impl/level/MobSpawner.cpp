@@ -4,6 +4,8 @@
 #include <entity/MobCategory.hpp>
 #include <entity/MobFactory.hpp>
 #include <entity/AbstractFish.hpp>
+#include <entity/Slime.hpp>
+#include <entity/Frog.hpp>
 #include <entity/Player.hpp>
 #include <level/Level.hpp>
 #include <level/MobSpawner.hpp>
@@ -42,14 +44,30 @@ bool_t MobSpawner::isSpawnPositionOk(const MobCategory &a1, Level *level,
       return 0;
     }
   } else {
-    if (!level->isSolidBlockingTile(x, y - 1, z)) {
-      return 0;
-    }
-    if (level->isSolidBlockingTile(x, y, z)) {
-      return 0;
-    }
-    if (level->getMaterial(x, y, z)->isLiquid()) {
-      return 0;
+    int32_t tileBelow = level->getTile(x, y - 1, z);
+    Biome* b = level->getBiome(x, z);
+    bool isSwamp = (b == Biome::swampland);
+    if (isSwamp) {
+      if (tileBelow != Tile::grass->blockID && tileBelow != Tile::dirt->blockID &&
+          tileBelow != Tile::sand->blockID && tileBelow != Tile::leaves->blockID &&
+          tileBelow != Tile::waterLily->blockID && tileBelow != Tile::water->blockID &&
+          tileBelow != Tile::calmWater->blockID && tileBelow != Tile::clay->blockID &&
+          tileBelow != Tile::gravel->blockID && !level->isSolidBlockingTile(x, y - 1, z)) {
+        return 0;
+      }
+      if (level->isSolidBlockingTile(x, y, z)) {
+        return 0;
+      }
+    } else {
+      if (!level->isSolidBlockingTile(x, y - 1, z)) {
+        return 0;
+      }
+      if (level->isSolidBlockingTile(x, y, z)) {
+        return 0;
+      }
+      if (level->getMaterial(x, y, z)->isLiquid()) {
+        return 0;
+      }
     }
   }
   return 1;
@@ -66,7 +84,7 @@ void MobSpawner::postProcessSpawnMobs(Level *a2, Biome *a3, int32_t a4,
                                       int32_t a5, int32_t a6, int32_t a7,
                                       Random *a8) {
   std::vector<Biome::MobSpawnerData> v61 =
-      *a3->getMobs(MobCategory::creature); // TODO check
+      *a3->getMobs(MobCategory::creature);
   if (!v61.empty()) {
     while (1) {
       float v26 = a8->nextFloat();
@@ -107,7 +125,10 @@ void MobSpawner::postProcessSpawnMobs(Level *a2, Biome *a3, int32_t a4,
       if (v34 < v60) {
         int v56 = 4;
         while (1) {
-          int top = a2->getTopSolidBlock(v35, v50);
+          int top = a2->getHeightmap(v35, v50) + 1;
+          if (top <= 2) {
+            top = a2->getTopSolidBlock(v35, v50) + 1;
+          }
           bool v43;
           if (MobSpawner::isSpawnPositionOk(MobCategory::creature, a2, v35, top,
                                             v50)) {
@@ -118,14 +139,18 @@ void MobSpawner::postProcessSpawnMobs(Level *a2, Biome *a3, int32_t a4,
                 goto LABEL_34;
               }
               continue;
-              // goto LABEL_24;
             }
             mob->moveTo((float)v35 + 0.5, (float)top, (float)v50 + 0.5,
                         a8->nextFloat() * 360.0, 0.0);
-            a2->addEntity(mob);
-            v43 = 1;
-            MobSpawner::finalizeMobSettings(mob, a2, (float)v35 + 0.5,
-                                            (float)top, (float)v50 + 0.5);
+            if (mob->canSpawn() || !a2->isSolidBlockingTile(v35, top, v50)) {
+              a2->addEntity(mob);
+              v43 = 1;
+              MobSpawner::finalizeMobSettings(mob, a2, (float)v35 + 0.5,
+                                              (float)top, (float)v50 + 0.5);
+            } else {
+              delete mob;
+              v43 = 0;
+            }
           } else {
             v43 = 0;
           }
@@ -174,11 +199,11 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
       continue;
     int px = (int)floorf(player->posX * 0.0625f);
     int pz = (int)floorf(player->posZ * 0.0625f);
-    for (int dx = -4; dx <= 4; ++dx) {
-      for (int dz = -4; dz <= 4; ++dz) {
+    for (int dx = -8; dx <= 8; ++dx) {
+      for (int dz = -8; dz <= 8; ++dz) {
         int cx = px + dx;
         int cz = pz + dz;
-        if (level->getLevelData()->getGeneratorVersion() == 0) {
+        if (level->getLevelData() && level->getLevelData()->getGeneratorVersion() == 0) {
           if (cx < 0 || cx > 15 || cz < 0 || cz > 15)
             continue;
         }
@@ -215,7 +240,7 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
     if ((isCreature || isWater) && !animals)
       continue;
 
-    int maxCap = isMonster ? 70 : (isCreature ? 15 : 20);
+    int maxCap = isMonster ? 70 : (isCreature ? 60 : 25);
     int currentCount = level->countInstanceOfBaseType(cat->id);
     if (currentCount >= maxCap)
       continue;
@@ -256,22 +281,22 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
           continue;
       } else if (isMonster) {
         bool foundCaveFloor = false;
-        Player *refPlayer = level->getNearestPlayer((float)x, (float)y, (float)z, -1.0f);
-        int targetY = refPlayer ? ((int)refPlayer->posY + (int)(level->random.genrand_int32() % 24) - 12) : y;
-        if (targetY < 2) targetY = 2;
-        if (targetY > 126) targetY = 126;
-
-        for (int scanY = targetY; scanY > 1; --scanY) {
-          if (!level->isSolidBlockingTile(x, scanY, z) &&
-              level->isSolidBlockingTile(x, scanY - 1, z) &&
-              level->getRawBrightness(x, scanY, z) <= 7) {
-            y = scanY;
+        Biome *b = level->getBiome(x, z);
+        bool isSwamp = (b == Biome::swampland);
+        if (isSwamp && (level->random.genrand_int32() % 2 == 0)) {
+          int topS = level->getHeightmap(x, z) + 1;
+          if (topS >= 45 && topS <= 75) {
+            y = topS;
             foundCaveFloor = true;
-            break;
           }
         }
         if (!foundCaveFloor) {
-          for (int scanY = 126; scanY > targetY; --scanY) {
+          Player *refPlayer = level->getNearestPlayer((float)x, (float)y, (float)z, -1.0f);
+          int targetY = refPlayer ? ((int)refPlayer->posY + (int)(level->random.genrand_int32() % 24) - 12) : y;
+          if (targetY < 2) targetY = 2;
+          if (targetY > 126) targetY = 126;
+
+          for (int scanY = targetY; scanY > 1; --scanY) {
             if (!level->isSolidBlockingTile(x, scanY, z) &&
                 level->isSolidBlockingTile(x, scanY - 1, z) &&
                 level->getRawBrightness(x, scanY, z) <= 7) {
@@ -280,9 +305,30 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
               break;
             }
           }
+          if (!foundCaveFloor) {
+            for (int scanY = 126; scanY > targetY; --scanY) {
+              if (!level->isSolidBlockingTile(x, scanY, z) &&
+                  level->isSolidBlockingTile(x, scanY - 1, z) &&
+                  level->getRawBrightness(x, scanY, z) <= 7) {
+                y = scanY;
+                foundCaveFloor = true;
+                break;
+              }
+            }
+          }
         }
         if (!foundCaveFloor)
           continue;
+      } else if (isCreature) {
+        int top = level->getHeightmap(x, z) + 1;
+        if (top <= 2) {
+          top = level->getTopSolidBlock(x, z) + 1;
+        }
+        if (top > 1 && top < 126) {
+          y = top;
+        } else {
+          continue;
+        }
       } else {
         if (level->isSolidBlockingTile(x, y, z))
           continue;
@@ -297,9 +343,10 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
 
         Biome::MobSpawnerData spawnData(-128, 0, 0, 0);
         AbstractFish* schoolLeader = 0;
+        int targetPackSize = 4;
 
         for (int clusterAttempt = 0;
-             clusterAttempt < 4 && currentCount < maxCap; ++clusterAttempt) {
+             clusterAttempt < 16 && currentCount < maxCap; ++clusterAttempt) {
           if (clusterAttempt > 0) {
             sx += (int)(level->random.genrand_int32() % 6) -
                   (int)(level->random.genrand_int32() % 6);
@@ -307,6 +354,24 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
                   (int)(level->random.genrand_int32() % 2);
             sz += (int)(level->random.genrand_int32() % 6) -
                   (int)(level->random.genrand_int32() % 6);
+          }
+
+          Biome *currentBiome = level->getBiome(sx, sz);
+          bool isSwamp = (currentBiome == Biome::swampland);
+
+          if (isCreature) {
+            int topS = level->getHeightmap(sx, sz) + 1;
+            if (topS <= 2) {
+              topS = level->getTopSolidBlock(sx, sz) + 1;
+            }
+            if (topS > 1 && topS < 126) {
+              sy = topS;
+            }
+          } else if (isMonster && isSwamp && sy >= 45 && sy <= 75) {
+            int topS = level->getHeightmap(sx, sz) + 1;
+            if (topS >= 45 && topS <= 75) {
+              sy = topS;
+            }
           }
 
           if (sy <= 1 || sy >= 127)
@@ -330,7 +395,7 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
               if (!snapped)
                 continue;
             }
-          } else if (level->isSolidBlockingTile(sx, sy, sz) || !level->isSolidBlockingTile(sx, sy - 1, sz)) {
+          } else if (!isSwamp && (level->isSolidBlockingTile(sx, sy, sz) || !level->isSolidBlockingTile(sx, sy - 1, sz))) {
             bool snapped = false;
             for (int dy = 1; dy <= 6; ++dy) {
               if (sy - dy > 1 && !level->isSolidBlockingTile(sx, sy - dy, sz) &&
@@ -363,7 +428,7 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
           float dz = nearest->posZ - fz;
           float distSq = dx * dx + dy * dy + dz * dz;
 
-          if (distSq < 144.0f || distSq > 16384.0f)
+          if (distSq < 64.0f || distSq > 16384.0f)
             continue;
 
           if (!MobSpawner::isSpawnPositionOk(*cat, level, sx, sy, sz))
@@ -397,19 +462,29 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
                 break;
               }
             }
+            targetPackSize = spawnData.max;
+            if (spawnData.min > 0 && spawnData.max >= spawnData.min) {
+              targetPackSize = spawnData.min + (int)(level->random.genrand_int32() % (spawnData.max - spawnData.min + 1));
+            }
+            if (targetPackSize <= 0) targetPackSize = 4;
           }
 
           if (isMonster) {
-            if (spawnData.mobtype != 37 && level->getRawBrightness(sx, sy, sz) > 7)
-              continue;
+            if (spawnData.mobtype != 37 && (!isSwamp || level->getRawBrightness(sx, sy, sz) > 7)) {
+              if (level->getRawBrightness(sx, sy, sz) > 7)
+                continue;
+            }
           } else if (isCreature) {
             int tileBelow = level->getTile(sx, sy - 1, sz);
             if (tileBelow != Tile::grass->blockID && tileBelow != Tile::snow->blockID &&
                 tileBelow != Tile::ice->blockID && tileBelow != Tile::topSnow->blockID &&
                 tileBelow != Tile::sand->blockID && tileBelow != Tile::dirt->blockID &&
-                tileBelow != Tile::leaves->blockID && tileBelow != Tile::rock->blockID)
+                tileBelow != Tile::leaves->blockID && tileBelow != Tile::rock->blockID &&
+                tileBelow != Tile::waterLily->blockID && tileBelow != Tile::water->blockID &&
+                tileBelow != Tile::calmWater->blockID && tileBelow != Tile::clay->blockID &&
+                tileBelow != Tile::gravel->blockID)
               continue;
-            if (spawnData.mobtype != 37 && spawnData.mobtype != 40 && level->getRawBrightness(sx, sy, sz) < 7)
+            if (spawnData.mobtype != 37 && spawnData.mobtype != 40 && level->getRawBrightness(sx, sy, sz) < 5)
               continue;
           }
 
@@ -421,6 +496,12 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
           if (mob->canSpawn() || !level->isSolidBlockingTile(sx, sy, sz)) {
             level->addEntity(mob);
             MobSpawner::finalizeMobSettings(mob, level, fx, fy, fz);
+            if (spawnData.mobtype == 37) {
+              Slime *slm = (Slime*)mob;
+              int r = (int)(level->random.genrand_int32() % 10);
+              int sz = (r < 5) ? 1 : ((r < 8) ? 2 : 4);
+              slm->setSlimeSize(sz);
+            }
             if (spawnData.mobtype >= 27 && spawnData.mobtype <= 30) {
               AbstractFish* fish = (AbstractFish*)mob;
               if (!schoolLeader) {
@@ -432,7 +513,7 @@ bool_t MobSpawner::tick(Level *level, bool_t hostiles, bool_t animals) {
             ++currentCount;
             ++totalSpawned;
             ++packSpawned;
-            if (packSpawned >= mob->getMaxSpawnClusterSize()) {
+            if (packSpawned >= targetPackSize || packSpawned >= mob->getMaxSpawnClusterSize()) {
               break;
             }
           } else {

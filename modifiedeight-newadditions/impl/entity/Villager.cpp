@@ -308,23 +308,35 @@ void Villager::readAdditionalSaveData(CompoundTag* tag) {
 	this->houseY = tag->getInt("HouseY");
 	this->houseZ = tag->getInt("HouseZ");
 	this->hasBed = tag->getByte("HasBed") != 0;
-	this->profession = tag->getInt("Profession");
-	this->tradeCount = tag->getInt("TradeCount");
-	if (this->tradeCount > 5) this->tradeCount = 5;
-	for (int32_t i = 0; i < this->tradeCount; ++i) {
-		char keyBuf[32];
-		snprintf(keyBuf, sizeof(keyBuf), "TradeInId%d", i);
-		this->trades[i].inputId = tag->getInt(keyBuf);
-		snprintf(keyBuf, sizeof(keyBuf), "TradeInCnt%d", i);
-		this->trades[i].inputCount = tag->getInt(keyBuf);
-		snprintf(keyBuf, sizeof(keyBuf), "TradeInMeta%d", i);
-		this->trades[i].inputMeta = tag->getInt(keyBuf);
-		snprintf(keyBuf, sizeof(keyBuf), "TradeOutId%d", i);
-		this->trades[i].outputId = tag->getInt(keyBuf);
-		snprintf(keyBuf, sizeof(keyBuf), "TradeOutCnt%d", i);
-		this->trades[i].outputCount = tag->getInt(keyBuf);
-		snprintf(keyBuf, sizeof(keyBuf), "TradeOutMeta%d", i);
-		this->trades[i].outputMeta = tag->getInt(keyBuf);
+	if (tag->contains("Profession")) {
+		this->profession = tag->getInt("Profession");
+	}
+	switch (this->profession % 5) {
+		case 0: this->skin = "mob/farmer.png"; break;
+		case 1: this->skin = "mob/librarian.png"; break;
+		case 2: this->skin = "mob/priest.png"; break;
+		case 3: this->skin = "mob/smith.png"; break;
+		case 4: this->skin = "mob/butcher.png"; break;
+		default: this->skin = "mob/villager.png"; break;
+	}
+	if (tag->contains("TradeCount")) {
+		this->tradeCount = tag->getInt("TradeCount");
+		if (this->tradeCount > 5) this->tradeCount = 5;
+		for (int32_t i = 0; i < this->tradeCount; ++i) {
+			char keyBuf[32];
+			snprintf(keyBuf, sizeof(keyBuf), "TradeInId%d", i);
+			this->trades[i].inputId = tag->getInt(keyBuf);
+			snprintf(keyBuf, sizeof(keyBuf), "TradeInCnt%d", i);
+			this->trades[i].inputCount = tag->getInt(keyBuf);
+			snprintf(keyBuf, sizeof(keyBuf), "TradeInMeta%d", i);
+			this->trades[i].inputMeta = tag->getInt(keyBuf);
+			snprintf(keyBuf, sizeof(keyBuf), "TradeOutId%d", i);
+			this->trades[i].outputId = tag->getInt(keyBuf);
+			snprintf(keyBuf, sizeof(keyBuf), "TradeOutCnt%d", i);
+			this->trades[i].outputCount = tag->getInt(keyBuf);
+			snprintf(keyBuf, sizeof(keyBuf), "TradeOutMeta%d", i);
+			this->trades[i].outputMeta = tag->getInt(keyBuf);
+		}
 	}
 	if (this->tradeCount <= 0) {
 		this->initTrades();

@@ -18,5 +18,6 @@ struct Ocelot: Animal {
 	virtual void aiStep();
 	virtual bool_t interactWithPlayer(Player*);
 	virtual bool_t canSpawn();
+	virtual bool_t removeWhenFarAway();
 	virtual Mob* getBreedOffspring(Animal*);
 };

@@ -135,5 +135,7 @@ void ArmorStandRenderer::render(Entity *entity, float x, float y, float z,
     }
   }
 
+  glDisable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER, 0.5f);
   glPopMatrix();
 }

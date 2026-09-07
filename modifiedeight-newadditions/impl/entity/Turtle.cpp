@@ -64,6 +64,10 @@ bool_t Turtle::canSpawn() {
 	return (tileBelow == Tile::sand->blockID || tileBelow == Tile::grass->blockID || this->isInWater()) && PathfinderMob::canSpawn();
 }
 
+bool_t Turtle::isWaterMob() {
+	return 1;
+}
+
 Mob* Turtle::getBreedOffspring(Animal*) {
 	return new Turtle(this->level);
 }

@@ -20,6 +20,8 @@ struct ItemFrame : HangingEntity {
 	virtual void dropItem();
 	virtual bool_t hurt(Entity*, int32_t);
 	virtual bool_t interactWithPlayer(Player*);
+	virtual void setDir(int32_t);
+	virtual bool_t survives();
 	void setItem(const ItemInstance&);
 	void removeFramedItem();
 	ItemInstance getDisplayedItem() const;

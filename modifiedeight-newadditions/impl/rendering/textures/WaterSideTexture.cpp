@@ -8,8 +8,8 @@ bool_t WaterSideTexture::isEnabled() {
 	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateWater) : 1;
 }
 
-WaterSideTexture::WaterSideTexture()
-	: DynamicTexture(*Tile::water->getTexture(3), 2) {
+WaterSideTexture::WaterSideTexture(const TextureUVCoordinateSet& a2)
+	: DynamicTexture(a2, 2) {
 	this->field_28 = 0;
 	this->field_2C = 0;
 	this->field_30 = 0;

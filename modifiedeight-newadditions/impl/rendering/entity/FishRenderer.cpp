@@ -30,10 +30,12 @@ void FishRenderer::render(Entity* entity, float x, float y, float z, float rot, 
 		glPopMatrix();
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5f);
 		return;
 	}
 
 	MobRenderer::render(entity, x, y, z, rot, a6);
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.5f);
 }

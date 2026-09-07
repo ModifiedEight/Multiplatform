@@ -84,7 +84,7 @@ std::vector<Biome::MobSpawnerData>* Biome::getMobs(const MobCategory& cat){
 	return &Biome::_emptyMobList;
 }
 float Biome::getCreatureProbability(void){
-	return 0.08f;
+	return 0.30f;
 }
 
 Biome::Biome(void){
@@ -169,44 +169,54 @@ void Biome::recalc(void) {
 
 void Biome::initBiomes(void) {
 	Biome::rainForest = (new RainforestBiome())->setColor(0x537B09)->setName("Rainforest")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
-	Biome::rainForest->creatureVec.emplace_back(Biome::MobSpawnerData(15, 22, 1, 3));
+	Biome::rainForest->creatureVec.emplace_back(Biome::MobSpawnerData(30, 22, 1, 3));
 	Biome::rainForest->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
-	Biome::swampland = (new SwampBiome())->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x8BAF48)->setTemperatureAndDownfall(0.8f, 0.9f);
-	Biome::swampland->monsterVec.emplace_back(Biome::MobSpawnerData(25, 37, 2, 4));
-	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(15, 37, 2, 4));
-	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(15, 40, 1, 3));
-	Biome::swampland->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
+	Biome::swampland = (new SwampBiome())->clearMobs(1, 0, 0)->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x6A7039)->setTemperatureAndDownfall(0.8f, 0.9f);
+	Biome::swampland->monsterVec.emplace_back(Biome::MobSpawnerData(120, 37, 4, 8));
+	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(120, 40, 3, 6));
+	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(100, 37, 4, 8));
+	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(10, 10, 1, 2));
+	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(10, 12, 1, 2));
+	Biome::swampland->waterCreatureVec.emplace_back(Biome::MobSpawnerData(10, 39, 1, 3));
 	Biome::seasonalForest = (new Biome())->setColor(0x56621)->setName("Seasonal Forest");
 	Biome::forest = (new ForestBiome())->setColor(0x56621)->setName("Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
-	Biome::forest->creatureVec.emplace_back(Biome::MobSpawnerData(8, 14, 2, 4));
-	Biome::forest->creatureVec.emplace_back(Biome::MobSpawnerData(4, 38, 1, 3));
+	Biome::forest->creatureVec.emplace_back(Biome::MobSpawnerData(30, 14, 2, 4));
+	Biome::forest->creatureVec.emplace_back(Biome::MobSpawnerData(25, 38, 1, 3));
 	Biome::savanna = (new FlatBiome())->setColor(0xD9E023)->setName("Savanna")->setTemperatureAndDownfall(0.8f, 0.4f);
 	Biome::shrubland = (new Biome())->setColor(0xA1AD20)->setName("Shrubland");
 	Biome::taiga = (new TaigaBiome())->setColor(0xB6659)->setName("Taiga")->setSnowCovered()->setLeafColor(0x4EBA3)->setTemperatureAndDownfall(0.05f, 0.8f);
-	Biome::taiga->creatureVec.emplace_back(Biome::MobSpawnerData(10, 14, 2, 4));
-	Biome::taiga->creatureVec.emplace_back(Biome::MobSpawnerData(10, 38, 2, 4));
+	Biome::taiga->creatureVec.emplace_back(Biome::MobSpawnerData(45, 14, 2, 4));
+	Biome::taiga->creatureVec.emplace_back(Biome::MobSpawnerData(45, 38, 2, 4));
 	Biome::desert = (new FlatBiome())->setColor(0xFA9418)->clearMobs(1, 1, 0)->setName("Desert")->setTemperatureAndDownfall(2.0f, 0.0f);
 	Biome::plains = (new FlatBiome())->setColor(0x8DB360)->setName("Plains")->setTemperatureAndDownfall(0.8f, 0.4f);
 	Biome::plains->creatureVec.emplace_back(Biome::MobSpawnerData(6, 39, 1, 3));
 	Biome::iceDesert = (new FlatBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Desert")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0f, 0.5f);
+	Biome::iceDesert->creatureVec.emplace_back(Biome::MobSpawnerData(60, 26, 1, 3));
 	Biome::tundra = (new Biome())->setColor(0x163933)->setName("Tundra")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.05f, 0.8f);
-	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(4, 26, 1, 2));
-	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(8, 14, 2, 4));
-	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(10, 38, 2, 4));
-	Biome::jungle = (new JungleBiome())->setColor(0x537B09)->setName("Jungle")->setLeafColor(0x537B09)->setTemperatureAndDownfall(1.2f, 0.9f);
-	Biome::jungle->creatureVec.emplace_back(Biome::MobSpawnerData(20, 22, 1, 3));
+	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(60, 26, 1, 3));
+	Biome::tundra->monsterVec.emplace_back(Biome::MobSpawnerData(30, 26, 1, 2));
+	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(45, 14, 2, 4));
+	Biome::tundra->creatureVec.emplace_back(Biome::MobSpawnerData(45, 38, 2, 4));
+	Biome::jungle = (new JungleBiome())->setColor(0x537B09)->setName("Jungle")->setLeafColor(0x30BB0B)->setTemperatureAndDownfall(0.95f, 0.9f);
+	Biome::jungle->creatureVec.emplace_back(Biome::MobSpawnerData(50, 22, 1, 3));
+	Biome::jungle->monsterVec.emplace_back(Biome::MobSpawnerData(25, 22, 1, 1));
 	Biome::jungle->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
 	Biome::equatorialRainforest = (new EquatorialRainforestBiome())->setColor(0x1F4715)->setName("Equatorial Rainforest")->setLeafColor(0x2A621E)->setTemperatureAndDownfall(1.3f, 1.0f);
-	Biome::equatorialRainforest->monsterVec.emplace_back(Biome::MobSpawnerData(30, 37, 2, 5));
-	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(25, 37, 2, 5));
-	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(15, 22, 1, 3));
+	Biome::equatorialRainforest->monsterVec.emplace_back(Biome::MobSpawnerData(35, 37, 2, 5));
+	Biome::equatorialRainforest->monsterVec.emplace_back(Biome::MobSpawnerData(20, 22, 1, 1));
+	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(35, 37, 2, 5));
+	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(35, 40, 1, 3));
+	Biome::equatorialRainforest->creatureVec.emplace_back(Biome::MobSpawnerData(45, 22, 1, 3));
 	Biome::equatorialRainforest->waterCreatureVec.emplace_back(Biome::MobSpawnerData(20, 39, 2, 6));
 	Biome::birchForest = (new BirchForestBiome())->setColor(0x56621)->setName("Birch Forest")->setLeafColor(0x4EBA31)->setTemperatureAndDownfall(0.7f, 0.8f);
-	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(8, 14, 2, 4));
-	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(4, 38, 1, 3));
+	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(30, 14, 2, 4));
+	Biome::birchForest->creatureVec.emplace_back(Biome::MobSpawnerData(25, 38, 1, 3));
 	Biome::mountain = (new MountainBiome())->setColor(0xA1AD20)->setName("Mountain")->setTemperatureAndDownfall(0.2f, 0.3f);
 	Biome::icePeaks = (new IcePeaksBiome())->setColor(0xFFFFFF)->clearMobs(1, 0, 0)->setName("Ice Peaks")->setSnowCovered()->setLeafColor(0xC4D339)->setTemperatureAndDownfall(0.0f, 0.5f);
-	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(10, 26, 1, 2));
+	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(60, 26, 1, 3));
+	Biome::icePeaks->monsterVec.emplace_back(Biome::MobSpawnerData(30, 26, 1, 2));
+	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(45, 14, 2, 4));
+	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(45, 38, 2, 4));
 	Biome::recalc();
 }
 

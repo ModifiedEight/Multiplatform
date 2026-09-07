@@ -82,7 +82,11 @@ bool_t Ocelot::canSpawn() {
 	int32_t z = (int32_t)floorf(this->posZ);
 	if (y <= 1 || y >= 127) return 0;
 	int32_t tileBelow = this->level->getTile(x, y - 1, z);
-	return (tileBelow == Tile::grass->blockID || tileBelow == Tile::leaves->blockID || tileBelow == Tile::dirt->blockID) && PathfinderMob::canSpawn();
+	return (tileBelow == Tile::grass->blockID || tileBelow == Tile::leaves->blockID || tileBelow == Tile::dirt->blockID || tileBelow == Tile::sand->blockID || tileBelow == Tile::wood->blockID) && Mob::canSpawn();
+}
+
+bool_t Ocelot::removeWhenFarAway() {
+	return !this->isTrusting;
 }
 
 Mob* Ocelot::getBreedOffspring(Animal* mate) {

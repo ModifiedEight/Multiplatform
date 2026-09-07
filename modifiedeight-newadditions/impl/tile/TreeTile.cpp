@@ -1,5 +1,6 @@
 #include <tile/TreeTile.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
 #include <tile/material/Material.hpp>
 #include <rendering/TextureAtlasTextureItem.hpp>
 
@@ -97,4 +98,14 @@ TextureUVCoordinateSet* TreeTile::getDirTexture(int32_t a2, int32_t a3) {
 	}
 	this->textureUV = *v6;
 	return &this->textureUV;
+}
+
+int32_t TreeTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level) {
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) {
+			return 0xA8A296;
+		}
+	}
+	return 0xFFFFFF;
 }

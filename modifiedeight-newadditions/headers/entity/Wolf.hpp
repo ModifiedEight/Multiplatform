@@ -19,5 +19,6 @@ struct Wolf: Animal {
 	virtual std::string getDeathSound();
 	virtual void aiStep();
 	virtual bool_t canSpawn();
+	virtual bool_t removeWhenFarAway();
 	virtual Mob* getBreedOffspring(Animal*);
 };

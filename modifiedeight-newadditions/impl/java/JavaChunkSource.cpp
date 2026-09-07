@@ -6,6 +6,8 @@
 #include <level/chunk/EmptyLevelChunk.hpp>
 #include <level/storage/DataLayer.hpp>
 #include <level/dimension/Dimension.hpp>
+#include <level/BiomeSource.hpp>
+#include <level/biome/Biome.hpp>
 #include <tile/Tile.hpp>
 #include <tile/entity/TileEntity.hpp>
 #include <string.h>
@@ -207,7 +209,14 @@ bool_t JavaChunkSource::shouldSave() {
 void JavaChunkSource::saveAll(bool_t) {
 }
 
-std::vector<Biome::MobSpawnerData> JavaChunkSource::getMobsAt(const MobCategory&, int32_t, int32_t, int32_t) {
+std::vector<Biome::MobSpawnerData> JavaChunkSource::getMobsAt(const MobCategory& a3, int32_t a4, int32_t a5, int32_t a6) {
+	BiomeSource* bs = this->level ? this->level->getBiomeSource() : 0;
+	if(bs) {
+		Biome* v10 = bs->getBiome(a4, a6);
+		if(v10) {
+			return std::vector<Biome::MobSpawnerData>(*v10->getMobs(a3));
+		}
+	}
 	return std::vector<Biome::MobSpawnerData>();
 }
 

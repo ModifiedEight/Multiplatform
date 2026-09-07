@@ -95,35 +95,33 @@ void Touch::InventoryPane::renderSelectedItem(std::vector<ScrollingPane::GridIte
 		if(a2[v11].field_0 == this->field_25C && this->invTicker > 0) {
 			v14 = a3[v13];
 			if(v14) {
-				a4.beginOverride();
 				v15 = (float)this->field_4C.height * (float)(v13 / this->field_8);
 				v16 = (int32_t)Gui::floorAlignToScreenPixel((float)((float)((float)this->field_264 + (float)((float)this->field_4C.width * (float)(v13 % this->field_8))) + 4.0) + (float)this->field_228.minX);
 				v17 = Gui::floorAlignToScreenPixel((float)((float)(v15 + (float)this->field_264) + 4.0) + (float)this->field_228.minY);
 				tileClass = v14->tileClass;
 				v19 = (float)(-15 * this->invTicker + 255) / 255.0;
-				if(tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
-					int ht = MobHeadTile::getHeadType(tileClass->blockID);
-					MobHeadRenderer::render2DFace(this->minecraft->texturesPtr, ht, (float)v16 + 2.0f, (float)(int32_t)v17 + 2.0f, 12.0f, 1.0f);
-					a4.voidBeginAndEndCalls(0);
-					a4.endOverrideAndDraw();
-					return;
-				}
-				if(tileClass) {
-					v20 = tileClass->getRenderShape();
-					TileRenderer::canRender(v20);
-					this->minecraft->texturesPtr->loadAndBindTexture("terrain-atlas.tga");
-				} else {
-					this->minecraft->texturesPtr->loadAndBindTexture("items-opaque.png");
-				}
 				v21 = (float)v16;
 				v22 = (float)(int32_t)v17;
-				ItemRenderer::renderGuiItemInChunk(IRCT_THREE, this->minecraft->texturesPtr, v14, v21, v22, v19, 1.0, 1.0);
+				if(tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
+					int ht = MobHeadTile::getHeadType(tileClass->blockID);
+					MobHeadRenderer::render2DFace(this->minecraft->texturesPtr, ht, v21 + 2.0f, v22 + 2.0f, 12.0f, v19);
+				} else {
+					a4.beginOverride();
+					if(tileClass) {
+						v20 = tileClass->getRenderShape();
+						TileRenderer::canRender(v20);
+						this->minecraft->texturesPtr->loadAndBindTexture("terrain-atlas.tga");
+					} else {
+						this->minecraft->texturesPtr->loadAndBindTexture("items-opaque.png");
+					}
+					ItemRenderer::renderGuiItemInChunk(IRCT_THREE, this->minecraft->texturesPtr, v14, v21, v22, v19, 1.0, 1.0);
+					a4.endOverrideAndDraw();
+				}
 				if(v13 == this->field_254 && this->field_258 >= 0.0) {
 					a5 = &a2[v11];
 					a6 = v21;
 					a7 = v22;
 				}
-				a4.endOverrideAndDraw();
 				return;
 			}
 		}

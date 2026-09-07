@@ -223,14 +223,24 @@ void NinecraftApp::init(void){
 	this->levelStorageSource = new ExternalFileLevelStorageSource(this->dataPathMaybe, this->field_CC4);
 	this->field_CFC = 0;
 	this->texturesPtr = new Textures(&this->options, this->platform());
-	this->texturesPtr->addDynamicTexture(new FireTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUV(0)));
-	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUVCount() > 1) {
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("fire") && NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUVCount() > 0) {
+		this->texturesPtr->addDynamicTexture(new FireTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUV(0)));
+	}
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("fire") && NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUVCount() > 1) {
 		this->texturesPtr->addDynamicTexture(new FireTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("fire")->getUV(1)));
 	}
-	this->texturesPtr->addDynamicTexture(new WaterTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("still_water")->getUV(0)));
-	this->texturesPtr->addDynamicTexture(new WaterSideTexture());
-	this->texturesPtr->addDynamicTexture(new LavaTexture());
-	this->texturesPtr->addDynamicTexture(new LavaSideTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_lava")->getUV(0)));
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("still_water") && NinecraftApp::_terrainTextureAtlas->getTextureItem("still_water")->getUVCount() > 0) {
+		this->texturesPtr->addDynamicTexture(new WaterTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("still_water")->getUV(0)));
+	}
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_water") && NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_water")->getUVCount() > 0) {
+		this->texturesPtr->addDynamicTexture(new WaterSideTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_water")->getUV(0)));
+	}
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("still_lava") && NinecraftApp::_terrainTextureAtlas->getTextureItem("still_lava")->getUVCount() > 0) {
+		this->texturesPtr->addDynamicTexture(new LavaTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("still_lava")->getUV(0)));
+	}
+	if (NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_lava") && NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_lava")->getUVCount() > 0) {
+		this->texturesPtr->addDynamicTexture(new LavaSideTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("flowing_lava")->getUV(0)));
+	}
 	if (NinecraftApp::_terrainTextureAtlas->field_4.count("seagrass")) {
 		this->texturesPtr->addDynamicTexture(new SeagrassTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("seagrass")->getUV(0)));
 	}
@@ -239,101 +249,6 @@ void NinecraftApp::init(void){
 	}
 	if (NinecraftApp::_terrainTextureAtlas->field_4.count("tall_seagrass_top")) {
 		this->texturesPtr->addDynamicTexture(new TallSeagrassTopTexture(*NinecraftApp::_terrainTextureAtlas->getTextureItem("tall_seagrass_top")->getUV(0)));
-	}
-	struct FoliageDef {
-		const char* name;
-		int uvIndex;
-		float speed;
-		float phase;
-		float amplitude;
-		int fixedRows;
-		bool isVine;
-		bool isLeaf;
-		bool isReeds;
-		bool isWaterlily;
-		bool isDoublePlantTop;
-		bool isDoublePlantBottom;
-	};
-	static const FoliageDef defs[] = {
-		{"tallgrass", 0, 0.035f, 0.0f, 0.8f, 2, false, false, false, false, false, false},
-		{"tallgrass", 1, 0.035f, 0.0f, 0.8f, 2, false, false, false, false, false, false},
-		{"tallgrass", 2, 0.026f, 1.8f, 0.7f, 2, false, false, false, false, false, false},
-		{"tallgrass", 3, 0.035f, 0.0f, 0.8f, 2, false, false, false, false, false, false},
-		{"tallgrass", 4, 0.026f, 1.8f, 0.7f, 2, false, false, false, false, false, false},
-		{"wheat_stage_x", 0, 0.032f, 0.5f, 0.5f, 3, false, false, false, false, false, false},
-		{"wheat_stage_x", 1, 0.032f, 0.8f, 0.6f, 3, false, false, false, false, false, false},
-		{"wheat_stage_x", 2, 0.032f, 1.1f, 0.6f, 3, false, false, false, false, false, false},
-		{"wheat_stage_x", 3, 0.032f, 1.4f, 0.7f, 3, false, false, false, false, false, false},
-		{"wheat_stage_x", 4, 0.032f, 1.7f, 0.7f, 2, false, false, false, false, false, false},
-		{"wheat_stage_x", 5, 0.032f, 2.0f, 0.8f, 2, false, false, false, false, false, false},
-		{"wheat_stage_x", 6, 0.032f, 2.3f, 0.8f, 2, false, false, false, false, false, false},
-		{"wheat_stage_x", 7, 0.032f, 2.6f, 0.9f, 2, false, false, false, false, false, false},
-		{"carrots_stage_x", 0, 0.030f, 0.5f, 0.5f, 3, false, false, false, false, false, false},
-		{"carrots_stage_x", 1, 0.030f, 1.0f, 0.6f, 3, false, false, false, false, false, false},
-		{"carrots_stage_x", 2, 0.030f, 1.5f, 0.7f, 2, false, false, false, false, false, false},
-		{"carrots_stage_x", 3, 0.030f, 2.0f, 0.8f, 2, false, false, false, false, false, false},
-		{"potatoes_stage_x", 0, 0.030f, 0.7f, 0.5f, 3, false, false, false, false, false, false},
-		{"potatoes_stage_x", 1, 0.030f, 1.2f, 0.6f, 3, false, false, false, false, false, false},
-		{"potatoes_stage_x", 2, 0.030f, 1.7f, 0.7f, 2, false, false, false, false, false, false},
-		{"potatoes_stage_x", 3, 0.030f, 2.2f, 0.8f, 2, false, false, false, false, false, false},
-		{"beetroot_stage_x", 0, 0.028f, 0.6f, 0.5f, 3, false, false, false, false, false, false},
-		{"beetroot_stage_x", 1, 0.028f, 1.1f, 0.6f, 3, false, false, false, false, false, false},
-		{"beetroot_stage_x", 2, 0.028f, 1.6f, 0.7f, 2, false, false, false, false, false, false},
-		{"beetroot_stage_x", 3, 0.028f, 2.1f, 0.8f, 2, false, false, false, false, false, false},
-		{"pumpkin_stem", 0, 0.030f, 1.3f, 0.7f, 3, false, false, false, false, false, false},
-		{"pumpkin_stem", 1, 0.030f, 2.3f, 0.8f, 2, false, false, false, false, false, false},
-		{"melon_stem", 0, 0.030f, 1.5f, 0.7f, 3, false, false, false, false, false, false},
-		{"melon_stem", 1, 0.030f, 2.5f, 0.8f, 2, false, false, false, false, false, false},
-		{"sapling", 0, 0.032f, 4.2f, 0.7f, 3, false, false, false, false, false, false},
-		{"sapling", 1, 0.028f, 1.4f, 0.7f, 3, false, false, false, false, false, false},
-		{"sapling", 2, 0.030f, 2.8f, 0.7f, 3, false, false, false, false, false, false},
-		{"sapling", 3, 0.029f, 0.5f, 0.7f, 3, false, false, false, false, false, false},
-		{"leaves", 0, 0.035f, 0.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves", 1, 0.035f, 1.5f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves", 2, 0.035f, 3.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves", 3, 0.035f, 4.5f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_opaque", 0, 0.035f, 0.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_opaque", 1, 0.035f, 1.5f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_opaque", 2, 0.035f, 3.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_opaque", 3, 0.035f, 4.5f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_jungle", 0, 0.035f, 2.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_acacia", 0, 0.035f, 3.5f, 1.0f, 0, false, true, false, false, false, false},
-		{"leaves_big_oak", 0, 0.035f, 5.0f, 1.0f, 0, false, true, false, false, false, false},
-		{"flower_dandelion", 0, 0.025f, 3.1f, 0.7f, 3, false, false, false, false, false, false},
-		{"flower_rose_blue", 0, 0.026f, 4.8f, 0.7f, 3, false, false, false, false, false, false},
-		{"flower_paeonia", 0, 0.028f, 1.2f, 0.7f, 3, false, false, false, false, false, false},
-		{"flower_oxeye_daisy", 0, 0.025f, 2.7f, 0.7f, 3, false, false, false, false, false, false},
-		{"flower_houstonia", 0, 0.030f, 0.9f, 0.6f, 3, false, false, false, false, false, false},
-		{"flower_blue_orchid", 0, 0.024f, 5.1f, 0.8f, 3, false, false, false, false, false, false},
-		{"flower_allium", 0, 0.025f, 3.8f, 0.7f, 3, false, false, false, false, false, false},
-		{"mushroom_red", 0, 0.025f, 1.5f, 0.6f, 3, false, false, false, false, false, false},
-		{"mushroom_brown", 0, 0.025f, 2.5f, 0.6f, 3, false, false, false, false, false, false},
-		{"reeds", 0, 0.022f, 1.5f, 0.8f, 2, false, false, true, false, false, false},
-		{"cactus", 0, 0.015f, 0.0f, 0.4f, 4, false, false, false, false, false, false},
-		{"cactus", 1, 0.015f, 0.0f, 0.4f, 4, false, false, false, false, false, false},
-		{"cactus", 2, 0.015f, 0.0f, 0.4f, 4, false, false, false, false, false, false},
-		{"vine", 0, 0.028f, 0.0f, 1.2f, 0, true, false, false, false, false, false},
-		{"waterlily", 0, 0.016f, 0.5f, 0.9f, 0, false, false, false, true, false, false},
-		{"double_plant_grass_top", 0, 0.035f, 0.7f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_grass_bottom", 0, 0.035f, 0.7f, 1.4f, 0, false, false, false, false, false, true},
-		{"double_plant_fern_top", 0, 0.028f, 2.3f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_fern_bottom", 0, 0.028f, 2.3f, 1.4f, 0, false, false, false, false, false, true},
-		{"double_plant_rose_top", 0, 0.028f, 3.9f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_rose_bottom", 0, 0.028f, 3.9f, 1.4f, 0, false, false, false, false, false, true},
-		{"double_plant_sunflower_front", 0, 0.028f, 1.9f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_sunflower_top", 0, 0.028f, 1.9f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_paeonia_top", 0, 0.028f, 4.7f, 1.4f, 0, false, false, false, false, true, false},
-		{"double_plant_paeonia_bottom", 0, 0.028f, 4.7f, 1.4f, 0, false, false, false, false, false, true},
-		{"double_plant_syringa_top", 0, 0.028f, 2.8f, 1.4f, 0, false, false, false, false, true, false}
-	};
-	for (const auto& def : defs) {
-		auto it = NinecraftApp::_terrainTextureAtlas->field_4.find(def.name);
-		if (it != NinecraftApp::_terrainTextureAtlas->field_4.end() && def.uvIndex < it->second.getUVCount()) {
-			TextureUVCoordinateSet* uv = it->second.getUV(def.uvIndex);
-			if (uv && uv->minX >= 0.0f) {
-				this->texturesPtr->addDynamicTexture(new FoliageTexture(*uv, def.speed, def.phase, def.amplitude, def.fixedRows, def.isVine, def.isLeaf, def.isReeds, def.isWaterlily, def.isDoublePlantTop, def.isDoublePlantBottom));
-			}
-		}
 	}
 	this->gui.texturesLoaded(this->texturesPtr);
 	this->field_190 = 0;

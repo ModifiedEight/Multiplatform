@@ -1,11 +1,12 @@
 #include <tile/FlowerTile.hpp>
 #include <level/Level.hpp>
+#include <item/ItemInstance.hpp>
 
 bool_t FlowerTile::_randomWalk(struct Level* level, int32_t& x, int32_t& y, int32_t& z, int32_t a6) {
-	Random* p_randomInstance; // r5
-	int32_t i;				  // r10
-	int32_t zz;				  // r3
-	uint32_t v13;			  // [sp+0h] [bp-30h]
+	Random* p_randomInstance;
+	int32_t i;
+	int32_t zz;
+	uint32_t v13;
 
 	p_randomInstance = &level->random;
 	for(i = 0;; ++i) {
@@ -30,13 +31,13 @@ FlowerTile::FlowerTile(int32_t id, const std::string& name)
 FlowerTile::~FlowerTile() {
 }
 bool_t FlowerTile::onFertilized(Level* level, int32_t x, int32_t y, int32_t z) {
-	Random* p_random; // r9
-	int32_t i;		  // r6
-	int8_t v10;		  // r0
-	Tile* v11;		  // r4
-	int32_t rx;		  // [sp+1Ch] [bp-8h] BYREF
-	int32_t ry;		  // [sp+20h] [bp-4h] BYREF
-	int32_t rz;		  // [sp+24h] [bp+0h] BYREF
+	Random* p_random;
+	int32_t i;
+	int8_t v10;
+	Tile* v11;
+	int32_t rx;
+	int32_t ry;
+	int32_t rz;
 
 	p_random = &level->random;
 	for(i = 16; i != 64; ++i) {
@@ -62,4 +63,13 @@ LABEL_8:
 		}
 	}
 	return 1;
+}
+
+void FlowerTile::spawnResources(Level* level, int32_t x, int32_t y, int32_t z, int32_t data, float chance) {
+	if (!level->isClientMaybe) {
+		int32_t count = (data & 3) + 1;
+		for (int32_t i = 0; i < count; ++i) {
+			this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, 0));
+		}
+	}
 }

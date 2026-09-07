@@ -74,120 +74,78 @@ void FoliageTexture::tick() {
 	float time = (float)this->ticks * this->speed + this->phase;
 	memset(this->data, 0, 1024);
 
-	if (this->isLeaf) {
-		float windX = sinf(time * 0.9f) * 0.7f;
-		for (int y = 0; y < 16; ++y) {
-			float rowSway = sinf(time * 0.85f + (float)y * 0.35f) * this->amplitude * 0.6f;
-			int shiftX = (int)roundf(windX + rowSway);
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shiftX;
-				int dstIdx = (y * 16 + x) * 4;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
+	auto sampleRow = [this](int y, float shift) {
+		for (int x = 0; x < 16; ++x) {
+			float srcX = (float)x - shift;
+			int dstIdx = (y * 16 + x) * 4;
+			if (srcX >= 0.0f && srcX <= 15.0f) {
+				int x0 = (int)floorf(srcX);
+				int x1 = (x0 < 15) ? x0 + 1 : 15;
+				float t = srcX - (float)x0;
+				int idx0 = (y * 16 + x0) * 4;
+				int idx1 = (y * 16 + x1) * 4;
+				float a0 = (float)this->originalPixels[idx0 + 3];
+				float a1 = (float)this->originalPixels[idx1 + 3];
+				float a = (1.0f - t) * a0 + t * a1;
+				if (a > 10.0f) {
+					float invA = 255.0f / a;
+					float r = ((1.0f - t) * (float)this->originalPixels[idx0 + 0] * (a0 / 255.0f) + t * (float)this->originalPixels[idx1 + 0] * (a1 / 255.0f)) * invA;
+					float g = ((1.0f - t) * (float)this->originalPixels[idx0 + 1] * (a0 / 255.0f) + t * (float)this->originalPixels[idx1 + 1] * (a1 / 255.0f)) * invA;
+					float b = ((1.0f - t) * (float)this->originalPixels[idx0 + 2] * (a0 / 255.0f) + t * (float)this->originalPixels[idx1 + 2] * (a1 / 255.0f)) * invA;
+					this->data[dstIdx + 0] = (uint8_t)fminf(255.0f, fmaxf(0.0f, r));
+					this->data[dstIdx + 1] = (uint8_t)fminf(255.0f, fmaxf(0.0f, g));
+					this->data[dstIdx + 2] = (uint8_t)fminf(255.0f, fmaxf(0.0f, b));
+					this->data[dstIdx + 3] = (uint8_t)fminf(255.0f, fmaxf(0.0f, a));
 				} else {
-					int clampedX = (srcX < 0) ? 0 : 15;
-					int srcIdx = (y * 16 + clampedX) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
+					this->data[dstIdx + 0] = 0;
+					this->data[dstIdx + 1] = 0;
+					this->data[dstIdx + 2] = 0;
+					this->data[dstIdx + 3] = 0;
 				}
+			} else {
+				this->data[dstIdx + 0] = 0;
+				this->data[dstIdx + 1] = 0;
+				this->data[dstIdx + 2] = 0;
+				this->data[dstIdx + 3] = 0;
 			}
+		}
+	};
+
+	if (this->isLeaf) {
+		float windX = sinf(time * 0.9f) * 0.4f;
+		for (int y = 0; y < 16; ++y) {
+			float rowSway = sinf(time * 0.85f + (float)y * 0.35f) * this->amplitude * 0.3f;
+			sampleRow(y, windX + rowSway);
 		}
 	} else if (this->isReeds) {
 		for (int y = 0; y < 16; ++y) {
 			float sway = sinf(time * 0.9f + (float)(15 - y) * 0.18f) * this->amplitude * ((float)(15 - y) / 15.0f);
-			int shift = (int)roundf(sway);
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shift;
-				int dstIdx = (y * 16 + x) * 4;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-				} else {
-					this->data[dstIdx + 0] = 0;
-					this->data[dstIdx + 1] = 0;
-					this->data[dstIdx + 2] = 0;
-					this->data[dstIdx + 3] = 0;
-				}
-			}
+			sampleRow(y, sway);
 		}
 	} else if (this->isWaterlily) {
-		int shiftX = (int)roundf(sinf(time * 0.7f) * 1.0f);
-		int shiftY = (int)roundf(cosf(time * 0.5f) * 0.8f);
+		float shiftX = sinf(time * 0.7f) * 0.6f;
 		for (int y = 0; y < 16; ++y) {
-			for (int x = 0; x < 16; ++x) {
-				int srcX = (x - shiftX) & 15;
-				int srcY = (y - shiftY) & 15;
-				int srcIdx = (srcY * 16 + srcX) * 4;
-				int dstIdx = (y * 16 + x) * 4;
-				this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-				this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-				this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-				this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-			}
+			sampleRow(y, shiftX);
 		}
 	} else if (this->isVine) {
 		for (int y = 0; y < 16; ++y) {
 			float swayFactor = 0.2f + 0.8f * ((float)y / 15.0f);
-			int shift = (int)roundf(sinf(time * 1.1f + (float)y * 0.25f) * this->amplitude * swayFactor);
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shift;
-				int dstIdx = (y * 16 + x) * 4;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-				} else {
-					this->data[dstIdx + 0] = 0;
-					this->data[dstIdx + 1] = 0;
-					this->data[dstIdx + 2] = 0;
-					this->data[dstIdx + 3] = 0;
-				}
-			}
+			float shift = sinf(time * 1.1f + (float)y * 0.25f) * this->amplitude * swayFactor;
+			sampleRow(y, shift);
 		}
 	} else if (this->isDoublePlantBottom) {
 		for (int y = 0; y < 16; ++y) {
 			float gh = (float)(15 - y);
 			float swayFactor = gh / 30.0f;
-			int shift = (int)roundf(sinf(time + (30.0f - gh) * 0.12f) * this->amplitude * swayFactor);
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shift;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					int dstIdx = (y * 16 + x) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-				}
-			}
+			float shift = sinf(time + (30.0f - gh) * 0.12f) * this->amplitude * swayFactor;
+			sampleRow(y, shift);
 		}
 	} else if (this->isDoublePlantTop) {
 		for (int y = 0; y < 16; ++y) {
 			float gh = 15.0f + (float)(15 - y);
 			float swayFactor = gh / 30.0f;
-			int shift = (int)roundf(sinf(time + (30.0f - gh) * 0.12f) * this->amplitude * swayFactor);
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shift;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					int dstIdx = (y * 16 + x) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-				}
-			}
+			float shift = sinf(time + (30.0f - gh) * 0.12f) * this->amplitude * swayFactor;
+			sampleRow(y, shift);
 		}
 	} else {
 		for (int y = 0; y < 16; ++y) {
@@ -195,19 +153,8 @@ void FoliageTexture::tick() {
 			if (y < 16 - this->fixedRows) {
 				swayFactor = (float)(15 - this->fixedRows - y) / (float)(15 - this->fixedRows);
 			}
-			int shift = (int)roundf(sinf(time + (float)y * 0.2f) * this->amplitude * swayFactor);
-
-			for (int x = 0; x < 16; ++x) {
-				int srcX = x - shift;
-				if (srcX >= 0 && srcX < 16) {
-					int srcIdx = (y * 16 + srcX) * 4;
-					int dstIdx = (y * 16 + x) * 4;
-					this->data[dstIdx + 0] = this->originalPixels[srcIdx + 0];
-					this->data[dstIdx + 1] = this->originalPixels[srcIdx + 1];
-					this->data[dstIdx + 2] = this->originalPixels[srcIdx + 2];
-					this->data[dstIdx + 3] = this->originalPixels[srcIdx + 3];
-				}
-			}
+			float shift = sinf(time + (float)y * 0.2f) * this->amplitude * swayFactor;
+			sampleRow(y, shift);
 		}
 	}
 }

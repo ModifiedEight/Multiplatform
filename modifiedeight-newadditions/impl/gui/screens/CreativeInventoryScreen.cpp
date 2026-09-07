@@ -465,7 +465,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(0, Tile::flowerHoustonia);
   addTabItem(0, Tile::flowerDaisy);
   addTabItem(0, Tile::flowerPaeonia);
-  for (int d = 0; d < 6; ++d) {
+  for (int d = 0; d < 4; ++d) {
     addTabItem(0, Tile::doublePlant, 1, d);
   }
   addTabItem(0, Tile::mushroom1);
@@ -473,7 +473,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(0, Tile::waterLily);
   addTabItem(0, Tile::seagrass);
   addTabItem(0, Tile::vine);
-  addTabItem(0, Tile::sweetBerryBush);
+  addTabItem(0, Item::sweetBerries);
   addTabItem(0, Tile::cactus);
   addTabItem(0, Tile::pumpkin);
   addTabItem(0, Tile::litPumpkin);

@@ -10,7 +10,7 @@ bool_t WaterTexture::isEnabled() {
 
 
 WaterTexture::WaterTexture(const TextureUVCoordinateSet& a2)
-	: DynamicTexture(Tile::water->textureUV, 1) {
+	: DynamicTexture(a2, 1) {
 	this->field_28 = 0;
 	this->field_2C = 0;
 	this->field_30 = new float[256];

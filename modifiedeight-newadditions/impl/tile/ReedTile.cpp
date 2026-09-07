@@ -114,9 +114,16 @@ int32_t ReedTile::getColor(int32_t) {
 int32_t ReedTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
 	if (level) {
 		Biome* b = level->getBiome(x, z);
-		if (b == Biome::swampland) {
-			return 0x607B3B;
-		}
+		if (b == Biome::swampland) return 0x607B3B;
+		if (b == Biome::jungle) return 0x50D030;
+		if (b == Biome::rainForest) return 0x48C838;
+		if (b == Biome::equatorialRainforest) return 0x38B828;
+		if (b == Biome::desert || b == Biome::savanna) return 0xABA446;
+		if (b == Biome::taiga) return 0x76B570;
+		if (b == Biome::tundra || b == Biome::icePeaks || b == Biome::iceDesert) return 0x70B090;
+		if (b == Biome::birchForest) return 0x86BF48;
+		if (b == Biome::seasonalForest) return 0x74B83C;
+		if (b == Biome::mountain) return 0x7BB858;
 	}
 	return 0x82C746;
 }

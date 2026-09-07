@@ -7,8 +7,8 @@ bool_t LavaTexture::isEnabled() {
 	return Options::instance ? (Options::instance->animateTextures && Options::instance->animateLava) : 1;
 }
 
-LavaTexture::LavaTexture()
-	: DynamicTexture(Tile::lava->textureUV, 1) {
+LavaTexture::LavaTexture(const TextureUVCoordinateSet& a2)
+	: DynamicTexture(a2, 1) {
 	this->field_28 = 0;
 	this->field_2C = 0;
 	this->field_30 = new float[256];

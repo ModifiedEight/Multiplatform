@@ -1,6 +1,8 @@
 #include <entity/Slime.hpp>
 #include <entity/Player.hpp>
 #include <level/Level.hpp>
+#include <level/biome/Biome.hpp>
+#include <tile/Tile.hpp>
 #include <item/Item.hpp>
 #include <math/Mth.hpp>
 #include <cmath>
@@ -33,11 +35,11 @@ void Slime::setSlimeSize(int32_t size) {
 
 void Slime::playerTouch(Player* player) {
 	if (this->slimeSize > 1 && player && !player->abilities.invulnerable && !player->abilities.instabuild) {
-		float reach = 0.6f * (float)this->slimeSize;
+		float reach = 0.6f * (float)this->slimeSize + 0.3f;
 		float dx = player->posX - this->posX;
 		float dz = player->posZ - this->posZ;
-		float dy = player->posY - this->posY;
-		if (dx * dx + dz * dz < (reach + 0.6f) * (reach + 0.6f) && fabsf(dy) < (reach + 1.2f)) {
+		float dy = (player->posY + player->entityHeight * 0.5f) - (this->posY + this->entityHeight * 0.5f);
+		if (dx * dx + dz * dz < reach * reach && fabsf(dy) < (this->entityHeight * 0.5f + player->entityHeight * 0.5f + 0.3f)) {
 			if (this->attackTime <= 0) {
 				this->attackTime = 20;
 				if (player->hurt(this, this->slimeSize)) {
@@ -50,7 +52,7 @@ void Slime::playerTouch(Player* player) {
 
 void Slime::checkHurtTarget(Entity* a2, float a3) {
 	if (this->slimeSize > 1 && a2) {
-		float reach = 0.6f * (float)this->slimeSize + 0.5f;
+		float reach = 0.6f * (float)this->slimeSize + 0.3f;
 		if (this->attackTime <= 0 && a3 < reach && a2->boundingBox.maxY > this->boundingBox.minY && a2->boundingBox.minY < this->boundingBox.maxY) {
 			this->attackTime = this->getAttackTime();
 			this->doHurtTarget(a2);
@@ -77,6 +79,19 @@ float Slime::getBaseSpeed() {
 
 void Slime::aiStep() {
 	Monster::aiStep();
+
+	if (this->slimeSize > 1 && this->level) {
+		AABB hitBox{.minX = this->boundingBox.minX - 0.3f, .minY = this->boundingBox.minY - 0.3f, .minZ = this->boundingBox.minZ - 0.3f, .maxX = this->boundingBox.maxX + 0.3f, .maxY = this->boundingBox.maxY + 0.3f, .maxZ = this->boundingBox.maxZ + 0.3f};
+		std::vector<Entity*>* nearby = this->level->getEntities(this, hitBox);
+		if (nearby) {
+			for (size_t i = 0; i < nearby->size(); ++i) {
+				Entity* ent = nearby->at(i);
+				if (ent && ent->isPlayer()) {
+					this->playerTouch((Player*)ent);
+				}
+			}
+		}
+	}
 
 	this->oSquish = this->squish;
 	this->squish += (this->targetSquish - this->squish) * 0.5f;
@@ -124,16 +139,23 @@ std::string Slime::getDeathSound() {
 }
 
 bool_t Slime::canSpawn() {
-	int32_t x = (int32_t)this->posX;
-	int32_t y = (int32_t)this->posY;
-	int32_t z = (int32_t)this->posZ;
-	if (x < 0) --x;
-	if (z < 0) --z;
+	if (!this->level) return 0;
+	int32_t x = (int32_t)floorf(this->posX);
+	int32_t y = (int32_t)floorf(this->posY);
+	int32_t z = (int32_t)floorf(this->posZ);
+	if (y <= 1 || y >= 127) return 0;
+	Biome* b = this->level->getBiome(x, z);
+	if (b == Biome::swampland) {
+		int32_t tileBelow = this->level->getTile(x, y - 1, z);
+		int32_t tileAt = this->level->getTile(x, y, z);
+		if (tileAt != 0 && tileAt != Tile::waterLily->blockID && tileAt != Tile::tallgrass->blockID && tileAt != Tile::water->blockID && tileAt != Tile::calmWater->blockID && Tile::tiles[tileAt] && Tile::tiles[tileAt]->isSolidRender()) return 0;
+		return (y >= 45 && y <= 75 && (tileBelow == Tile::grass->blockID || tileBelow == Tile::dirt->blockID || tileBelow == Tile::sand->blockID || tileBelow == Tile::leaves->blockID || tileBelow == Tile::waterLily->blockID || tileBelow == Tile::water->blockID || tileBelow == Tile::calmWater->blockID || tileBelow == Tile::clay->blockID || tileBelow == Tile::gravel->blockID || this->level->isSolidBlockingTile(x, y - 1, z)));
+	}
 	return this->level->isSolidBlockingTile(x, y - 1, z) && !this->level->isSolidBlockingTile(x, y, z);
 }
 
 int32_t Slime::getMaxSpawnClusterSize() {
-	return 4;
+	return 8;
 }
 
 void Slime::die(Entity* cause) {

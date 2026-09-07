@@ -814,36 +814,23 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 		}
 	}
 	if (biomeAtChunk == Biome::jungle || biomeAtChunk == Biome::rainForest) {
-		if ((a8->genrand_int32() % 8) == 0) {
-			int32_t xx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t zz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t hm = this->level->getHeightmap(xx, zz);
-			MelonFeature mf;
-			mf.place(this->level, a8, xx, hm, zz);
+		if ((a8->genrand_int32() % 2) == 0) {
+			int melonPatches = 1 + (a8->genrand_int32() % 2);
+			for (int mp = 0; mp < melonPatches; ++mp) {
+				int32_t xx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t zz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t hm = this->level->getHeightmap(xx, zz);
+				MelonFeature mf;
+				mf.place(this->level, a8, xx, hm, zz);
+			}
 		}
 
-		for (int v = 0; v < 40; ++v) {
+		for (int v = 0; v < 12; ++v) {
 			int32_t vx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
 			int32_t vz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
 			int32_t vy = 64 + (a8->genrand_int32() % 60);
 			VineFeature vf;
 			vf.place(this->level, a8, vx, vy, vz);
-		}
-
-		if ((a8->genrand_int32() % 3) == 0) {
-			int32_t mx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t mz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t my = this->level->getHeightmap(mx, mz);
-			MegaJungleTreeFeature mjf(0, 14, 3, 3);
-			mjf.place(this->level, a8, mx, my, mz);
-		}
-
-		for (int b = 0; b < 4; ++b) {
-			int32_t bx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t bz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t by = this->level->getHeightmap(bx, bz);
-			JungleBushFeature jbf(3, 3);
-			jbf.place(this->level, a8, bx, by, bz);
 		}
 	}
 	if (biomeAtChunk == Biome::swampland) {
@@ -899,13 +886,6 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 			int32_t ry = this->level->getHeightmap(rx, rz);
 			ReedsFeature rf;
 			rf.place(this->level, a8, rx, ry, rz);
-		}
-		for (int i = 0; i < 14; ++i) {
-			int32_t bx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t bz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
-			int32_t by = this->level->getHeightmap(bx, bz);
-			JungleBushFeature jbf(3, 3);
-			jbf.place(this->level, a8, bx, by, bz);
 		}
 		for (int i = 0; i < 28; ++i) {
 			int32_t fx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;

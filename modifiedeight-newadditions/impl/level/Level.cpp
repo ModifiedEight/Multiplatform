@@ -1060,7 +1060,16 @@ std::string Level::getPlayerNames() {
 }
 
 Biome::MobSpawnerData Level::getRandomMobSpawnAt(const MobCategory& a3, int32_t a4, int32_t a5, int32_t a6) {
-	std::vector<Biome::MobSpawnerData> v18 = this->chunkSource->getMobsAt(a3, a4, a5, a6);
+	std::vector<Biome::MobSpawnerData> v18 = this->chunkSource ? this->chunkSource->getMobsAt(a3, a4, a5, a6) : std::vector<Biome::MobSpawnerData>();
+	if (v18.empty()) {
+		BiomeSource* bs = this->getBiomeSource();
+		if (bs) {
+			Biome* b = bs->getBiome(a4, a6);
+			if (b) {
+				v18 = *b->getMobs(a3);
+			}
+		}
+	}
 	int v10 = 0;
 	for(auto&& v: v18) {
 		v10 += v.rarity;
@@ -2378,7 +2387,7 @@ void Level::tick() {
 		if(_D6E4DF90 + 1 > 1) {
 			_D6E4DF90 = 0;
 			bool spawnMonsters = this->spawnMonstersMaybe;
-			bool spawnAnimals = this->spawnAnimalsMaybe && (this->getTime() % 400) <= 1;
+			bool spawnAnimals = this->spawnAnimalsMaybe;
 			MobSpawner::tick(this, spawnMonsters, spawnAnimals);
 		} else {
 			++_D6E4DF90;
@@ -2492,10 +2501,22 @@ void Level::tick() {
 				if (topY > 0 && topY < 127) {
 					int tileBelow = this->getTile(rx, topY - 1, rz);
 					int tileAt = this->getTile(rx, topY, rz);
-					if (tileAt == 0 && tileBelow > 0 && Tile::tiles[tileBelow] && Tile::tiles[tileBelow]->isSolidRender() && tileBelow != 78 && tileBelow != 79) {
-						this->setTile(rx, topY, rz, 78, 3);
-					} else if (tileBelow == 8 || tileBelow == 9) {
-						this->setTile(rx, topY - 1, rz, 79, 3);
+					if (tileBelow == 8 || tileBelow == 9) {
+						if (tileAt == 0 && this->canSeeSky(rx, topY, rz)) {
+							this->setTile(rx, topY - 1, rz, 79, 3);
+						}
+					} else if (tileAt == 0 && tileBelow > 0 && tileBelow != 78 && tileBelow != 79 && tileBelow != 8 && tileBelow != 9 && tileBelow != 10 && tileBelow != 11 && Tile::tiles[tileBelow] && Tile::tiles[tileBelow]->isSolidRender() && this->canSeeSky(rx, topY, rz)) {
+						bool hasWater = false;
+						for (int cy = topY; cy < 128; ++cy) {
+							int ct = this->getTile(rx, cy, rz);
+							if (ct == 8 || ct == 9 || (Tile::tiles[ct] && Tile::tiles[ct]->material && Tile::tiles[ct]->material->isLiquid())) {
+								hasWater = true;
+								break;
+							}
+						}
+						if (!hasWater) {
+							this->setTile(rx, topY, rz, 78, 3);
+						}
 					}
 				}
 			}

@@ -4,6 +4,9 @@
 #include <item/Item.hpp>
 #include <inventory/Inventory.hpp>
 #include <nbt/CompoundTag.hpp>
+#include <tile/Tile.hpp>
+#include <tile/SlabTile.hpp>
+#include <tile/material/Material.hpp>
 
 ItemFrame::ItemFrame(Level* level)
 	: HangingEntity(level)
@@ -156,4 +159,80 @@ void ItemFrame::addAdditonalSaveData(CompoundTag* tag) {
 		this->item.save(itTag);
 		tag->put("Item", itTag);
 	}
+}
+
+void ItemFrame::setDir(int32_t dir) {
+	this->direction = dir;
+	float dist = 0.505f;
+	float px = (float)this->tileX + 0.5f;
+	float py = (float)this->tileY + 0.5f;
+	float pz = (float)this->tileZ + 0.5f;
+
+	if (dir == 0) {
+		this->yaw = 0.0f;
+		this->prevYaw = 0.0f;
+		this->pitch = 0.0f;
+		pz += dist;
+		this->boundingBox = { px - 0.375f, py - 0.375f, pz - 0.0625f, px + 0.375f, py + 0.375f, pz + 0.0625f };
+	} else if (dir == 1) {
+		this->yaw = 90.0f;
+		this->prevYaw = 90.0f;
+		this->pitch = 0.0f;
+		px -= dist;
+		this->boundingBox = { px - 0.0625f, py - 0.375f, pz - 0.375f, px + 0.0625f, py + 0.375f, pz + 0.375f };
+	} else if (dir == 2) {
+		this->yaw = 180.0f;
+		this->prevYaw = 180.0f;
+		this->pitch = 0.0f;
+		pz -= dist;
+		this->boundingBox = { px - 0.375f, py - 0.375f, pz - 0.0625f, px + 0.375f, py + 0.375f, pz + 0.0625f };
+	} else if (dir == 3) {
+		this->yaw = 270.0f;
+		this->prevYaw = 270.0f;
+		this->pitch = 0.0f;
+		px += dist;
+		this->boundingBox = { px - 0.0625f, py - 0.375f, pz - 0.375f, px + 0.0625f, py + 0.375f, pz + 0.375f };
+	} else if (dir == 4) {
+		this->pitch = 90.0f;
+		this->prevPitch = 90.0f;
+		py -= dist;
+		this->boundingBox = { px - 0.375f, py - 0.0625f, pz - 0.375f, px + 0.375f, py + 0.0625f, pz + 0.375f };
+	} else if (dir == 5) {
+		this->pitch = -90.0f;
+		this->prevPitch = -90.0f;
+		int tileId = this->level ? this->level->getTile(this->tileX, this->tileY, this->tileZ) : 0;
+		if (tileId > 0 && Tile::tiles[tileId]) {
+			Tile* t = Tile::tiles[tileId];
+			if (t->getRenderShape() == 19) {
+				SlabTile* st = (SlabTile*)t;
+				if (st->isBottomSlab(this->level, this->tileX, this->tileY, this->tileZ)) {
+					py = (float)this->tileY + 0.505f;
+				} else {
+					py += dist;
+				}
+			} else {
+				py += dist;
+			}
+		} else {
+			py += dist;
+		}
+		this->boundingBox = { px - 0.375f, py - 0.0625f, pz - 0.375f, px + 0.375f, py + 0.0625f, pz + 0.375f };
+	}
+	this->setPos(px, py, pz);
+}
+
+bool_t ItemFrame::survives() {
+	if (!this->level) return 0;
+	int tileId = this->level->getTile(this->tileX, this->tileY, this->tileZ);
+	if (tileId <= 0 || !Tile::tiles[tileId]) return 0;
+	Tile* t = Tile::tiles[tileId];
+	const Material* mat = t->material;
+	if (!mat || !mat->isSolid()) return 0;
+
+	for (auto&& e : std::vector<Entity*>(*this->level->getEntities(this, this->boundingBox))) {
+		if (e->isHangingEntity()) {
+			return 0;
+		}
+	}
+	return 1;
 }

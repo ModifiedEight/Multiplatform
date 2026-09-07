@@ -156,7 +156,22 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 		}
 	}
 	int32_t origX = x, origY = y, origZ = z;
-	v19 = Tile::tiles[level->getTile(x, y, z)];
+	int32_t targetTileId = level->getTile(x, y, z);
+	if (targetTileId == this->blockID && (this->blockID == 37 || this->blockID == 38 || this->blockID == 191 || this->blockID == 192 || this->blockID == 239 || this->blockID == 240 || this->blockID == 241 || this->blockID == 242)) {
+		int32_t curData = level->getData(x, y, z);
+		if ((curData & 3) < 3) {
+			level->setTileAndData(x, y, z, this->blockID, (curData & 3) + 1, 3);
+			Tile* t = Tile::tiles[this->blockID];
+			if (t && t->soundType) {
+				level->playSound((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, t->soundType->field_C, (t->soundType->field_0 + 1.0f) * 0.5f, t->soundType->field_4 * 0.8f);
+			}
+			if (!player || !player->abilities.instabuild) {
+				--item->count;
+			}
+			return 1;
+		}
+	}
+	v19 = Tile::tiles[targetTileId];
 	if(v19 && v19->replaceable) {
 		sideNew = 1;
 	} else {

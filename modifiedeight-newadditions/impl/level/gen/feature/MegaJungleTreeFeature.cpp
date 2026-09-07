@@ -162,16 +162,17 @@ bool_t MegaJungleTreeFeature::place(Level* level, Random* random, int32_t x, int
 		this->placeLeafCluster(level, endX, endY, endZ, 2);
 	}
 
-	for (int32_t lx = x - 6; lx <= x + 7; ++lx) {
-		for (int32_t lz = z - 6; lz <= z + 7; ++lz) {
-			for (int32_t ly = topY - 5; ly <= topY + 2; ++ly) {
+	for (int32_t lx = x - 5; lx <= x + 6; lx += 2) {
+		for (int32_t lz = z - 5; lz <= z + 6; lz += 2) {
+			for (int32_t ly = topY - 3; ly <= topY; ly += 2) {
 				if (ly > 0 && ly < 128 && level->getTile(lx, ly, lz) == Tile::leaves->blockID) {
 					if (random->genrand_int32() % 3 == 0) {
-						int32_t vlen = 4 + (random->genrand_int32() % 8);
-						if (level->isEmptyTile(lx, ly, lz - 1)) this->addHangingVine(level, random, lx, ly, lz - 1, 4, vlen);
-						if (level->isEmptyTile(lx, ly, lz + 1)) this->addHangingVine(level, random, lx, ly, lz + 1, 1, vlen);
-						if (level->isEmptyTile(lx - 1, ly, lz)) this->addHangingVine(level, random, lx - 1, ly, lz, 2, vlen);
-						if (level->isEmptyTile(lx + 1, ly, lz)) this->addHangingVine(level, random, lx + 1, ly, lz, 8, vlen);
+						int32_t vlen = 2 + (random->genrand_int32() % 4);
+						int32_t side = random->genrand_int32() % 4;
+						if (side == 0 && level->isEmptyTile(lx, ly, lz - 1)) this->addHangingVine(level, random, lx, ly, lz - 1, 4, vlen);
+						else if (side == 1 && level->isEmptyTile(lx, ly, lz + 1)) this->addHangingVine(level, random, lx, ly, lz + 1, 1, vlen);
+						else if (side == 2 && level->isEmptyTile(lx - 1, ly, lz)) this->addHangingVine(level, random, lx - 1, ly, lz, 2, vlen);
+						else if (side == 3 && level->isEmptyTile(lx + 1, ly, lz)) this->addHangingVine(level, random, lx + 1, ly, lz, 8, vlen);
 					}
 				}
 			}

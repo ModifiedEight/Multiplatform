@@ -5,4 +5,5 @@ struct JungleBiome : public Biome {
 	JungleBiome();
 	~JungleBiome();
 	Feature* getTreeFeature(Random*);
+	Feature* getGrassFeature(Random*);
 };

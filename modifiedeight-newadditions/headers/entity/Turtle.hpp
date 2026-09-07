@@ -14,5 +14,6 @@ struct Turtle: Animal {
 	virtual std::string getDeathSound();
 	virtual void aiStep();
 	virtual bool_t canSpawn();
+	virtual bool_t isWaterMob();
 	virtual Mob* getBreedOffspring(Animal*);
 };

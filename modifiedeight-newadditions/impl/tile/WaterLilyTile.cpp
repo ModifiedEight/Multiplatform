@@ -25,6 +25,11 @@ int32_t WaterLilyTile::getColor(int32_t) {
 }
 
 int32_t WaterLilyTile::getColor(LevelSource* level, int32_t x, int32_t y, int32_t z) {
+	if (level) {
+		Biome* b = level->getBiome(x, z);
+		if (b == Biome::swampland) return 0x208030;
+		if (b == Biome::jungle || b == Biome::rainForest || b == Biome::equatorialRainforest) return 0x40B030;
+	}
 	return 0x529141;
 }
 
