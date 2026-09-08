@@ -23,7 +23,10 @@ struct ControllerHandler {
 	static void clampVec(float&, float&);
 	static int32_t lastPerspectiveMs;
 	static bool_t jumpHeld, sneakHeld, sprintHeld;
+	static bool_t sneakToggle;
 	static bool_t attackHeld, useHeld, confirmHeld;
+	static bool_t justCaptured;
+	static bool_t wasConnected;
 
 	static void beginCapture(bool_t);
 	static void endCapture();

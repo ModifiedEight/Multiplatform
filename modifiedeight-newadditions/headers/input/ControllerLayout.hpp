@@ -15,11 +15,12 @@ enum ControllerAction {
 	CA_TOGGLE_PERSPECTIVE = 8,
 	CA_SNEAK = 9,
 	CA_GAME_MENU = 10,
-	CA_MOVE_AXIS_X = 11,
-	CA_MOVE_AXIS_Y = 12,
-	CA_LOOK_AXIS_X = 13,
-	CA_LOOK_AXIS_Y = 14,
-	CA_COUNT = 15
+	CA_CHAT = 11,
+	CA_MOVE_AXIS_X = 12,
+	CA_MOVE_AXIS_Y = 13,
+	CA_LOOK_AXIS_X = 14,
+	CA_LOOK_AXIS_Y = 15,
+	CA_COUNT = 16
 };
 
 struct ControllerLayout {

@@ -511,20 +511,27 @@ void Minecraft::joinMultiplayer(const struct PingedCompatibleServer& a2, bool_t 
 }
 void Minecraft::leaveGame(bool_t a2, bool_t a3) {
 	if(!this->field_CF4 && this->levelGenerated) {
-		if (this->player && this->level && this->level->getLevelData()) {
-			CompoundTag playerTag;
-			this->player->saveWithoutId(&playerTag);
-			this->level->getLevelData()->setPlayerTag(&playerTag);
+		bool_t skipSave = this->level && this->level->isClientMaybe && !a2;
+		if (!skipSave) {
+			if (this->player && this->level && this->level->getLevelData()) {
+				CompoundTag playerTag;
+				this->player->saveWithoutId(&playerTag);
+				this->level->getLevelData()->setPlayerTag(&playerTag);
+			}
 		}
-		if (this->level && this->level->getLevelStorage() && this->player) {
-			this->level->getLevelStorage()->save(this->player);
+		if (!skipSave) {
+			if (this->level && this->level->getLevelStorage() && this->player) {
+				this->level->getLevelStorage()->save(this->player);
+			}
 		}
 		if(this->level) {
-			if(this->level->getChunkSource()) {
-				this->level->getChunkSource()->saveAll(0);
+			if(!skipSave) {
+				if(this->level->getChunkSource()) {
+					this->level->getChunkSource()->saveAll(0);
+				}
+				this->level->saveGame();
+				this->level->savePlayers();
 			}
-			this->level->saveGame();
-			this->level->savePlayers();
 			this->level->saveLevelData();
 		}
 		this->rakNetInstance->disconnect();

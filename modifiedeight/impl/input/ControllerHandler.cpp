@@ -9,6 +9,7 @@
 #include <input/Keyboard.hpp>
 #include <input/Mouse.hpp>
 #include <inventory/Inventory.hpp>
+#include <sound/SoundEngine.hpp>
 #include <math.h>
 #include <utils.h>
 
@@ -34,9 +35,12 @@ float ControllerHandler::moveY = 0.0f;
 bool_t ControllerHandler::jumpHeld = 0;
 bool_t ControllerHandler::sneakHeld = 0;
 bool_t ControllerHandler::sprintHeld = 0;
+bool_t ControllerHandler::sneakToggle = 0;
 bool_t ControllerHandler::attackHeld = 0;
 bool_t ControllerHandler::useHeld = 0;
 bool_t ControllerHandler::confirmHeld = 0;
+bool_t ControllerHandler::justCaptured = 0;
+bool_t ControllerHandler::wasConnected = 0;
 float ControllerHandler::frameDt = 1.0f;
 double ControllerHandler::lastFrameS = 0;
 void ControllerHandler::clampVec(float& x, float& y) {
@@ -75,6 +79,7 @@ bool_t ControllerHandler::takeCaptured(Binding& out) {
 	out = ControllerHandler::capturedBinding;
 	ControllerHandler::hasCaptured = 0;
 	ControllerHandler::captureMode = 0;
+	ControllerHandler::justCaptured = 1;
 	return 1;
 }
 
@@ -113,8 +118,15 @@ void ControllerHandler::tick(Minecraft* mc) {
 	if(dtMs > 100.0f) dtMs = 100.0f;
 	ControllerHandler::lastFrameS = nowS;
 	ControllerHandler::frameDt += ((dtMs / 16.6667f) - ControllerHandler::frameDt) * 0.2f;
+	if(mc && Gamepad::connected && !ControllerHandler::wasConnected && mc->useTouchscreen() && !mc->options.useJoypad) {
+		mc->options.useJoypad = 1;
+		mc->options.save();
+		mc->optionUpdated(&Options::Option::USE_TOUCH_JOYPAD, 1);
+	}
+	ControllerHandler::wasConnected = Gamepad::connected;
 	if(!ControllerHandler::isEnabled(mc)) {
 		ControllerHandler::releaseAll();
+		ControllerHandler::sneakToggle = 0;
 		ControllerHandler::confirmHeld = 0;
 		Gamepad::beginFrame();
 		return;
@@ -122,6 +134,7 @@ void ControllerHandler::tick(Minecraft* mc) {
 
 	if(ControllerHandler::captureMode) {
 		ControllerHandler::releaseAll();
+		ControllerHandler::sneakToggle = 0;
 		ControllerHandler::confirmHeld = 0;
 		if(!ControllerHandler::hasCaptured) {
 			Binding found;
@@ -164,7 +177,13 @@ void ControllerHandler::tickGame(Minecraft* mc) {
 	ControllerHandler::moveY = my;
 
 	ControllerHandler::jumpHeld = Gamepad::isBindingDown(ControllerLayout::get(CA_JUMP));
-	ControllerHandler::sneakHeld = Gamepad::isBindingDown(ControllerLayout::get(CA_SNEAK));
+	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_SNEAK))) {
+		ControllerHandler::sneakToggle ^= 1;
+		if(mc->soundEngine) {
+			mc->soundEngine->playUI("random.click", 1.0f, 1.0f);
+		}
+	}
+	ControllerHandler::sneakHeld = ControllerHandler::sneakToggle;
 
 	static int32_t lastFwdTapMs = 0;
 	static bool_t fwdWasDown = 0;
@@ -241,6 +260,10 @@ void ControllerHandler::tickGame(Minecraft* mc) {
 		mc->gui.handleKeyPressed(100);
 	}
 
+	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_CHAT))) {
+		mc->screenChooser.setScreen(CHAT_SCREEN);
+	}
+
 	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_TOGGLE_PERSPECTIVE))) {
 		int32_t nowMs = getTimeMs();
 		if(nowMs - ControllerHandler::lastPerspectiveMs >= 350) {
@@ -289,7 +312,10 @@ void ControllerHandler::tickMenu(Minecraft* mc) {
 	int16_t cy = (int16_t)ControllerHandler::cursorY;
 
 	bool_t confirm = Gamepad::isBindingDown(ControllerLayout::get(CA_JUMP));
-	if(confirm && !ControllerHandler::confirmHeld) {
+	if(!confirm) {
+		ControllerHandler::justCaptured = 0;
+	}
+	if(confirm && !ControllerHandler::confirmHeld && !ControllerHandler::justCaptured) {
 		ControllerHandler::confirmHeld = 1;
 		ControllerHandler::lastPadCursorMs = getTimeMs();
 		Mouse::feed(1, 1, cx, cy);
@@ -348,13 +374,11 @@ void ControllerHandler::applyMove(IMoveInput* input, Player* player) {
 		}
 	}
 
-	if(ControllerHandler::sneakHeld) {
-		if(flying) {
-			input->flyDownPressed = 1;
-			input->sneakingMaybe = 0;
-		} else {
-			input->sneakingMaybe = 1;
-		}
+	if(flying) {
+		input->flyDownPressed = ControllerHandler::sneakToggle;
+		input->sneakingMaybe = 0;
+	} else {
+		input->sneakingMaybe = ControllerHandler::sneakToggle;
 	}
 
 	if(player->isLocalPlayer()) {

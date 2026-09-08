@@ -226,6 +226,7 @@ static bool resolveItem(const std::string& rawName, int& outId, std::string& out
 }
 
 static bool executeCommand(Minecraft* mc, const std::string& line) {
+	if (!mc || !mc->level || mc->isOnlineClient() || (mc->level && mc->level->isClientMaybe)) return false;
 	if (line.empty() || line[0] != '/') return false;
 
 	std::stringstream ss(line.substr(1));
@@ -498,12 +499,13 @@ static bool executeCommand(Minecraft* mc, const std::string& line) {
 
 void ChatScreen::sendChatMessage() {
 	if(this->field_54.size()) {
-		if(!executeCommand(this->minecraft, this->field_54)) {
+		if (this->minecraft->isOnlineClient() || (this->minecraft->level && this->minecraft->level->isClientMaybe)) {
 			MessagePacket v7(this->field_54, this->minecraft->player->username);
 			this->minecraft->rakNetInstance->send(v7);
-			if(!this->minecraft->isOnlineClient()) {
-				this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
-			}
+		} else if(!executeCommand(this->minecraft, this->field_54)) {
+			MessagePacket v7(this->field_54, this->minecraft->player->username);
+			this->minecraft->rakNetInstance->send(v7);
+			this->minecraft->gui.addMessage(this->minecraft->player->username, this->field_54, 200);
 		}
 		this->field_78.emplace_back(this->field_54);
 		this->field_84 = this->field_78.size();

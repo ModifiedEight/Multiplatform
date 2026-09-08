@@ -18,6 +18,7 @@ static const char_t* _caNames[CA_COUNT] = {
 	"Toggle Perspective",
 	"Sneak/Fly Down",
 	"Game Menu",
+	"Chat",
 	"Move Left/Right",
 	"Move Forward/Back",
 	"Look Left/Right",
@@ -36,6 +37,7 @@ static const char_t* _caKeys[CA_COUNT] = {
 	"perspective",
 	"sneak",
 	"gamemenu",
+	"chat",
 	"movex",
 	"movey",
 	"lookx",
@@ -64,6 +66,7 @@ void ControllerLayout::resetToDefaults() {
 	ControllerLayout::bindings[CA_LOOK_AXIS_X] = Binding(BIND_AXIS_FULL, GP_AXIS_RX);
 	ControllerLayout::bindings[CA_LOOK_AXIS_Y] = Binding(BIND_AXIS_FULL, GP_AXIS_RY);
 	ControllerLayout::bindings[CA_GAME_MENU] = Binding(BIND_BUTTON, GP_BTN_START);
+	ControllerLayout::bindings[CA_CHAT] = Binding(BIND_BUTTON, GP_BTN_DPAD_RIGHT);
 }
 
 void ControllerLayout::load() {
