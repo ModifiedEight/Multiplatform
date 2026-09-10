@@ -179,9 +179,6 @@ void ControllerHandler::tickGame(Minecraft* mc) {
 	ControllerHandler::jumpHeld = Gamepad::isBindingDown(ControllerLayout::get(CA_JUMP));
 	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_SNEAK))) {
 		ControllerHandler::sneakToggle ^= 1;
-		if(mc->soundEngine) {
-			mc->soundEngine->playUI("random.click", 1.0f, 1.0f);
-		}
 	}
 	ControllerHandler::sneakHeld = ControllerHandler::sneakToggle;
 
@@ -324,7 +321,7 @@ void ControllerHandler::tickMenu(Minecraft* mc) {
 		Mouse::feed(1, 0, cx, cy);
 	}
 
-	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_SNEAK))) {
+	if(Gamepad::wasBindingPressed(ControllerLayout::get(CA_SNEAK)) || Gamepad::wasButtonPressed(GP_BTN_B)) {
 		mc->handleBack(0);
 		return;
 	}

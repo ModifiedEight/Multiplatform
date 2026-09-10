@@ -91,7 +91,7 @@ struct LevelRenderer: LevelListener, AppPlatform::Listener
 	std::string gatherStats1();
 	void generateSky();
 	static int32_t getLayerFeature(int32_t, bool_t);
-	void render(const AABB&);
+	void render(const AABB&, float);
 	int32_t renderChunks(int32_t, float, bool_t);
 	void renderClouds(float);
 	void renderDebug(const AABB&, float);

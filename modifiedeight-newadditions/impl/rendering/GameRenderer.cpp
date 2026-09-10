@@ -367,7 +367,7 @@ void GameRenderer::pick(float a2) {
 			if(this->minecraft->viewEntityMaybe) {
 				if(this->minecraft->viewEntityMaybe->isAlive()) {
 					float v6 = this->minecraft->gameMode->getPickRange();
-					Vec3 v72(0, 0, 0);
+					Vec3 v72 = this->minecraft->viewEntityMaybe->getPos(a2);
 					bool updated;
 					if(!this->minecraft->useTouchscreen() || this->minecraft->options.useJoypad) {
 						bool isLiquidClipItem;
@@ -814,17 +814,15 @@ void GameRenderer::renderLevel(float a2) {
 	this->minecraft->levelRenderer->renderNameTags(a2);
 	if(this->field_4C == 1.0) {
 		if(viewEntityMaybe->isPlayer()) {
-			if(!this->minecraft->currentScreen && !this->minecraft->options.thirdPerson && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
-#ifndef PCTWEAKS
-				if(this->minecraft->useTouchscreen() && !this->minecraft->mouseGrabbed) {
+		if(!this->minecraft->currentScreen && !this->minecraft->options.thirdPerson && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
+#ifdef PCTWEAKS
+			levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+#else
+			if(this->minecraft->useTouchscreen()) {
+				levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+			}
 #endif
-					levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
-#ifndef PCTWEAKS
-				} else {
-					levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
-				}
-#endif
-				levelRenderer->renderHit((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+			levelRenderer->renderHit((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 			}
 		}
 	}

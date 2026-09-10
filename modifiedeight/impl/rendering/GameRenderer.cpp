@@ -192,12 +192,16 @@ void GameRenderer::moveCameraToPlayer(float a2) {
 	float v44;			  // r0
 	Minecraft* minecraft; // r3
 	Minecraft* v46;		  // r3
+	float rayYaw = 0.0f;
+	float rayPitch = 0.0f;
 
 	viewEntityMaybe = this->minecraft->viewEntityMaybe;
 	posX = viewEntityMaybe->posX;
 	prevX = viewEntityMaybe->prevX;
 	posY = viewEntityMaybe->posY;
 	prevY = viewEntityMaybe->prevY;
+	posZ = viewEntityMaybe->posZ;
+	prevZ = viewEntityMaybe->prevZ;
 	v11 = viewEntityMaybe->ridingHeight - 1.62;
 	if(viewEntityMaybe->isSneaking()) {
 		v11 += 0.12f;
@@ -230,12 +234,18 @@ LABEL_9:
 		v30 = prevZ + (float)((float)(posZ - prevZ) * a2);
 		v31 = prevX + (float)((float)(posX - prevX) * a2);
 		pitch = viewEntityMaybe->pitch;
-		v33 = (float)(pitch / 180.0) * 3.1416;
+		rayYaw = yaw;
+		rayPitch = pitch;
+		if (this->minecraft->options.thirdPerson == 2) {
+			rayYaw += 180.0f;
+			rayPitch = -rayPitch;
+		}
+		v33 = (float)(rayPitch / 180.0) * 3.1416;
 		v34 = v28 - v11;
-		v35 = Mth::sin((float)(yaw / 180.0) * 3.1416);
+		v35 = Mth::sin((float)(rayYaw / 180.0) * 3.1416);
 		v36 = Mth::cos(v33);
 		v37 = (float)-(float)(v35 * v36) * v23;
-		v38 = (float)(Mth::cos((float)(yaw / 180.0) * 3.1416) * v36) * v23;
+		v38 = (float)(Mth::cos((float)(rayYaw / 180.0) * 3.1416) * v36) * v23;
 		v39 = -(float)(Mth::sin(v33) * v23);
 		do {
 			v40 = (float)(2 * (v24 & 1) - 1) * 0.1;
@@ -303,7 +313,7 @@ void GameRenderer::pick(float a2) {
 			if(this->minecraft->viewEntityMaybe) {
 				if(this->minecraft->viewEntityMaybe->isAlive()) {
 					float v6 = this->minecraft->gameMode->getPickRange();
-					Vec3 v72(0, 0, 0);
+					Vec3 v72 = this->minecraft->viewEntityMaybe->getPos(a2);
 					bool updated;
 					if(!this->minecraft->useTouchscreen() || this->minecraft->options.useJoypad) {
 						bool isLiquidClipItem;
@@ -754,13 +764,11 @@ void GameRenderer::renderLevel(float a2) {
 		if(viewEntityMaybe->isPlayer()) {
 			if(!this->minecraft->currentScreen && this->minecraft->selectedObject.hitType != 2 && !viewEntityMaybe->isUnderLiquid(Material::water)) {
 				if(!this->minecraft->options.thirdPerson) {
-#ifndef PCTWEAKS
-					if(this->minecraft->useTouchscreen() && !this->minecraft->mouseGrabbed) {
-#endif
+#ifdef PCTWEAKS
+					levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
+#else
+					if(this->minecraft->useTouchscreen()) {
 						levelRenderer->renderHitSelect((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
-#ifndef PCTWEAKS
-					} else {
-						levelRenderer->renderHitOutline((Player*)viewEntityMaybe, this->minecraft->selectedObject, 0, 0, a2);
 					}
 #endif
 				}

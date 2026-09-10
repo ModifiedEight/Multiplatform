@@ -120,7 +120,7 @@ void TouchscreenInput::rebuild() {
         (this->field_42 || (hideGUI = this->field_41) != 0)) {
       hideGUI = 1;
     }
-    if (!this->minecraft->player->isRiding()) {
+    if (!Gamepad::connected && !this->minecraft->player->isRiding()) {
       if (hideGUI || this->idkWhatIsThis2) {
         v4 = _D6E06658;
       } else if (this->isButtonDown(102)) {
@@ -161,37 +161,41 @@ void TouchscreenInput::rebuild() {
         sub_D6604D0C(this->upRightButton, 26, 133, 26.0);
       }
     }
-    if (this->isButtonDown(100)) {
-      v9 = _D6E0665C;
-    } else {
-      v9 = _D6E06660;
+    if (!Gamepad::connected) {
+      if (this->isButtonDown(100)) {
+        v9 = _D6E0665C;
+      } else {
+        v9 = _D6E06660;
+      }
+      Tesselator::instance.colorABGR(v9);
+      if (this->idkWhatIsThis2) {
+        v10 = 52;
+        v11 = 133;
+      } else {
+        v10 = 0;
+        v11 = 107;
+      }
+      sub_D6604D0C(this->upArrow, v10, v11, 26.0);
     }
-    Tesselator::instance.colorABGR(v9);
-    if (this->idkWhatIsThis2) {
-      v10 = 52;
-      v11 = 133;
-    } else {
-      v10 = 0;
-      v11 = 107;
-    }
-    sub_D6604D0C(this->upArrow, v10, v11, 26.0);
-    if (this->field_43 && hideGUI) {
-      v12 = _D6E06658;
-    } else if (this->isButtonDown(104)) {
-      v12 = _D6E0665C;
-    } else {
-      v12 = _D6E06660;
-    }
-    Tesselator::instance.colorABGR(v12);
-    if (this->field_43) {
-      v13 = 133;
-    } else {
-      v13 = 107;
-    }
-    if (this->options->swapJumpAndSneak) {
-      sub_D6604D0C(this->jumpButton, 104, this->field_43 ? 133 : 107, 26.0);
-    } else {
-      sub_D6604D0C(this->jumpButton, 104, v13, 26.0);
+    if (!Gamepad::connected) {
+      if (this->field_43 && hideGUI) {
+        v12 = _D6E06658;
+      } else if (this->isButtonDown(104)) {
+        v12 = _D6E0665C;
+      } else {
+        v12 = _D6E06660;
+      }
+      Tesselator::instance.colorABGR(v12);
+      if (this->field_43) {
+        v13 = 133;
+      } else {
+        v13 = 107;
+      }
+      if (this->options->swapJumpAndSneak) {
+        sub_D6604D0C(this->jumpButton, 104, this->field_43 ? 133 : 107, 26.0);
+      } else {
+        sub_D6604D0C(this->jumpButton, 104, v13, 26.0);
+      }
     }
     if (!this->minecraft->currentScreen) {
       if (this->isButtonDown(106)) {
@@ -202,7 +206,7 @@ void TouchscreenInput::rebuild() {
       Tesselator::instance.colorABGR(v14);
       sub_D6604D0C(this->chatButton, 200, 82, 18.0);
     }
-    if (!this->minecraft->currentScreen && this->sneakButton) {
+    if (!Gamepad::connected && !this->minecraft->currentScreen && this->sneakButton) {
       if (this->isButtonDown(108)) {
         v14 = _D6E0665C;
       } else {
@@ -407,7 +411,6 @@ void TouchscreenInput::tick(Player *a2) {
               static int32_t s_lastSneakTap = 0;
               int32_t now = getTimeMs();
               if (now - s_lastSneakTap <= 400) {
-                this->minecraft->soundEngine->playUI("random.click", 1.0, 1.0);
                 this->sneakingMaybe = !this->sneakingMaybe;
                 s_lastSneakTap = 0;
               } else {

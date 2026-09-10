@@ -428,6 +428,9 @@ void LocalPlayer::aiStep() {
   if (!currentScreen || currentScreen->field_C) {
     moveInput->tick(this);
   }
+  if (this->moveInput->sneakingMaybe && this->ySize < 0.2) {
+    this->ySize = 0.2;
+  }
   this->field_B7C = 1.0;
   if (this->abilities.mayfly) {
     if (!jumpingMaybe && this->moveInput->jumpingMaybe) {
@@ -463,10 +466,6 @@ void LocalPlayer::aiStep() {
     }
   }
 
-  if (!this->abilities.flying && this->moveInput->sneakingMaybe &&
-      !this->onGround) {
-    this->motionY = this->motionY - 0.15f;
-  }
   if (this->isUsingItem()) {
     this->moveInput->strafeInput = this->moveInput->strafeInput * 0.35;
     this->moveInput->forwardInput = this->moveInput->forwardInput * 0.35;
