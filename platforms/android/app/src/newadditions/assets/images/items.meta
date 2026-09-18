@@ -2719,5 +2719,17 @@
       256
     ],
     "additonal_textures": []
+  },
+  {
+    "name": "sweet_berries",
+    "uv": [
+      0.0,
+      0.0,
+      0.0625,
+      0.0625,
+      256,
+      256
+    ],
+    "additonal_textures": []
   }
 ]

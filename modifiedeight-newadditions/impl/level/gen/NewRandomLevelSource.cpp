@@ -19,6 +19,8 @@
 #include <level/gen/feature/ReedsFeature.hpp>
 #include <level/gen/feature/SpringFeature.hpp>
 #include <level/gen/feature/WaterLilyFeature.hpp>
+#include <level/gen/feature/HugeMushroomFeature.hpp>
+#include <level/biome/MushroomBiome.hpp>
 #include <entity/Frog.hpp>
 #include <math.h>
 #include <tile/HeavyTile.hpp>
@@ -118,13 +120,15 @@ void NewRandomLevelSource::buildSurfaces(int32_t a2, int32_t a3, uint8_t* a4, st
 								if(blockY >= 61 && blockY <= 63) {
 									b = biome->topBlock;
 									b2 = biome->fillerBlock;
-									if(z2) {
-										b = 0;
-										b2 = Tile::gravel->blockID;
-									}
-									if(z) {
-										b = Tile::sand->blockID;
-										b2 = Tile::sand->blockID;
+									if(biome != Biome::mushroom) {
+										if(z2) {
+											b = 0;
+											b2 = Tile::gravel->blockID;
+										}
+										if(z) {
+											b = Tile::sand->blockID;
+											b2 = Tile::sand->blockID;
+										}
 									}
 								}
 
@@ -167,6 +171,7 @@ void NewRandomLevelSource::buildSurfaces(int32_t a2, int32_t a3, uint8_t* a4, st
 					}
 				}
 			}
+
 		}
 	}
 }
@@ -688,6 +693,15 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 		OreFeature f(Tile::lapisOre->blockID, 6);
 		f.place(this->level, a8, v59, v61, v63);
 	}
+	if (Tile::glowstoneOre) {
+		for (int vgo = 0; vgo < 14; ++vgo) {
+			int32_t gx = chunkXStart + (a8->genrand_int32() & 0xF);
+			int32_t gy = 4 + (a8->genrand_int32() % 68);
+			int32_t gzz = chunkZStart + (a8->genrand_int32() & 0xF);
+			OreFeature f(Tile::glowstoneOre->blockID, 8);
+			f.place(this->level, a8, gx, gy, gzz);
+		}
+	}
 
 	float v = this->treeNoise.getValue((float)chunkXStart * 0.5, (float)chunkZStart * 0.5);
 	int v67 = (int)(float)((float)((float)((float)(a8->nextFloat() * 4.0) + (float)(v * 0.125)) + 4.0) / 3.0);
@@ -797,19 +811,20 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 			}
 		}
 	}
-	if ((biomeAtChunk == Biome::forest || biomeAtChunk == Biome::birchForest || biomeAtChunk == Biome::jungle || biomeAtChunk == Biome::rainForest) && (a8->genrand_int32() % 5 == 0) && Tile::mushroom1 && Tile::mushroom2) {
+	if ((biomeAtChunk == Biome::forest || biomeAtChunk == Biome::birchForest || biomeAtChunk == Biome::jungle || biomeAtChunk == Biome::rainForest || biomeAtChunk == Biome::swampland || biomeAtChunk == Biome::taiga) && (a8->genrand_int32() % 3 == 0) && Tile::mushroom1 && Tile::mushroom2) {
 		int32_t mx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
 		int32_t mz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
 		int32_t my = this->level->getHeightmap(mx, mz);
 		int32_t mTile = (a8->genrand_int32() % 2 == 0) ? Tile::mushroom1->blockID : Tile::mushroom2->blockID;
-		int mCount = 1 + (a8->genrand_int32() % 3);
+		int mCount = 2 + (a8->genrand_int32() % 4);
 		for (int m = 0; m < mCount; ++m) {
-			int32_t smx = mx + (a8->genrand_int32() % 3) - 1;
-			int32_t smz = mz + (a8->genrand_int32() % 3) - 1;
+			int32_t smx = mx + (a8->genrand_int32() % 5) - 2;
+			int32_t smz = mz + (a8->genrand_int32() % 5) - 2;
 			int32_t smy = this->level->getHeightmap(smx, smz);
 			int ground = this->level->getTile(smx, smy - 1, smz);
-			if (this->level->isEmptyTile(smx, smy, smz) && (ground == Tile::grass->blockID || ground == Tile::dirt->blockID)) {
-				this->level->setTileAndDataNoUpdate(smx, smy, smz, mTile, 0);
+			if (this->level->isEmptyTile(smx, smy, smz) && (ground == Tile::grass->blockID || ground == Tile::dirt->blockID || (Tile::mycelium && ground == Tile::mycelium->blockID))) {
+				int32_t mData = a8->genrand_int32() % 3;
+				this->level->setTileAndDataNoUpdate(smx, smy, smz, mTile, mData);
 			}
 		}
 	}
@@ -1229,7 +1244,7 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 	}
 	int32_t cactiCnt;
 	if(biomeAtChunk == Biome::desert) {
-		cactiCnt = 5;
+		cactiCnt = 20;
 	} else {
 		cactiCnt = 0;
 	}
@@ -1239,6 +1254,44 @@ void NewRandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, i
 		int8_t v102 = a8->genrand_int32();
 		CactusFeature f;
 		f.place(this->level, a8, chunkXStart + (v100 & 0xF) + 8, v101 & 0x7F, chunkZStart + (v102 & 0xF) + 8);
+	}
+	if (biomeAtChunk == Biome::desert && Tile::deadBush) {
+		for (int32_t db = 0; db < 6; ++db) {
+			int8_t dbx = a8->genrand_int32();
+			int8_t dbz = a8->genrand_int32();
+			int32_t dx = chunkXStart + (dbx & 0xF) + 8;
+			int32_t dz = chunkZStart + (dbz & 0xF) + 8;
+			int32_t dy = this->level->getHeightmap(dx, dz);
+			if (dy > 0 && dy < 127 && this->level->isEmptyTile(dx, dy, dz) && Tile::deadBush->canSurvive(this->level, dx, dy, dz)) {
+				this->level->setTileAndData(dx, dy, dz, Tile::deadBush->blockID, 0, 2);
+			}
+		}
+	}
+	if (biomeAtChunk == Biome::mushroom) {
+		int hugeMushroomCount = 2 + (a8->genrand_int32() % 3);
+		for (int h = 0; h < hugeMushroomCount; ++h) {
+			int32_t hx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t hz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+			int32_t hy = this->level->getHeightmap(hx, hz);
+			int32_t mType = a8->genrand_int32() % 2;
+			HugeMushroomFeature hmf(mType);
+			hmf.place(this->level, a8, hx, hy, hz);
+		}
+		if (Tile::mushroom1 && Tile::mushroom2) {
+			for (int sm = 0; sm < 28; ++sm) {
+				int32_t mx = chunkXStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t mz = chunkZStart + (a8->genrand_int32() & 0xF) + 8;
+				int32_t my = this->level->getHeightmap(mx, mz);
+				if (my > 0 && my < 127 && this->level->isEmptyTile(mx, my, mz)) {
+					int ground = this->level->getTile(mx, my - 1, mz);
+					if ((Tile::mycelium && ground == Tile::mycelium->blockID) || ground == Tile::dirt->blockID || ground == Tile::grass->blockID) {
+						int32_t mTile = (a8->genrand_int32() % 2 == 0) ? Tile::mushroom1->blockID : Tile::mushroom2->blockID;
+						int32_t mData = a8->genrand_int32() % 3;
+						this->level->setTileAndDataNoUpdate(mx, my, mz, mTile, mData);
+					}
+				}
+			}
+		}
 	}
 	for(int32_t v103 = 0; v103 < 50; ++v103) {
 		int8_t v104 = a8->genrand_int32();

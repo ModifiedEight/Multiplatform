@@ -193,6 +193,8 @@ void Options::update() {
 							this->readInt(v13[i + 1], this->chatBgColor);
 						} else if(v13[i] == "options.panoramaangle") {
 							this->readInt(v13[i + 1], this->panoramaAngle);
+						} else if(v13[i] == "options.guiscale") {
+							this->readInt(v13[i + 1], this->guiScale);
 						} else if(v13[i] == OptionStrings::Graphics_Gamma) {
 							this->readFloat(v13[i + 1], this->brightness);
 						} else if(v13[i] == OptionStrings::Game_ThirdPerson) {
@@ -267,6 +269,7 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->renderDistance = Options::RENDERDISTANCE_LEVELS[idx];
 	} else if(a2 == &Options::Option::GUI_SCALE) {
 		this->guiScale = (a3 + (uint8_t)this->guiScale) & 3;
+		this->notifyOptionUpdate(a2, this->guiScale);
 	} else if(a2 == &Options::Option::VIEW_BOBBING) {
 		this->viewBobbing ^= 1u;
 	} else if(a2 == &Options::Option::THIRD_PERSON) {
@@ -401,6 +404,8 @@ void Options::set(const Options::Option* a2, int32_t a3) {
 		this->newAdditions = a3;
 	} else if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		this->panoramaAngle = a3;
+	} else if(a2 == &Options::Option::GUI_SCALE) {
+		this->guiScale = a3 & 3;
 	}
 	this->notifyOptionUpdate(a2, a3);
 }
@@ -480,6 +485,7 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.swapjumpandsneak", this->swapJumpAndSneak);
 	this->addOptionToSaveOutput(v4, "options.extendedinventory", this->extendedInventory);
 	this->addOptionToSaveOutput(v4, "options.panoramaangle", this->panoramaAngle);
+	this->addOptionToSaveOutput(v4, "options.guiscale", this->guiScale);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
 	this->addOptionToSaveOutput(v4, "audio_music", this->musicVolume);
@@ -606,7 +612,7 @@ void Options::initDefaultValues(void) {
 	this->controllerCursorSensitivity = 2.25f;
 	this->limitFramerate = 0;
 	this->renderDistance = 2;
-	this->useTouchscreen = this->minecraft->supportNonTouchscreen();
+	this->useTouchscreen = !this->minecraft->supportNonTouchscreen();
 	float v4 = this->minecraft->platform()->getPixelsPerMillimeter();
 	if(v4 > 12) v4 = 12;
 	else if(v4 <= 3) v4 = 3;
@@ -696,6 +702,9 @@ std::vector<int> Options::getValues(const Options::Option* a2) {
 	}
 	if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		return Options::PANORAMA_ANGLE_LEVELS;
+	}
+	if(a2 == &Options::Option::GUI_SCALE) {
+		return {0, 1, 2, 3};
 	}
 	return {};
 }
@@ -796,6 +805,9 @@ int32_t Options::getIntValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		return this->panoramaAngle;
 	}
+	if(a2 == &Options::Option::GUI_SCALE) {
+		return this->guiScale;
+	}
 	return 0;
 }
 std::string Options::getDescription(const Options::Option* a2, std::string a4) {
@@ -818,6 +830,10 @@ std::string Options::getDescription(const Options::Option* a2, std::string a4) {
 	if(a2 == &Options::Option::PANORAMA_ANGLE) {
 		std::string modes[] = {"Off", "0: Forward", "1: Right (90)", "2: Back (180)", "3: Left (270)", "4: Up", "5: Down"};
 		if(this->panoramaAngle >= 0 && this->panoramaAngle <= 6) return a4 + ": " + modes[this->panoramaAngle];
+	}
+	if(a2 == &Options::Option::GUI_SCALE) {
+		std::string modes[] = {"Auto", "Small", "Normal", "Large"};
+		if(this->guiScale >= 0 && this->guiScale <= 3) return a4 + ": " + modes[this->guiScale];
 	}
 	if(a2 == &Options::Option::RENDER_DISTANCE) {
 		std::string modes[] = {"Tiny", "Short", "Normal", "Far", "Very Far", "Ultra", "Extreme"};

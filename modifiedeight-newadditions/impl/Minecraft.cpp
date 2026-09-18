@@ -642,69 +642,61 @@ void Minecraft::pauseGame(bool_t a2) {
 	}
 }
 void Minecraft::prepareLevel(const std::string& a2) {
-	Level* level;	   // r0
-	int32_t v4;		   // r6
-	int32_t v5;		   // r8
-	int32_t i;		   // r5
-	int32_t v7;		   // r7
-	int32_t v8;		   // r6
-	LevelChunk* chunk; // r0
-	int32_t j;		   // r5
-	Level* v11;		   // r0
-
 	this->progressMessageIndex = 1;
-	Stopwatch v13; // [sp+4h] [bp-13Ch] BYREF
-	Stopwatch v14; // [sp+38h] [bp-108h] BYREF
-	Stopwatch v15; // [sp+68h] [bp-D8h] BYREF
-	Stopwatch v16; // [sp+98h] [bp-A8h] BYREF
-	Stopwatch v17; // [sp+C8h] [bp-78h] BYREF
-	v13.start();
-	Stopwatch v18; // [sp+F8h] [bp-48h] BYREF
 
-	level = this->level;
+	Level* level = this->level;
 	if(!level->field_B64) {
 		level->setUpdateLights(0);
 	}
-	v4 = 0;
-	v5 = 8;
-	do {
-		v7 = v4;
-		for(i = 8; i != 264; i += 16) {
-			this->field_CBC = v7 >> 8;
-			v14.start();
-			this->level->getTile(v5, 64, i);
-			v14.stop();
-			v18.start();
-			if(this->level->field_B64) {
-				while(this->level->updateLights()) {
-					;
+
+	TilePos spawn = level->getSharedSpawnPos();
+	int spawnChunkX = spawn.x >> 4;
+	int spawnChunkZ = spawn.z >> 4;
+	if (spawnChunkX < 2) spawnChunkX = 2;
+	if (spawnChunkX > 13) spawnChunkX = 13;
+	if (spawnChunkZ < 2) spawnChunkZ = 2;
+	if (spawnChunkZ > 13) spawnChunkZ = 13;
+
+	int minCX = spawnChunkX - 3;
+	int maxCX = spawnChunkX + 3;
+	int minCZ = spawnChunkZ - 3;
+	int maxCZ = spawnChunkZ + 3;
+	if (minCX < 0) minCX = 0;
+	if (maxCX > 15) maxCX = 15;
+	if (minCZ < 0) minCZ = 0;
+	if (maxCZ > 15) maxCZ = 15;
+
+	int totalChunks = (maxCX - minCX + 1) * (maxCZ - minCZ + 1);
+	int processed = 0;
+
+	for (int cx = minCX; cx <= maxCX; ++cx) {
+		for (int cz = minCZ; cz <= maxCZ; ++cz) {
+			this->field_CBC = (processed * 100) / totalChunks;
+			this->level->getTile((cx << 4) + 8, 64, (cz << 4) + 8);
+			if (this->level->field_B64) {
+				int lightSteps = 0;
+				while (this->level->updateLights() && ++lightSteps < 100) {
 				}
 			}
-			v18.stop();
-			v7 += 100;
+			++processed;
 		}
-		v4 += 1600;
-		v5 += 16;
-	} while(v4 != 25600);
-	v8 = 0;
-	v13.stop();
+	}
+
 	this->level->setUpdateLights(1);
-	v15.start();
-	do {
-		for(j = 0; j != 16; ++j) {
-			chunk = this->level->getChunk(v8, j);
-			if(chunk) {
-				if(!chunk->field_24B) {
+
+	for (int cx = minCX; cx <= maxCX; ++cx) {
+		for (int cz = minCZ; cz <= maxCZ; ++cz) {
+			LevelChunk* chunk = this->level->getChunk(cx, cz);
+			if (chunk) {
+				if (!chunk->field_24B) {
 					chunk->unsaved = 0;
 					chunk->clearUpdateMap();
 				}
 			}
 		}
-		++v8;
-	} while(v8 != 16);
-	v15.stop();
-	v17.start();
-	v11 = this->level;
+	}
+
+	Level* v11 = this->level;
 	this->progressMessageIndex = 3;
 	if(v11->field_B64) {
 		v11->setInitialSpawn();
@@ -714,19 +706,9 @@ void Minecraft::prepareLevel(const std::string& a2) {
 		v11->saveLevelData();
 		this->level->loadEntities();
 	}
-	v17.stop();
 	this->field_CBC = -1;
 	this->progressMessageIndex = 2;
-	v16.start();
 	this->level->prepare();
-	v16.stop();
-
-	v13.print("Generate level: ");
-	v18.print(" - light: ");
-	v14.print(" - getTl: ");
-	v15.print(" - clear: ");
-	v16.print(" - prepr: ");
-	v17.print(" - store: ");
 }
 void* Minecraft::prepareLevel_tspawn(void* a2) {
 	((Minecraft*)a2)->generateLevel("Currently not used", ((Minecraft*)a2)->level);
@@ -863,6 +845,7 @@ void Minecraft::setScreen(Screen* screen) {
 		}
 	} else {
 		this->grabMouse();
+		if(this->platform()) this->platform()->hideKeyboard();
 	}
 }
 void Minecraft::setSize(int32_t a2, int32_t a3) {
@@ -880,20 +863,27 @@ void Minecraft::setSize(int32_t a2, int32_t a3) {
 		ppm = 10;
 	}
 
-	float gscale;
-	if(this->options.guiScale > 0) {
-		gscale = this->options.guiScale;
+	float autoScale;
+	if(this->field_1C >= 1000) {
+		if(ppm <= 15) autoScale = 4;
+		else autoScale = 6;
+	} else if(this->field_1C >= 800) {
+		autoScale = 3;
+	} else if(this->field_1C >= 400) {
+		autoScale = 2;
 	} else {
-		if(this->field_1C >= 1000) {
-			if(ppm <= 15) gscale = 4;
-			else gscale = 6;
-		} else if(this->field_1C >= 800) {
-			gscale = 3;
-		} else if(this->field_1C >= 400) {
-			gscale = 2;
-		} else {
-			gscale = 1;
-		}
+		autoScale = 1;
+	}
+
+	float gscale = autoScale;
+	if(this->options.guiScale == 1) {
+		gscale = (autoScale >= 3) ? (autoScale - 2) : 1;
+	} else if(this->options.guiScale == 2) {
+		gscale = (autoScale >= 2) ? (autoScale - 1) : 1;
+	} else if(this->options.guiScale == 3) {
+		gscale = autoScale;
+	} else {
+		gscale = autoScale;
 	}
 	Gui::GuiScale = gscale;
 CALCULATE_INVERSE:

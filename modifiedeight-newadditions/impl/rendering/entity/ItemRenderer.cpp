@@ -8,6 +8,7 @@
 #include <tile/Tile.hpp>
 #include <tile/MobHeadTile.hpp>
 #include <rendering/tileentity/MobHeadRenderer.hpp>
+#include <rendering/tileentity/ChestRenderer.hpp>
 #include <item/Item.hpp>
 #include <entity/ItemEntity.hpp>
 #include <rendering/EntityRenderDispatcher.hpp>
@@ -261,6 +262,10 @@ void ItemRenderer::renderGuiItemCorrect(Font* a1, Textures* a2, const ItemInstan
 			int htype = MobHeadTile::getHeadType(a3->tileClass->blockID);
 			MobHeadRenderer::render2DFace(a2, htype, (float)a4 + 2.0f, (float)a5 + 2.0f, 12.0f, 1.0f);
 			return;
+		} else if(a3->tileClass && (a3->tileClass == Tile::chest || (Tile::enderChest && a3->tileClass == Tile::enderChest))) {
+			bool isEnder = (Tile::enderChest && a3->tileClass == Tile::enderChest);
+			ChestRenderer::renderGuiChest(a2, isEnder, (float)a4, (float)a5, 1.0f, 1.0f);
+			return;
 		} else if(a3->tileClass && (v9 = a3->tileClass->getRenderShape(), TileRenderer::canRender(v9))) {
 			a2->loadAndBindTexture("terrain.png");
 			glPushMatrix();
@@ -327,12 +332,15 @@ void ItemRenderer::renderGuiItemInChunk(ItemRenderChunkType a1, Textures* a2, co
 			if(!a3->itemClass && !tileClass) {
 				return;
 			}
+			if(tileClass && (tileClass == Tile::chest || (Tile::enderChest && tileClass == Tile::enderChest))) {
+				if(a1 == IRCT_THREE) {
+					bool isEnder = (Tile::enderChest && tileClass == Tile::enderChest);
+					ChestRenderer::renderGuiChest(a2, isEnder, a4, a5, a8, a6);
+				}
+				return;
+			}
 			if(a1 == IRCT_THREE) {
 				if(tileClass && !MobHeadTile::isHeadBlock(tileClass->blockID)) {
-					if (tileClass == Tile::chest || (Tile::enderChest && tileClass == Tile::enderChest)) {
-						v19 = -1;
-						goto LABEL_21;
-					}
 LABEL_19:
 					v19 = getFoliageColor(tileClass, a3->getAuxValue(), a3->getId());
 LABEL_21:
@@ -344,11 +352,6 @@ LABEL_21:
 					return;
 				}
 				if(tileClass && !MobHeadTile::isHeadBlock(tileClass->blockID)) {
-					if (tileClass == Tile::chest || (Tile::enderChest && tileClass == Tile::enderChest)) {
-						if (a1 == IRCT_ONE) return;
-						v19 = -1;
-						goto LABEL_21;
-					}
 					if(a1 == IRCT_TWO) {
 						return;
 					}
@@ -380,6 +383,11 @@ void ItemRenderer::renderGuiItemNew(Textures* a1, const ItemInstance* a2, int32_
 	if (tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
 		int htype = MobHeadTile::getHeadType(tileClass->blockID);
 		MobHeadRenderer::render2DFace(a1, htype, a4 + 2.0f * a8, a5 + 2.0f * a8, 12.0f * a8, a7);
+		return;
+	}
+	if (tileClass && (tileClass == Tile::chest || (Tile::enderChest && tileClass == Tile::enderChest))) {
+		bool isEnder = (Tile::enderChest && tileClass == Tile::enderChest);
+		ChestRenderer::renderGuiChest(a1, isEnder, a4, a5, a8, a7);
 		return;
 	}
 	int32_t aux;

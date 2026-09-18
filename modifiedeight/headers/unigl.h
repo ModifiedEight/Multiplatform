@@ -25,12 +25,12 @@ void gluPerspective(GLfloat fovy, GLfloat aspect, GLfloat znear, GLfloat zfar);
 
 #include <GL/gl.h>
 #include <GL/glext.h>
-#include <GL/glu.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void gluPerspective(GLfloat fovy, GLfloat aspect, GLfloat znear, GLfloat zfar);
 void initGlFuncs();
 extern void (*glDeleteBuffers)(GLsizei n, const GLuint* buffers);
 extern void (*glGenBuffers)(GLsizei n, GLuint* buffers);

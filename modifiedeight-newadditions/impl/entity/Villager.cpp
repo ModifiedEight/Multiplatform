@@ -29,14 +29,13 @@ Villager::Villager(Level* level)
 	this->sleepTimer = 0;
 	this->profession = this->random.genrand_int32() % 5;
 	this->entityRenderId = VILLAGER;
-
-	switch (this->profession) {
-		case 0: this->skin = "mob/farmer.png"; break;
-		case 1: this->skin = "mob/librarian.png"; break;
-		case 2: this->skin = "mob/priest.png"; break;
-		case 3: this->skin = "mob/smith.png"; break;
-		case 4: this->skin = "mob/butcher.png"; break;
-		default: this->skin = "mob/villager.png"; break;
+	switch (this->profession % 5) {
+		case 0: this->skin = "mob/villager/farmer.png"; break;
+		case 1: this->skin = "mob/villager/librarian.png"; break;
+		case 2: this->skin = "mob/villager/priest.png"; break;
+		case 3: this->skin = "mob/villager/smith.png"; break;
+		case 4: this->skin = "mob/villager/butcher.png"; break;
+		default: this->skin = "mob/villager/villager.png"; break;
 	}
 
 	this->getNavigation()->setCanOpenDoors(1);
@@ -312,12 +311,12 @@ void Villager::readAdditionalSaveData(CompoundTag* tag) {
 		this->profession = tag->getInt("Profession");
 	}
 	switch (this->profession % 5) {
-		case 0: this->skin = "mob/farmer.png"; break;
-		case 1: this->skin = "mob/librarian.png"; break;
-		case 2: this->skin = "mob/priest.png"; break;
-		case 3: this->skin = "mob/smith.png"; break;
-		case 4: this->skin = "mob/butcher.png"; break;
-		default: this->skin = "mob/villager.png"; break;
+		case 0: this->skin = "mob/villager/farmer.png"; break;
+		case 1: this->skin = "mob/villager/librarian.png"; break;
+		case 2: this->skin = "mob/villager/priest.png"; break;
+		case 3: this->skin = "mob/villager/smith.png"; break;
+		case 4: this->skin = "mob/villager/butcher.png"; break;
+		default: this->skin = "mob/villager/villager.png"; break;
 	}
 	if (tag->contains("TradeCount")) {
 		this->tradeCount = tag->getInt("TradeCount");

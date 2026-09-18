@@ -31,7 +31,7 @@ bool_t DyePowderItem::useOn(ItemInstance* item, Player* player, Level* level, in
 	int32_t tileId = level->getTile(x, y, z);
 	int32_t data = level->getData(x, y, z);
 
-	bool isPlant = (Tile::tiles[tileId] && (tileId == 2 || tileId == 59 || (Tile::carrots && tileId == Tile::carrots->blockID) || (Tile::potatoes && tileId == Tile::potatoes->blockID) || (Tile::beetroot && tileId == Tile::beetroot->blockID) || tileId == 6 || (Tile::vine && tileId == Tile::vine->blockID) || (Tile::waterLily && tileId == Tile::waterLily->blockID) || (Tile::tallgrass && tileId == Tile::tallgrass->blockID) || (Tile::sapling && tileId == Tile::sapling->blockID)));
+	bool isPlant = (Tile::tiles[tileId] && (tileId == 2 || tileId == 59 || (Tile::carrots && tileId == Tile::carrots->blockID) || (Tile::potatoes && tileId == Tile::potatoes->blockID) || (Tile::beetroot && tileId == Tile::beetroot->blockID) || tileId == 6 || (Tile::vine && tileId == Tile::vine->blockID) || (Tile::waterLily && tileId == Tile::waterLily->blockID) || (Tile::tallgrass && tileId == Tile::tallgrass->blockID) || (Tile::sapling && tileId == Tile::sapling->blockID) || (Tile::mycelium && tileId == Tile::mycelium->blockID)));
 	bool sneak = (player && player->isSneaking());
 
 	if (item && item->getAuxValue() == 15 && (!sneak || isPlant)) {

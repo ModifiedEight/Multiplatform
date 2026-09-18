@@ -2804,17 +2804,153 @@ bool_t TileRenderer::tesselateCrossInWorld(Tile* tile, int32_t x, int32_t y, int
 	if (tile == Tile::flower || tile == Tile::rose || tile == Tile::flowerRose ||
 	    tile == Tile::flowerPaeonia || tile == Tile::flowerDaisy ||
 	    tile == Tile::flowerHoustonia || tile == Tile::flowerOrchid ||
-	    tile == Tile::flowerAllium) {
+	    tile == Tile::flowerAllium || tile == Tile::mushroom1 || tile == Tile::mushroom2) {
 		flowerCount = (v19 & 3) + 1;
+	}
+	if (tile == Tile::mushroom1 || tile == Tile::mushroom2) {
+		int trunkDir = -1;
+		if (this->levelSource->getTile(x - 1, y, z) == Tile::treeTrunk->blockID) trunkDir = 4;
+		else if (this->levelSource->getTile(x + 1, y, z) == Tile::treeTrunk->blockID) trunkDir = 5;
+		else if (this->levelSource->getTile(x, y, z - 1) == Tile::treeTrunk->blockID) trunkDir = 2;
+		else if (this->levelSource->getTile(x, y, z + 1) == Tile::treeTrunk->blockID) trunkDir = 3;
+
+		if (trunkDir != -1) {
+			TextureUVCoordinateSet* uvs = tile->getTexture(0, v19);
+			float minU = uvs->minX, maxU = uvs->maxX;
+			float minV = uvs->minY, maxV = uvs->maxY;
+
+			int count = (v19 & 3) + 1;
+			for (int f = 0; f < count; ++f) {
+				float size = (count == 1) ? 0.60f : 0.42f;
+				float halfW = size * 0.5f;
+				float yBase;
+				float lateral;
+				if (count == 1) {
+					yBase = (float)y + 0.45f;
+					lateral = 0.5f;
+				} else if (f == 0) {
+					yBase = (float)y + 0.28f;
+					lateral = 0.32f;
+				} else if (f == 1) {
+					yBase = (float)y + 0.65f;
+					lateral = 0.68f;
+				} else if (f == 2) {
+					yBase = (float)y + 0.72f;
+					lateral = 0.32f;
+				} else {
+					yBase = (float)y + 0.22f;
+					lateral = 0.70f;
+				}
+
+				if (trunkDir == 4) {
+					float x0 = (float)x, x1 = x0 + size;
+					float z0 = (float)z + lateral - halfW, z1 = (float)z + lateral + halfW;
+					float zMid = (float)z + lateral;
+					float y0 = yBase - halfW, y1 = yBase + halfW;
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, minU, minV);
+
+					Tesselator::instance.vertexUV(x1, yBase, z0, minU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, maxU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+
+					Tesselator::instance.vertexUV(x0, y0, zMid, minU, maxV);
+					Tesselator::instance.vertexUV(x1, y0, zMid, minU, minV);
+					Tesselator::instance.vertexUV(x1, y1, zMid, maxU, minV);
+					Tesselator::instance.vertexUV(x0, y1, zMid, maxU, maxV);
+
+					Tesselator::instance.vertexUV(x0, y1, zMid, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, y1, zMid, maxU, minV);
+					Tesselator::instance.vertexUV(x1, y0, zMid, minU, minV);
+					Tesselator::instance.vertexUV(x0, y0, zMid, minU, maxV);
+				} else if (trunkDir == 5) {
+					float x0 = (float)x + 1.0f, x1 = x0 - size;
+					float z0 = (float)z + lateral - halfW, z1 = (float)z + lateral + halfW;
+					float zMid = (float)z + lateral;
+					float y0 = yBase - halfW, y1 = yBase + halfW;
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, minU, minV);
+
+					Tesselator::instance.vertexUV(x1, yBase, z0, minU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, maxU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+
+					Tesselator::instance.vertexUV(x0, y0, zMid, minU, maxV);
+					Tesselator::instance.vertexUV(x1, y0, zMid, minU, minV);
+					Tesselator::instance.vertexUV(x1, y1, zMid, maxU, minV);
+					Tesselator::instance.vertexUV(x0, y1, zMid, maxU, maxV);
+
+					Tesselator::instance.vertexUV(x0, y1, zMid, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, y1, zMid, maxU, minV);
+					Tesselator::instance.vertexUV(x1, y0, zMid, minU, minV);
+					Tesselator::instance.vertexUV(x0, y0, zMid, minU, maxV);
+				} else if (trunkDir == 2) {
+					float z0 = (float)z, z1 = z0 + size;
+					float x0 = (float)x + lateral - halfW, x1 = (float)x + lateral + halfW;
+					float xMid = (float)x + lateral;
+					float y0 = yBase - halfW, y1 = yBase + halfW;
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, minU, minV);
+
+					Tesselator::instance.vertexUV(x0, yBase, z1, minU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+
+					Tesselator::instance.vertexUV(xMid, y0, z0, minU, maxV);
+					Tesselator::instance.vertexUV(xMid, y0, z1, minU, minV);
+					Tesselator::instance.vertexUV(xMid, y1, z1, maxU, minV);
+					Tesselator::instance.vertexUV(xMid, y1, z0, maxU, maxV);
+
+					Tesselator::instance.vertexUV(xMid, y1, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(xMid, y1, z1, maxU, minV);
+					Tesselator::instance.vertexUV(xMid, y0, z1, minU, minV);
+					Tesselator::instance.vertexUV(xMid, y0, z0, minU, maxV);
+				} else if (trunkDir == 3) {
+					float z0 = (float)z + 1.0f, z1 = z0 - size;
+					float x0 = (float)x + lateral - halfW, x1 = (float)x + lateral + halfW;
+					float xMid = (float)x + lateral;
+					float y0 = yBase - halfW, y1 = yBase + halfW;
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x0, yBase, z1, minU, minV);
+
+					Tesselator::instance.vertexUV(x0, yBase, z1, minU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z1, maxU, minV);
+					Tesselator::instance.vertexUV(x1, yBase, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(x0, yBase, z0, minU, maxV);
+
+					Tesselator::instance.vertexUV(xMid, y0, z0, minU, maxV);
+					Tesselator::instance.vertexUV(xMid, y0, z1, minU, minV);
+					Tesselator::instance.vertexUV(xMid, y1, z1, maxU, minV);
+					Tesselator::instance.vertexUV(xMid, y1, z0, maxU, maxV);
+
+					Tesselator::instance.vertexUV(xMid, y1, z0, maxU, maxV);
+					Tesselator::instance.vertexUV(xMid, y1, z1, maxU, minV);
+					Tesselator::instance.vertexUV(xMid, y0, z1, minU, minV);
+					Tesselator::instance.vertexUV(xMid, y0, z0, minU, maxV);
+				}
+			}
+			return 1;
+		}
 	}
 	if (flowerCount <= 1) {
 		this->tesselateCrossTexture(tile, v19, v11, v12, v13);
 	} else {
 		static const float offsets[4][2] = {
-			{-0.18f, -0.18f},
-			{ 0.18f,  0.18f},
-			{ 0.18f, -0.18f},
-			{-0.18f,  0.18f}
+			{-0.30f, -0.30f},
+			{ 0.30f,  0.30f},
+			{ 0.30f, -0.30f},
+			{-0.30f,  0.30f}
 		};
 		for (int32_t f = 0; f < flowerCount; ++f) {
 			this->tesselateCrossTexture(tile, v19, (float)x + offsets[f][0], v12, (float)z + offsets[f][1]);

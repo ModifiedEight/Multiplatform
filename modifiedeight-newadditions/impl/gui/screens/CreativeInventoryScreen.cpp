@@ -142,7 +142,7 @@ static void addTabItem(int tab, Tile *tile, int count = 1, int aux = 0) {
   if (tile && tab >= 0 && tab < CreativeInventoryScreen::NUM_TABS) {
     if (s_creativeIsServer) {
       if (!Item::isVanilla081Id(tile->blockID)) return;
-      if (tile == Tile::bed && aux != 0) return;
+      if (tile == Tile::bed && aux != 14) return;
     }
     CreativeInventoryScreen::filteredItems[tab].emplace_back(
         ItemInstance(tile, count, aux));
@@ -152,7 +152,7 @@ static void addTabItem(int tab, Item *item, int count = 1, int aux = 0) {
   if (item && tab >= 0 && tab < CreativeInventoryScreen::NUM_TABS) {
     if (s_creativeIsServer) {
       if (!Item::isVanilla081Id(item->itemID)) return;
-      if (item == Item::bed && aux != 0) return;
+      if (item == Item::bed && aux != 14) return;
       if (item == Item::mushroomStew) return;
       if (item == Item::mobPlacer && aux != 10 && aux != 11 && aux != 12 && aux != 13 && aux != 32 && aux != 33 && aux != 34 && aux != 35 && aux != 36) return;
       if (item == Item::fish_raw || item == Item::fish_cooked || item == Item::salmon_raw || item == Item::salmon_cooked || item == Item::clownfish || item == Item::pufferfish) return;
@@ -181,6 +181,9 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(8, Tile::dirt);
   addTabItem(8, Tile::grass);
   addTabItem(8, Tile::grassPath);
+  addTabItem(8, Tile::mycelium);
+  addTabItem(8, Tile::mushroomBlockBrown);
+  addTabItem(8, Tile::mushroomBlockRed);
   addTabItem(8, Tile::clay);
   addTabItem(8, Tile::sand);
   addTabItem(8, Tile::gravel);
@@ -213,6 +216,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(8, Tile::emeraldOre);
   addTabItem(8, Tile::lapisOre);
   addTabItem(8, Tile::redStoneOre);
+  addTabItem(8, Tile::glowstoneOre);
   addTabItem(8, Tile::netherQuartz);
   addTabItem(8, Tile::coalBlock);
   addTabItem(8, Tile::ironBlock);
@@ -256,6 +260,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(7, Tile::enderChest);
   addTabItem(7, Tile::musicPlayer);
   addTabItem(7, Tile::torch);
+  addTabItem(7, Tile::lightGem);
   addTabItem(7, Tile::glass);
   addTabItem(7, Tile::thinGlass);
   addTabItem(7, Item::painting);
@@ -383,7 +388,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(6, Item::boots_diamond);
 
   // TAB 3: Spawn Eggs
-  for (int eggId : {10, 11, 12, 13, 14, 15, 17, 22, 26, 27, 28, 29,
+  for (int eggId : {10, 11, 12, 13, 14, 53, 17, 22, 26, 27, 28, 29,
                     30, 32, 33, 34, 35, 36, 37, 38, 39, 40, 120}) {
     addTabItem(5, Item::mobPlacer, 1, eggId);
   }
@@ -396,6 +401,7 @@ void CreativeInventoryScreen::populateFilteredItems(bool isServer) {
   addTabItem(4, Item::goldIngot);
   addTabItem(4, Item::emerald);
   addTabItem(4, Item::netherQuartz);
+  addTabItem(4, Item::yellowDust);
   addTabItem(4, Item::stick);
   addTabItem(4, Item::flint);
   addTabItem(4, Item::clay);

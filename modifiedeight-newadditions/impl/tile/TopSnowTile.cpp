@@ -42,8 +42,15 @@ bool_t TopSnowTile::shouldRenderFace(LevelSource* level, int32_t x, int32_t y, i
 	}
 	return Tile::shouldRenderFace(level, x, y, z, face);
 }
-AABB* TopSnowTile::getAABB(Level*, int32_t, int32_t, int32_t) {
-	return 0;
+AABB* TopSnowTile::getAABB(Level* level, int32_t x, int32_t y, int32_t z) {
+	this->updateShape(level, x, y, z);
+	this->aabb.minX = (float)x + this->minX;
+	this->aabb.minY = (float)y + this->minY;
+	this->aabb.minZ = (float)z + this->minZ;
+	this->aabb.maxX = (float)x + this->maxX;
+	this->aabb.maxY = (float)y + this->maxY;
+	this->aabb.maxZ = (float)z + this->maxZ;
+	return &this->aabb;
 }
 bool_t TopSnowTile::isSolidRender() {
 	return 0;

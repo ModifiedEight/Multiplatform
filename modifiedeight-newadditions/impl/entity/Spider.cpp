@@ -71,6 +71,10 @@ std::string Spider::getDeathSound() {
 	return "mob.spiderdeath";
 }
 Entity* Spider::findAttackTarget() {
+	Mob* hurtBy = this->getLastHurtByMob();
+	if(hurtBy && hurtBy->isAlive()) {
+		return hurtBy;
+	}
 	if(this->getBrightness(1.0) >= 0.5) {
 		return 0;
 	}
@@ -85,7 +89,8 @@ void Spider::checkHurtTarget(Entity* a2, float a3) {
 	float diffZ; // s16
 	float dist2; // s12
 
-	if(this->getBrightness(1.0) <= 0.5 || this->random.genrand_int32() % 0x64) {
+	Mob* hurtBy = this->getLastHurtByMob();
+	if(this->getBrightness(1.0) <= 0.5 || (hurtBy && hurtBy == a2) || (this->random.genrand_int32() % 0x64)) {
 		if(a3 <= 2.0 || a3 >= 6.0 || this->random.genrand_int32() % 0xA) {
 			Monster::checkHurtTarget(a2, a3);
 		} else if(this->onGround) {
@@ -97,6 +102,6 @@ void Spider::checkHurtTarget(Entity* a2, float a3) {
 			this->motionZ = (float)(this->motionZ * 0.2) + (float)((float)((float)(diffZ / dist2) * 0.5) * 0.8);
 		}
 	} else {
-		this->attackTarget = 0;
+		this->setAttackTarget(0);
 	}
 }

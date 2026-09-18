@@ -86,6 +86,14 @@ static bool translateCustomDesc(const std::string &key, std::string &out) {
     out = "Sea grass.";
     return true;
   }
+  if (key == "desc.mycelium") {
+    out = "Spreads to nearby dirt blocks and allows mushrooms to grow.";
+    return true;
+  }
+  if (key == "desc.mushroomblockbrown" || key == "desc.mushroomblockred") {
+    out = "Harvested from huge mushrooms.";
+    return true;
+  }
   return false;
 }
 
@@ -444,6 +452,7 @@ bool_t I18n::get(const std::string &a1, std::string &a2) {
     a2 = "Smooths chunk rebuilds to eliminate frame drops";
     return 1;
   }
+  if (a1 == "options.group.realms") { a2 = "ModifiedEight"; return 1; }
   if (a1 == "item.fishingRod.name") { a2 = "Fishing Rod"; return 1; }
   if (a1 == "item.fishRaw.name") { a2 = "Raw Fish"; return 1; }
   if (a1 == "item.fishCooked.name") { a2 = "Cooked Fish"; return 1; }
@@ -711,6 +720,7 @@ std::string I18n::get(const std::string &a2) {
     return "Smooth Chunk Loading";
   if (a2 == "options.smoothchunks.desc")
     return "Smooths chunk rebuilds to eliminate frame drops";
+  if (a2 == "options.group.realms") return "ModifiedEight";
   if (a2 == "item.fishingRod.name") return "Fishing Rod";
   if (a2 == "item.fishRaw.name") return "Raw Fish";
   if (a2 == "item.fishCooked.name") return "Cooked Fish";
@@ -849,6 +859,14 @@ std::string I18n::get(const std::string &a2) {
     return "Gold Button";
   if (a2 == "tile.buttonIron.name" || a2 == "item.buttonIron.name")
     return "Iron Button";
+  if (a2 == "tile.mycelium.name" || a2 == "item.mycelium.name")
+    return "Mycelium";
+  if (a2 == "tile.mushroomBlockBrown.name" || a2 == "item.mushroomBlockBrown.name")
+    return "Brown Mushroom Block";
+  if (a2 == "tile.mushroomBlockRed.name" || a2 == "item.mushroomBlockRed.name")
+    return "Red Mushroom Block";
+  if (a2 == "tile.glowstoneOre.name" || a2 == "item.glowstoneOre.name" || a2 == "tile.oreGlowstone.name" || a2 == "item.oreGlowstone.name")
+    return "Glowstone Ore";
 
   std::string out;
   if (translateCustomDesc(a2, out))

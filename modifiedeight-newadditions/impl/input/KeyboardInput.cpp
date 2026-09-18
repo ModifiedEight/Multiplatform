@@ -3,6 +3,11 @@
 #include <entity/Player.hpp>
 #include <entity/LocalPlayer.hpp>
 #include <input/ControllerHandler.hpp>
+#if __has_include(<SDL/SDL.h>)
+#include <SDL/SDL.h>
+#elif __has_include(<SDL.h>)
+#include <SDL.h>
+#endif
 
 KeyboardInput::KeyboardInput(Options* a2) {
 	this->strafeInput = 0;
@@ -51,7 +56,6 @@ void KeyboardInput::tick(Player* a2) {
 		this->strafeInput = this->strafeInput * 0.3;
 		this->forwardInput = this->forwardInput * 0.3;
 	}
-	// handle double-tap forward -> sprint
 	if(this->forwardTapTimer > 0) --this->forwardTapTimer;
 	if(this->forwardDoubleTapDetected) {
 		this->forwardDoubleTapDetected = false;
@@ -59,7 +63,6 @@ void KeyboardInput::tick(Player* a2) {
 			((LocalPlayer*)a2)->setSprinting(true);
 		}
 	}
-	// cancel sprint if not moving forward or if sneaking
 	if(a2 && a2->isLocalPlayer()) {
 		LocalPlayer* lp = (LocalPlayer*)a2;
 		if(this->forwardInput <= 0.0f || this->sneakingMaybe) {
@@ -72,25 +75,29 @@ void KeyboardInput::tick(Player* a2) {
 	ControllerHandler::applyMove(this, a2);
 }
 void KeyboardInput::setKey(int32_t a2, bool_t a3) {
-	Options* options; // r4
-	int32_t v4;		  // r3
-	int32_t keyCode;  // r5
-	int32_t v6;		  // r4
+	Options* options;
+	int32_t v4;
+	int32_t keyCode;
+	int32_t v6;
 
 	options = this->options;
 	if(a2 == options->keyForward.keyCode) {
 		v4 = 0;
+		if(a3) this->inputs[1] = 0;
 	} else {
 		v4 = -1;
 	}
 	if(a2 == options->keyBack.keyCode) {
 		v4 = 1;
+		if(a3) this->inputs[0] = 0;
 	}
 	if(a2 == options->keyLeft.keyCode) {
 		v4 = 2;
+		if(a3) this->inputs[3] = 0;
 	}
 	if(a2 == options->keyRight.keyCode) {
 		v4 = 3;
+		if(a3) this->inputs[2] = 0;
 	}
 	if(a2 == options->keyJump.keyCode) {
 		v4 = 4;

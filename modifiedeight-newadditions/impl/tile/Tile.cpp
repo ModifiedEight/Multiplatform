@@ -78,6 +78,8 @@
 #include <tile/MixedSlabTile.hpp>
 #include <tile/MultiTextureTile.hpp>
 #include <tile/Mushroom.hpp>
+#include <tile/MyceliumTile.hpp>
+#include <tile/HugeMushroomTile.hpp>
 #include <tile/NetherReactor.hpp>
 #include <tile/ObsidianTile.hpp>
 #include <tile/SoulSandTile.hpp>
@@ -176,6 +178,9 @@ Tile *Tile::goldenRail;
 Tile *Tile::web;
 Tile *Tile::tallgrass;
 Tile *Tile::waterLily;
+Tile *Tile::mycelium;
+Tile *Tile::mushroomBlockBrown;
+Tile *Tile::mushroomBlockRed;
 Tile *Tile::fence_spruce;
 Tile *Tile::fence_birch;
 Tile *Tile::fence_jungle;
@@ -340,6 +345,7 @@ Tile *Tile::beetroot;
 Tile *Tile::stonecutterBench;
 Tile *Tile::slimeBlock;
 Tile *Tile::sweetBerryBush;
+Tile *Tile::glowstoneOre;
 Tile *Tile::musicPlayer;
 Tile *Tile::glowingObsidian;
 Tile *Tile::netherReactor;
@@ -715,6 +721,24 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                         ->setSoundType(Tile::SOUND_GRASS)
                         ->setCategory(2, 8)
                         ->setDescriptionId("mushroom");
+  Tile::mycelium = (new MyceliumTile(110))
+                       ->init()
+                       ->setDestroyTime(0.6f)
+                       ->setSoundType(Tile::SOUND_GRASS)
+                       ->setCategory(1, 1)
+                       ->setDescriptionId("mycelium");
+  Tile::mushroomBlockBrown = (new HugeMushroomTile(99, 0))
+                                 ->init()
+                                 ->setDestroyTime(0.2f)
+                                 ->setSoundType(Tile::SOUND_WOOD)
+                                 ->setCategory(1, 1)
+                                 ->setDescriptionId("mushroomBlockBrown");
+  Tile::mushroomBlockRed = (new HugeMushroomTile(100, 1))
+                               ->init()
+                               ->setDestroyTime(0.2f)
+                               ->setSoundType(Tile::SOUND_WOOD)
+                               ->setCategory(1, 1)
+                               ->setDescriptionId("mushroomBlockRed");
   Tile::goldBlock = (new MetalTile(41, "gold_block"))
                         ->init()
                         ->setDestroyTime(3.0)
@@ -1554,6 +1578,14 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
                              ->setSoundType(Tile::SOUND_GRASS)
                              ->setCategory(2, 1)
                              ->setDescriptionId("sweetBerryBush");
+  Tile::glowstoneOre = (new OreTile(235, "glowstone_ore"))
+                            ->init()
+                            ->setDestroyTime(3.0)
+                            ->setExplodeable(5.0)
+                            ->setSoundType(Tile::SOUND_STONE)
+                            ->setLightEmission(0.85f)
+                            ->setCategory(1, 8)
+                            ->setDescriptionId("glowstoneOre");
   Tile::musicPlayer = (new MusicPlayerTile(84))
                           ->init()
                           ->setDestroyTime(2.0)
@@ -1941,6 +1973,13 @@ void Tile::initTiles(std::shared_ptr<TextureAtlas> a1) {
           (new TileItem(Tile::pressurePlate_cobblestone->blockID - 256));
     }
     Item::items[Tile::pressurePlate_cobblestone->blockID]->setCategory(3, 8)->setDescriptionId("pressurePlateCobblestone");
+  }
+  if (Tile::glowstoneOre) {
+    if (!Item::items[Tile::glowstoneOre->blockID]) {
+      Item::items[Tile::glowstoneOre->blockID] =
+          (new TileItem(Tile::glowstoneOre->blockID - 256));
+    }
+    Item::items[Tile::glowstoneOre->blockID]->setCategory(1, 8)->setDescriptionId("glowstoneOre");
   }
   if (Tile::pressurePlate_spruce) {
     if (!Item::items[Tile::pressurePlate_spruce->blockID]) {

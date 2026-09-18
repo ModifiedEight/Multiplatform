@@ -41,7 +41,9 @@ jobs:
           ccache -s || true
           mkdir -p modifiedeight/build/assets modifiedeight-newadditions/build/assets
           cp -r ../platforms/android/app/src/classic/assets/* modifiedeight/build/assets/ 2>/dev/null || true
+          cp -r ../modifiedeight/assets/* modifiedeight/build/assets/ 2>/dev/null || true
           cp -r ../platforms/android/app/src/newadditions/assets/* modifiedeight-newadditions/build/assets/ 2>/dev/null || true
+          cp -r ../modifiedeight-newadditions/assets/* modifiedeight-newadditions/build/assets/ 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4
@@ -116,6 +118,7 @@ jobs:
           cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll . 2>/dev/null || true
           mkdir -p assets
           cp -r ../platforms/android/app/src/newadditions/assets/* assets/ 2>/dev/null || true
+          cp -r ../modifiedeight-newadditions/assets/* assets/ 2>/dev/null || true
 
       - name: upload stuff
         uses: actions/upload-artifact@v4

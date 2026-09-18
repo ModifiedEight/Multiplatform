@@ -1,6 +1,7 @@
 #include <tile/FlowerTile.hpp>
 #include <level/Level.hpp>
 #include <item/ItemInstance.hpp>
+#include <entity/ItemEntity.hpp>
 
 bool_t FlowerTile::_randomWalk(struct Level* level, int32_t& x, int32_t& y, int32_t& z, int32_t a6) {
 	Random* p_randomInstance;
@@ -66,10 +67,13 @@ LABEL_8:
 }
 
 void FlowerTile::spawnResources(Level* level, int32_t x, int32_t y, int32_t z, int32_t data, float chance) {
-	if (!level->isClientMaybe) {
-		int32_t count = (data & 3) + 1;
-		for (int32_t i = 0; i < count; ++i) {
-			this->popResource(level, x, y, z, ItemInstance(this->blockID, 1, 0));
-		}
+	int32_t count = (data & 3) + 1;
+	for (int32_t i = 0; i < count; ++i) {
+		float xOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		float yOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		float zOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		ItemEntity* ent = new ItemEntity(level, (float)x + xOffset, (float)y + yOffset, (float)z + zOffset, ItemInstance(this->blockID, 1, 0));
+		ent->delayBeforePickup = 10;
+		level->addEntity(ent);
 	}
 }

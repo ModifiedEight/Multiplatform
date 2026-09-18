@@ -347,6 +347,7 @@ void TextureAtlas::load(struct NinecraftApp* mc) {
 				"seagrass", "tall_seagrass_bottom", "tall_seagrass_top", "kelp", "kelp_plant",
 				"flower_rose", "flower_pot", "daylight_detector_side", "daylight_detector_top", "daylight_detector_inverted_top",
 				"sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3",
+				"glowstone_ore",
 				"jukebox_top", "jukebox_side", "slime", "slime_block",
 				"iron_trapdoor", "trapdoor_jungle", "jungle_trapdoor", "jungle_door_top", "jungle_door_bottom",
 				"copper_ore", "copper_block", "copper_bars",

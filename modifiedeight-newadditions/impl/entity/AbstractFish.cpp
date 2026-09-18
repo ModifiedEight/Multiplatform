@@ -69,23 +69,50 @@ void AbstractFish::aiStep() {
 			bool waterAbove = (tileAbove == 8 || tileAbove == 9);
 			bool waterBelow = (tileBelow == 8 || tileBelow == 9);
 
+			if (this->leaderEntityId == 0 && (this->random.genrand_int32() % 30 == 0) && this->level) {
+				AABB searchBox{this->posX - 9.0f, this->posY - 4.0f, this->posZ - 9.0f, this->posX + 9.0f, this->posY + 4.0f, this->posZ + 9.0f};
+				std::vector<Entity*>* nearby = this->level->getEntities(this, searchBox);
+				if (nearby) {
+					for (Entity* e : *nearby) {
+						if (e && e->isAlive() && e->getEntityTypeId() == this->getEntityTypeId() && e->entityId != this->entityId) {
+							AbstractFish* otherFish = (AbstractFish*)e;
+							if (otherFish->leaderEntityId == 0 || otherFish->leaderEntityId == otherFish->entityId) {
+								this->leaderEntityId = otherFish->entityId;
+								break;
+							} else if (otherFish->leaderEntityId != this->entityId) {
+								this->leaderEntityId = otherFish->leaderEntityId;
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			Entity* leaderEnt = (this->leaderEntityId != 0 && this->level) ? this->level->getEntity(this->leaderEntityId) : nullptr;
-			if (leaderEnt && leaderEnt->isAlive()) {
+			if (leaderEnt && leaderEnt->isAlive() && leaderEnt->isInWater() && leaderEnt->entityId != this->entityId) {
 				float dx = leaderEnt->posX - this->posX;
+				float dy = leaderEnt->posY - this->posY;
 				float dz = leaderEnt->posZ - this->posZ;
 				float dsq = dx * dx + dz * dz;
-				if (dsq > 2.25f) {
+				if (dsq > 16.0f) {
 					this->targetAngle = (float)(atan2f(dz, dx) * 180.0 / M_PI) - 90.0f;
+					this->swimSpeed = 0.055f;
+				} else if (dsq > 2.0f) {
+					float targetFollowAngle = (float)(atan2f(dz, dx) * 180.0 / M_PI) - 90.0f;
+					this->targetAngle = leaderEnt->yaw * 0.6f + targetFollowAngle * 0.4f;
 					this->swimSpeed = ((AbstractFish*)leaderEnt)->swimSpeed;
 				} else {
-					this->targetAngle = leaderEnt->yaw;
+					this->targetAngle = leaderEnt->yaw + (float)((this->entityId % 7) - 3) * 5.0f;
 					this->swimSpeed = ((AbstractFish*)leaderEnt)->swimSpeed;
+				}
+				if (fabsf(dy) > 0.3f) {
+					this->motionY += (dy > 0 ? 0.015f : -0.015f);
 				}
 			} else {
 				this->leaderEntityId = 0;
-				if (this->random.genrand_int32() % 60 == 0) {
+				if (this->random.genrand_int32() % 50 == 0) {
 					this->targetAngle = (this->random.nextFloat() * 360.0f - 180.0f);
-					this->swimSpeed = 0.03f + this->random.nextFloat() * 0.03f;
+					this->swimSpeed = 0.03f + this->random.nextFloat() * 0.025f;
 				}
 			}
 

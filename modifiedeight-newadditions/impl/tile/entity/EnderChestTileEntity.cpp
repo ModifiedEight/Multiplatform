@@ -7,6 +7,7 @@
 EnderChestTileEntity::EnderChestTileEntity()
 	: ChestTileEntity() {
 	this->type = 6;
+	this->viewingPlayer = nullptr;
 	this->items.resize(27);
 	for (int i = 0; i < 27; ++i) {
 		this->items[i] = nullptr;
@@ -14,6 +15,12 @@ EnderChestTileEntity::EnderChestTileEntity()
 }
 
 EnderChestTileEntity::~EnderChestTileEntity() {
+	if (this->viewingPlayer) {
+		for (int i = 0; i < 27; ++i) {
+			this->viewingPlayer->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
+		}
+		this->viewingPlayer = nullptr;
+	}
 	this->items.clear();
 }
 
@@ -33,11 +40,56 @@ bool_t EnderChestTileEntity::save(CompoundTag* tag) {
 	return TileEntity::save(tag);
 }
 
-void EnderChestTileEntity::tick() {
-	if (this->openedBy) {
-		Player* p = (Player*)this->openedBy;
+ItemInstance* EnderChestTileEntity::getItem(int32_t a2) {
+	if (a2 < 0 || a2 >= 27) return nullptr;
+	if (this->viewingPlayer) {
+		return this->viewingPlayer->enderChestItems[a2];
+	}
+	return this->items[a2];
+}
+
+void EnderChestTileEntity::setItem(int32_t a2, ItemInstance* a3) {
+	if (a2 < 0 || a2 >= 27) return;
+	if (this->viewingPlayer) {
+		if (this->viewingPlayer->enderChestItems[a2]) {
+			if (a3) {
+				*this->viewingPlayer->enderChestItems[a2] = *a3;
+			} else {
+				delete this->viewingPlayer->enderChestItems[a2];
+				this->viewingPlayer->enderChestItems[a2] = nullptr;
+			}
+		} else if (a3) {
+			this->viewingPlayer->enderChestItems[a2] = new ItemInstance(*a3);
+		}
+		this->items[a2] = this->viewingPlayer->enderChestItems[a2];
+	} else {
+		if (this->items[a2]) {
+			if (a3) {
+				*this->items[a2] = *a3;
+			} else {
+				delete this->items[a2];
+				this->items[a2] = nullptr;
+			}
+		} else if (a3) {
+			this->items[a2] = new ItemInstance(*a3);
+		}
+	}
+}
+
+void EnderChestTileEntity::stopOpen() {
+	if (this->viewingPlayer) {
 		for (int i = 0; i < 27; ++i) {
-			p->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
+			this->viewingPlayer->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
+		}
+		this->viewingPlayer = nullptr;
+	}
+	ChestTileEntity::stopOpen();
+}
+
+void EnderChestTileEntity::tick() {
+	if (this->viewingPlayer) {
+		for (int i = 0; i < 27; ++i) {
+			this->viewingPlayer->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
 		}
 	}
 
@@ -94,13 +146,12 @@ void EnderChestTileEntity::tick() {
 }
 
 void EnderChestTileEntity::openBy(Player* player) {
-	if (this->openedBy && this->openedBy != player) {
-		Player* prev = (Player*)this->openedBy;
+	if (this->viewingPlayer && this->viewingPlayer != player) {
 		for (int i = 0; i < 27; ++i) {
-			prev->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
+			this->viewingPlayer->enderChestItems[i] = (i < (int)this->items.size()) ? this->items[i] : nullptr;
 		}
 	}
-	this->openedBy = player;
+	this->viewingPlayer = player;
 	if (player) {
 		for (int i = 0; i < 27; ++i) {
 			if (i < (int)this->items.size()) {
@@ -108,11 +159,9 @@ void EnderChestTileEntity::openBy(Player* player) {
 			}
 		}
 	}
-	if (this->field_A8 <= 0) {
+	if (!this->openedBy) {
 		this->field_A8 = 6;
+		this->openedBy = player;
 		this->startOpen();
-	}
-	if (player) {
-		player->openContainer(this);
 	}
 }

@@ -368,16 +368,38 @@ void Touch::StartMenuScreen::setupPlayButtons(bool_t a2) {
   v4 = width / 2 - 50;
   this->playButton.posX = v4;
   v5 = height / 2;
-  if (a2)
-    v6 = v5 - 15;
-  else
-    v6 = v5 + 10;
 
-  this->playButton.posY = v6;
+  this->marketplaceButton.width = 100;
+  this->marketplaceButton.height = 30;
+  this->marketplaceButton.posX = v4;
+
   this->playOnRealmsButton.width = 100;
-  this->playOnRealmsButton.posX = v4;
   this->playOnRealmsButton.height = 30;
-  this->playOnRealmsButton.posY = v6 + 40;
+  this->playOnRealmsButton.posX = v4;
+
+  if (Options::instance && Options::instance->marketplace) {
+    if (a2)
+      v6 = v5 - 40;
+    else
+      v6 = v5 - 20;
+
+    this->playButton.posY = v6;
+    this->marketplaceButton.posY = v6 + 36;
+    this->playOnRealmsButton.posY = v6 + 72;
+    this->marketplaceButton.visible = 1;
+    this->marketplaceButton.active = 1;
+  } else {
+    if (a2)
+      v6 = v5 - 15;
+    else
+      v6 = v5 + 10;
+
+    this->playButton.posY = v6;
+    this->marketplaceButton.posY = -1000;
+    this->marketplaceButton.visible = 0;
+    this->marketplaceButton.active = 0;
+    this->playOnRealmsButton.posY = v6 + 40;
+  }
 }
 
 Touch::StartMenuScreen::~StartMenuScreen() {
@@ -485,7 +507,7 @@ void Touch::StartMenuScreen::init() {
   this->field_2C.emplace_back(&this->playButton);
   this->field_2C.emplace_back(&this->playOnRealmsButton);
   this->field_2C.emplace_back(this->settingsButtonMaybe);
-  this->field_138 = "\x0fMojang AB, ModifiedEight New Additions 1.6.5.1 ";
+  this->field_138 = "\x0fMojang AB, ModifiedEight New Additions 1.7.0.1 ";
   this->field_13C = Common::getGameVersionString();
   this->playOnRealmsButton.active = 0;
   this->playButton.active = 0;
@@ -511,28 +533,6 @@ void Touch::StartMenuScreen::setupPositions() {
 
   bool_t mco = 1; // TODO this.mojangConnector.isMCOCreateServersEnabled();
   this->setupPlayButtons(mco);
-  int32_t posY = this->playOnRealmsButton.posY;
-  int32_t v13 = this->playButton.posY;
-  int32_t v14 = v13 - (this->height - (this->field_144 + this->field_14C) -
-                       (posY + this->playOnRealmsButton.height - v13)) /
-                          2;
-
-  this->marketplaceButton.width = this->playButton.width;
-  this->marketplaceButton.height = this->playButton.height;
-  this->marketplaceButton.posX = this->playButton.posX;
-  if (Options::instance && Options::instance->marketplace) {
-    this->playButton.posY = v13 + v14 - 30;
-    this->marketplaceButton.posY = this->playButton.posY + 32;
-    this->playOnRealmsButton.posY = this->marketplaceButton.posY + 32;
-    this->marketplaceButton.visible = 1;
-    this->marketplaceButton.active = 1;
-  } else {
-    this->playButton.posY = v13 + v14;
-    this->playOnRealmsButton.posY = posY + v14;
-    this->marketplaceButton.posY = -1000;
-    this->marketplaceButton.visible = 0;
-    this->marketplaceButton.active = 0;
-  }
   this->settingsButtonMaybe->height = 32;
   this->settingsButtonMaybe->width = 32;
   this->settingsButtonMaybe->posX =

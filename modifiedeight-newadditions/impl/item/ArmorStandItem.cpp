@@ -3,6 +3,7 @@
 #include <level/Level.hpp>
 #include <entity/Player.hpp>
 #include <inventory/Inventory.hpp>
+#include <tile/Tile.hpp>
 
 ArmorStandItem::ArmorStandItem(int32_t id)
 	: Item(id) {
@@ -16,8 +17,10 @@ bool_t ArmorStandItem::useOn(ItemInstance* item, Player* player, Level* level, i
 		return 0;
 	}
 
+	Tile* clickedTile = Tile::tiles[level->getTile(x, y, z)];
+	float topY = (float)y + (clickedTile ? clickedTile->maxY : 1.0f);
 	float placeX = (float)x + 0.5f;
-	float placeY = (float)(y + 1);
+	float placeY = topY;
 	float placeZ = (float)z + 0.5f;
 
 	ArmorStand* stand = new ArmorStand(level, placeX, placeY, placeZ);

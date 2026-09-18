@@ -76,7 +76,6 @@ void ProgressScreen::render(int32_t a2, int32_t a3, float a4) {
 			this->drawCenteredString(v25, std::string(1, _SYMS[(int32_t)(getTimeS() * 5.5) % 4]), v23 + v21 + 6, v22, -1);
 		}
 		Screen::render(a2, a3, a4);
-		sleepMs(50);
 	}
 }
 void ProgressScreen::init() {

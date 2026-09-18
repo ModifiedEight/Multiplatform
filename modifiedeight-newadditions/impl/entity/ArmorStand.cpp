@@ -46,9 +46,20 @@ int32_t ArmorStand::getMaxHealth() {
 
 void ArmorStand::tick() {
 	Entity::tick();
+	this->prevX = this->posX;
+	this->prevY = this->posY;
+	this->prevZ = this->posZ;
+
+	this->motionY -= 0.04f;
+	this->move(0.0f, this->motionY, 0.0f);
+	if (this->onGround) {
+		this->motionY = 0.0f;
+	} else {
+		this->motionY *= 0.98f;
+	}
 	this->motionX = 0.0f;
 	this->motionZ = 0.0f;
-	if (this->motionY > 0.0f) this->motionY = 0.0f;
+
 	this->headYaw = this->yaw;
 	this->prevHeadYaw = this->yaw;
 	this->field_128 = this->yaw;

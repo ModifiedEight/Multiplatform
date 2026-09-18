@@ -151,5 +151,39 @@ bool_t TreeFeature::place(Level* level, Random* random, int32_t x, int32_t y, in
 			}
 		}
 	}
+	if (Tile::mushroom1 && Tile::mushroom2) {
+		if (random->genrand_int32() % 3 == 0) {
+			int32_t count = 1 + (random->genrand_int32() % 3);
+			for (int32_t mi = 0; mi < count; ++mi) {
+				int32_t mx = x + (random->genrand_int32() % 5) - 2;
+				int32_t mz = z + (random->genrand_int32() % 5) - 2;
+				int32_t my = y;
+				while (my > 1 && level->isEmptyTile(mx, my, mz)) my--;
+				if (my > 0 && my < 127) {
+					int32_t ground = level->getTile(mx, my, mz);
+					if ((ground == Tile::grass->blockID || ground == Tile::dirt->blockID || ground == Tile::treeTrunk->blockID) && level->isEmptyTile(mx, my + 1, mz)) {
+						int32_t mTile = (random->genrand_int32() % 2 == 0) ? Tile::mushroom1->blockID : Tile::mushroom2->blockID;
+						int32_t mData = random->genrand_int32() % 3;
+						this->placeBlock(level, mx, my + 1, mz, mTile, mData);
+					}
+				}
+			}
+		}
+		if (random->genrand_int32() % 2 == 0) {
+			int32_t dir = random->genrand_int32() % 4;
+			int32_t tx = x + (dir == 0 ? 1 : (dir == 1 ? -1 : 0));
+			int32_t tz = z + (dir == 2 ? 1 : (dir == 3 ? -1 : 0));
+			int32_t ty = y;
+			while (ty > 1 && level->isEmptyTile(tx, ty, tz)) ty--;
+			if (ty > 0 && ty < 127 && level->isEmptyTile(tx, ty + 1, tz)) {
+				int32_t ground = level->getTile(tx, ty, tz);
+				if (ground == Tile::grass->blockID || ground == Tile::dirt->blockID || ground == Tile::treeTrunk->blockID) {
+					int32_t mTile = (random->genrand_int32() % 2 == 0) ? Tile::mushroom1->blockID : Tile::mushroom2->blockID;
+					int32_t mData = random->genrand_int32() % 3;
+					this->placeBlock(level, tx, ty + 1, tz, mTile, mData);
+				}
+			}
+		}
+	}
 	return 1;
 }

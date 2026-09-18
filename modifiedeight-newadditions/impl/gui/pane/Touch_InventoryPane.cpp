@@ -14,6 +14,7 @@
 #include <tile/Tile.hpp>
 #include <tile/MobHeadTile.hpp>
 #include <rendering/tileentity/MobHeadRenderer.hpp>
+#include <rendering/tileentity/ChestRenderer.hpp>
 #include <rendering/EntityTileRenderer.hpp>
 
 Touch::InventoryPane::InventoryPane(Touch::IInventoryPaneCallback* a2, Minecraft* a3, const IntRectangle& a4, int32_t a5, float a6, int32_t a7, int32_t a8, int32_t a9, bool_t a10)
@@ -50,7 +51,7 @@ void Touch::InventoryPane::buildInventoryItemsChunk(ItemRenderChunkType a2) {
 	for(uint32_t i = 0; i < v10.size(); ++i) {
 		const ItemInstance* v5 = v10[i];
 		if(v5) {
-			if(MobHeadTile::isHeadBlock(v5->getId())) {
+			if(MobHeadTile::isHeadBlock(v5->getId()) || (v5->tileClass && (v5->tileClass == Tile::chest || (Tile::enderChest && v5->tileClass == Tile::enderChest)))) {
 				continue;
 			}
 			float v6 = (float)this->field_4C.height * (float)(i / this->field_8);
@@ -105,6 +106,9 @@ void Touch::InventoryPane::renderSelectedItem(std::vector<ScrollingPane::GridIte
 				if(tileClass && MobHeadTile::isHeadBlock(tileClass->blockID)) {
 					int ht = MobHeadTile::getHeadType(tileClass->blockID);
 					MobHeadRenderer::render2DFace(this->minecraft->texturesPtr, ht, v21 + 2.0f, v22 + 2.0f, 12.0f, v19);
+				} else if(tileClass && (tileClass == Tile::chest || (Tile::enderChest && tileClass == Tile::enderChest))) {
+					bool isEnder = (Tile::enderChest && tileClass == Tile::enderChest);
+					ChestRenderer::renderGuiChest(this->minecraft->texturesPtr, isEnder, v21, v22, 1.0f, v19);
 				} else {
 					a4.beginOverride();
 					if(tileClass) {
@@ -180,21 +184,27 @@ void Touch::InventoryPane::renderBatch(std::vector<ScrollingPane::GridItem>& a2,
 		this->field_294.render();
 		this->minecraft->texturesPtr->loadAndBindTexture("items-opaque.png");
 		this->field_2BC.render();
-		this->renderSelectedItem(a2, v40, Tesselator::instance, v35, v36, v37);
-		glPopMatrix();
-	}
-
-	for(int v12 = 0; v12 < a2.size(); ++v12) {
-		ScrollingPane::GridItem* v13 = &a2[v12];
-		if(v13->field_0 >= 0 && v13->field_0 < (int32_t)v40.size() && v40[v13->field_0]) {
-			const ItemInstance* inst = v40[v13->field_0];
-			float v32 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_C) + 4.0);
-			float v14 = Gui::floorAlignToScreenPixel((float)((float)this->field_264 + v13->field_10) + 4.0);
-			if(inst->tileClass && MobHeadTile::isHeadBlock(inst->tileClass->blockID)) {
-				int ht = MobHeadTile::getHeadType(inst->tileClass->blockID);
-				MobHeadRenderer::render2DFace(this->minecraft->texturesPtr, ht, v32 + 2.0f, v14 + 2.0f, 12.0f, 1.0f);
+		for(int v12 = 0; v12 < a2.size(); ++v12) {
+			ScrollingPane::GridItem* v13 = &a2[v12];
+			if(v13->field_0 >= 0 && v13->field_0 < (int32_t)v40.size() && v40[v13->field_0]) {
+				const ItemInstance* inst = v40[v13->field_0];
+				int itemIdx = v13->field_0;
+				float v15 = (float)this->field_4C.height * (float)(itemIdx / this->field_8);
+				int32_t v16 = (int32_t)Gui::floorAlignToScreenPixel((float)((float)((float)this->field_264 + (float)((float)this->field_4C.width * (float)(itemIdx % this->field_8))) + 4.0) + (float)this->field_228.minX);
+				float v17 = Gui::floorAlignToScreenPixel((float)((float)(v15 + (float)this->field_264) + 4.0) + (float)this->field_228.minY);
+				float v32 = (float)v16;
+				float v14 = (float)(int32_t)v17;
+				if(inst->tileClass && MobHeadTile::isHeadBlock(inst->tileClass->blockID)) {
+					int ht = MobHeadTile::getHeadType(inst->tileClass->blockID);
+					MobHeadRenderer::render2DFace(this->minecraft->texturesPtr, ht, v32 + 2.0f, v14 + 2.0f, 12.0f, 1.0f);
+				} else if(inst->tileClass && (inst->tileClass == Tile::chest || (Tile::enderChest && inst->tileClass == Tile::enderChest))) {
+					bool isEnder = (Tile::enderChest && inst->tileClass == Tile::enderChest);
+					ChestRenderer::renderGuiChest(this->minecraft->texturesPtr, isEnder, v32, v14, 1.0f, 1.0f);
+				}
 			}
 		}
+		this->renderSelectedItem(a2, v40, Tesselator::instance, v35, v36, v37);
+		glPopMatrix();
 	}
 
 	if(v35) {

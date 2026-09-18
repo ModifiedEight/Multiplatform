@@ -550,7 +550,7 @@ void Player::tick() {
 				}
 			}
 		}
-		this->stepHeight = 0.5f;
+		this->stepHeight = 0.6f;
 	}
 	if(!this->level->isClientMaybe) {
 		this->foodData.tick(this);
@@ -780,7 +780,12 @@ LABEL_25:
 				if (slot < 27) {
 					ItemInstance* inst = new ItemInstance();
 					inst->load(itemTag);
-					this->enderChestItems[slot] = inst;
+					if (inst->isNull() || inst->count <= 0) {
+						delete inst;
+						this->enderChestItems[slot] = nullptr;
+					} else {
+						this->enderChestItems[slot] = inst;
+					}
 				}
 			}
 		}

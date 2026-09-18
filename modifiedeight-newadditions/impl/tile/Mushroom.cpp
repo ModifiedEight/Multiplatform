@@ -1,5 +1,7 @@
 #include <tile/Mushroom.hpp>
 #include <level/Level.hpp>
+#include <item/ItemInstance.hpp>
+#include <entity/ItemEntity.hpp>
 
 Mushroom::Mushroom(int32_t id, const std::string& name) : Bush(id, name){
 	this->setShape(0.3, 0.0, 0.3, 0.7, 0.4, 0.7);
@@ -9,10 +11,7 @@ Mushroom::Mushroom(int32_t id, const std::string& name) : Bush(id, name){
 Mushroom::~Mushroom() {
 }
 bool_t Mushroom::mayPlace(Level* level, int32_t x, int32_t y, int32_t z, uint8_t a6) {
-	if(Tile::mayPlace(level, x, y, z, a6)) {
-		return this->canSurvive(level, x, y, z);
-	}
-	return 0;
+	return this->canSurvive(level, x, y, z);
 }
 void Mushroom::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* random) {
 	int32_t v8;	  // r10
@@ -81,14 +80,42 @@ void Mushroom::tick(Level* level, int32_t x, int32_t y, int32_t z, Random* rando
 	}
 }
 bool_t Mushroom::canSurvive(Level* level, int32_t x, int32_t y, int32_t z){
-	int32_t v9; // r9
-
 	if((uint32_t)y > 0x7F) {
 		return 0;
 	}
-	v9 = level->getTile(x, y - 1, z);
-	return level->getRawBrightness(x, y, z) <= 12 && this->mayPlaceOn(v9);
+	bool adjacentToTrunk = (level->getTile(x + 1, y, z) == Tile::treeTrunk->blockID ||
+	                        level->getTile(x - 1, y, z) == Tile::treeTrunk->blockID ||
+	                        level->getTile(x, y, z + 1) == Tile::treeTrunk->blockID ||
+	                        level->getTile(x, y, z - 1) == Tile::treeTrunk->blockID);
+	if (adjacentToTrunk) {
+		return 1;
+	}
+	int32_t below = level->getTile(x, y - 1, z);
+	if (below <= 0) {
+		return 0;
+	}
+	if (Tile::mycelium && below == Tile::mycelium->blockID) {
+		return 1;
+	}
+	if (below == Tile::treeTrunk->blockID) {
+		return 1;
+	}
+	if (!this->mayPlaceOn(below)) {
+		return 0;
+	}
+	return level->getRawBrightness(x, y, z) <= 12;
 }
 bool_t Mushroom::mayPlaceOn(int32_t a2) {
-	return Tile::solid[a2];
+	return Tile::solid[a2] || a2 == Tile::treeTrunk->blockID || (Tile::mycelium && a2 == Tile::mycelium->blockID);
+}
+void Mushroom::spawnResources(Level* level, int32_t x, int32_t y, int32_t z, int32_t data, float chance) {
+	int32_t count = (data & 3) + 1;
+	for (int32_t i = 0; i < count; ++i) {
+		float xOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		float yOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		float zOffset = level->random.nextFloat() * 0.7f + 0.15f;
+		ItemEntity* ent = new ItemEntity(level, (float)x + xOffset, (float)y + yOffset, (float)z + zOffset, ItemInstance(this->blockID, 1, 0));
+		ent->delayBeforePickup = 10;
+		level->addEntity(ent);
+	}
 }

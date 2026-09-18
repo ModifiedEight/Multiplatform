@@ -17,7 +17,8 @@ TileItem::TileItem(int32_t id)
 TileItem::~TileItem() {
 }
 bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float faceX, float faceY, float faceZ) {
-	if (Tile::slimeBlock && this->blockID == Tile::slimeBlock->blockID && item && item->count > 0) {
+	Tile* thisTile = (this->blockID >= 0 && this->blockID < 256) ? Tile::tiles[this->blockID] : nullptr;
+	if (thisTile && Tile::mixedSlab && this->blockID != Tile::mixedSlab->blockID && !thisTile->isLiquidTile() && (thisTile->getRenderShape() == 0 || thisTile->isCubeShaped() || thisTile->isSolidRender()) && item && item->count > 0) {
 		int32_t targetTile = level->getTile(x, y, z);
 		if (targetTile == Tile::mixedSlab->blockID) {
 			MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);
@@ -27,13 +28,13 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 					if (te->bottomTileId == 0 && te->topTileId != 0) {
 						if (side == 0 || (side >= 2 && faceY <= 0.5f)) {
 							te->bottomTileId = this->blockID;
-							te->bottomAux = 0;
+							te->bottomAux = item->getAuxValue();
 							combined = true;
 						}
 					} else if (te->topTileId == 0 && te->bottomTileId != 0) {
 						if (side == 1 || (side >= 2 && faceY > 0.5f)) {
 							te->topTileId = this->blockID;
-							te->topAux = 0;
+							te->topAux = item->getAuxValue();
 							combined = true;
 						}
 					}
@@ -41,13 +42,13 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 					if (te->bottomTileId == 0 && te->topTileId != 0) {
 						if (side == 2 || (side != 3 && faceZ <= 0.5f)) {
 							te->bottomTileId = this->blockID;
-							te->bottomAux = 0;
+							te->bottomAux = item->getAuxValue();
 							combined = true;
 						}
 					} else if (te->topTileId == 0 && te->bottomTileId != 0) {
 						if (side == 3 || (side != 2 && faceZ > 0.5f)) {
 							te->topTileId = this->blockID;
-							te->topAux = 0;
+							te->topAux = item->getAuxValue();
 							combined = true;
 						}
 					}
@@ -55,13 +56,13 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 					if (te->bottomTileId == 0 && te->topTileId != 0) {
 						if (side == 4 || (side != 5 && faceX <= 0.5f)) {
 							te->bottomTileId = this->blockID;
-							te->bottomAux = 0;
+							te->bottomAux = item->getAuxValue();
 							combined = true;
 						}
 					} else if (te->topTileId == 0 && te->bottomTileId != 0) {
 						if (side == 5 || (side != 4 && faceX > 0.5f)) {
 							te->topTileId = this->blockID;
-							te->topAux = 0;
+							te->topAux = item->getAuxValue();
 							combined = true;
 						}
 					}
@@ -120,9 +121,9 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 						if (te) {
 							te->mode = mode;
 							te->bottomTileId = bTileId;
-							te->bottomAux = 0;
+							te->bottomAux = item->getAuxValue();
 							te->topTileId = tTileId;
-							te->topAux = 0;
+							te->topAux = item->getAuxValue();
 						}
 						level->sendTileUpdated(targetX, targetY, targetZ);
 						Tile* fullTile = Tile::tiles[this->blockID];
@@ -157,7 +158,7 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 	}
 	int32_t origX = x, origY = y, origZ = z;
 	int32_t targetTileId = level->getTile(x, y, z);
-	if (targetTileId == this->blockID && (this->blockID == 37 || this->blockID == 38 || this->blockID == 191 || this->blockID == 192 || this->blockID == 239 || this->blockID == 240 || this->blockID == 241 || this->blockID == 242)) {
+	if (targetTileId == this->blockID && (this->blockID == 37 || this->blockID == 38 || this->blockID == 39 || this->blockID == 40 || this->blockID == 191 || this->blockID == 192 || this->blockID == 239 || this->blockID == 240 || this->blockID == 241 || this->blockID == 242)) {
 		int32_t curData = level->getData(x, y, z);
 		if ((curData & 3) < 3) {
 			level->setTileAndData(x, y, z, this->blockID, (curData & 3) + 1, 3);
@@ -196,6 +197,22 @@ bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t
 				break;
 			default:
 				break;
+		}
+	}
+
+	int32_t destTileId = level->getTile(x, yNew, zNew);
+	if (destTileId == this->blockID && (this->blockID == 37 || this->blockID == 38 || this->blockID == 39 || this->blockID == 40 || this->blockID == 191 || this->blockID == 192 || this->blockID == 239 || this->blockID == 240 || this->blockID == 241 || this->blockID == 242)) {
+		int32_t curData = level->getData(x, yNew, zNew);
+		if ((curData & 3) < 3) {
+			level->setTileAndData(x, yNew, zNew, this->blockID, (curData & 3) + 1, 3);
+			Tile* t = Tile::tiles[this->blockID];
+			if (t && t->soundType) {
+				level->playSound((float)x + 0.5f, (float)yNew + 0.5f, (float)zNew + 0.5f, t->soundType->field_C, (t->soundType->field_0 + 1.0f) * 0.5f, t->soundType->field_4 * 0.8f);
+			}
+			if (!player || !player->abilities.instabuild) {
+				--item->count;
+			}
+			return 1;
 		}
 	}
 

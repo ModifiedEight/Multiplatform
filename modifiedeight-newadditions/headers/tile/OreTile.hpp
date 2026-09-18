@@ -8,4 +8,5 @@ struct OreTile : Tile{
 	virtual int32_t getResource(int32_t, Random*);
 	virtual int32_t getResourceCount(Random*);
 	virtual int32_t getSpawnResourcesAuxValue(int32_t);
+	virtual void animateTick(Level*, int32_t, int32_t, int32_t, Random*);
 };

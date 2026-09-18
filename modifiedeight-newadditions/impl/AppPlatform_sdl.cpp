@@ -240,8 +240,14 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
   if (this->hasContext)
     return 1;
 
+#if !defined(_WIN32) && !defined(WIN32) && !defined(__APPLE__)
+  setenv("XMODIFIERS", "@im=none", 1);
+  setenv("SDL_IM_MODULE", "none", 1);
+  setenv("IBUS_DISABLE_SNOOPER", "1", 1);
+#endif
+
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_WM_SetCaption("ModifiedEight New Additions 1.6.5.1", 0);
+  SDL_WM_SetCaption("ModifiedEight New Additions 1.7.0.1", 0);
 
   {
     int w, h, ch;
@@ -268,7 +274,8 @@ bool_t AppPlatform_sdl::sdlCtxInit() {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_EnableUNICODE(1);
+  SDL_EnableUNICODE(0);
+  SDL_EnableKeyRepeat(0, 0);
   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
   SDL_JoystickEventState(SDL_ENABLE);
   this->sdl_surface = this->setSDLVideoMode();
@@ -380,9 +387,9 @@ void AppPlatform_sdl::onKeyPressed(Minecraft *mc, SDLKey key, uint8_t scancode,
 #if !defined(_WIN32) && !defined(WIN32)
   if (!pressed) {
     SDL_Event next_event;
-    if (SDL_PeepEvents(&next_event, 1, SDL_PEEKEVENT, SDL_ALLEVENTS) > 0) {
-      if (next_event.type == SDL_KEYDOWN && next_event.key.keysym.sym == key) {
-        SDL_PeepEvents(&next_event, 1, SDL_GETEVENT, SDL_ALLEVENTS);
+    if (SDL_PeepEvents(&next_event, 1, SDL_PEEKEVENT, SDL_EVENTMASK(SDL_KEYDOWN)) > 0) {
+      if (next_event.type == SDL_KEYDOWN && (next_event.key.keysym.sym == key || (scancode && next_event.key.keysym.scancode == scancode))) {
+        SDL_PeepEvents(&next_event, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_KEYDOWN));
         return;
       }
     }
@@ -586,7 +593,7 @@ void AppPlatform_sdl::init() {
           if (online < 1 && curState == 3)
             online = 1;
           DiscordRPC::update(
-              details, "icon", "ModifiedEight New Additions 1.6.5.1",
+              details, "icon", "ModifiedEight New Additions 1.7.0.1",
               {{"Get Client", "https://modifiedeight.github.io/"}},
               curState == 3 ? online : 0, curState == 3 ? online : 0);
         }
@@ -594,9 +601,13 @@ void AppPlatform_sdl::init() {
       }
     }
 
-    if (mc->mouseGrabbed && !mc->useTouchscreen()) {
+    if (windowActive && ((mc->mouseGrabbed && !mc->useTouchscreen()) || (mc->level && !mc->currentScreen && !mc->useTouchscreen()))) {
       SDL_WM_GrabInput(SDL_GRAB_ON);
-      SDL_ShowCursor(SDL_DISABLE);
+      if (mc->mouseGrabbed) {
+        SDL_ShowCursor(SDL_DISABLE);
+      } else {
+        SDL_ShowCursor(SDL_ENABLE);
+      }
     } else {
       SDL_WM_GrabInput(SDL_GRAB_OFF);
       SDL_ShowCursor(SDL_ENABLE);
@@ -714,7 +725,7 @@ void AppPlatform_sdl::init() {
       case SDL_KEYUP:
         if (!windowActive)
           break;
-        if (this->keyboardShown && appPlatform.sdl_event.key.keysym.unicode &&
+        if (this->keyboardShown && mc && mc->currentScreen && appPlatform.sdl_event.key.keysym.unicode &&
             appPlatform.sdl_event.key.keysym.sym != SDLK_BACKSPACE &&
             appPlatform.sdl_event.key.keysym.sym != SDLK_RETURN &&
             appPlatform.sdl_event.key.keysym.sym != SDLK_ESCAPE) {
@@ -993,9 +1004,11 @@ AppPlatform_sdl::~AppPlatform_sdl() { this->sdlCtxDestroy(); }
 void AppPlatform_sdl::showKeyboard(std::string *a, int32_t b, bool_t c) {
   AppPlatform::showKeyboard(a, b, c);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+  SDL_EnableUNICODE(1);
 }
 void AppPlatform_sdl::hideKeyboard(void) {
   AppPlatform::hideKeyboard();
   SDL_EnableKeyRepeat(0, 0);
+  SDL_EnableUNICODE(0);
 }
 #endif

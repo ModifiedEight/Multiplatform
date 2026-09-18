@@ -116,12 +116,17 @@ else()
         ${SDL_INCLUDE_DIR}
         ${SDL_INCLUDE_DIR}/SDL
     )
+    if(EXISTS "/run/host/usr/lib64/libSDL.so")
+        set(SDL_LINK_TARGET "/run/host/usr/lib64/libSDL.so")
+    else()
+        set(SDL_LINK_TARGET SDL)
+    endif()
 
     if(WIN32)
         target_link_options(modifiedeight-newadditions PRIVATE -static -static-libgcc -static-libstdc++)
         target_link_libraries(modifiedeight-newadditions pthread dsound dxguid opengl32 winmm ws2_32 gdi32 psapi)
     else()
-        target_link_libraries(modifiedeight-newadditions ${OPENAL_LIBRARY})
+        target_link_libraries(modifiedeight-newadditions openal)
     endif()
 
     if(WIN32)
@@ -132,17 +137,11 @@ else()
         set(CURL_LINK_TARGET CURL::libcurl)
     endif()
 
-    if(ZLIB_LIBRARY)
-        set(ZLIB_LINK_TARGET ${ZLIB_LIBRARY})
-    else()
-        set(ZLIB_LINK_TARGET ZLIB::ZLIB)
-    endif()
-
     target_link_libraries(modifiedeight-newadditions
         ${CURL_LINK_TARGET}
-        ${ZLIB_LINK_TARGET}
-        ${OPENGL_LIBRARIES}
-        ${SDL_LIBRARIES}
+        z
+        GL
+        ${SDL_LINK_TARGET}
         oaes_lib
         RakNetStatic
         jsoncpp_lib

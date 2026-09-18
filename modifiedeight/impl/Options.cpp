@@ -154,6 +154,8 @@ void Options::update() {
 							this->readInt(v13[i + 1], this->chatColor);
 						} else if(v13[i] == "options.chatbgcolor") {
 							this->readInt(v13[i + 1], this->chatBgColor);
+						} else if(v13[i] == "options.guiscale") {
+							this->readInt(v13[i + 1], this->guiScale);
 						} else if(v13[i] == OptionStrings::Game_ThirdPerson) {
 							this->readBool(v13[i + 1], this->thirdPerson);
 						} else if(v13[i] == OptionStrings::Controls_UseTouchScreen) {
@@ -224,6 +226,7 @@ void Options::toggle(const Options::Option* a2, int32_t a3) {
 		this->renderDistance = Options::RENDERDISTANCE_LEVELS[idx];
 	} else if(a2 == &Options::Option::GUI_SCALE) {
 		this->guiScale = (a3 + (uint8_t)this->guiScale) & 3;
+		this->notifyOptionUpdate(a2, this->guiScale);
 	} else if(a2 == &Options::Option::VIEW_BOBBING) {
 		this->viewBobbing ^= 1u;
 	} else if(a2 == &Options::Option::THIRD_PERSON) {
@@ -311,6 +314,8 @@ void Options::set(const Options::Option* a2, int32_t a3) {
 		this->chatBgColor = a3;
 	} else if(a2 == &Options::Option::NEW_ADDITIONS) {
 		this->newAdditions = a3;
+	} else if(a2 == &Options::Option::GUI_SCALE) {
+		this->guiScale = a3 & 3;
 	}
 	this->notifyOptionUpdate(a2, a3);
 }
@@ -370,6 +375,7 @@ void Options::save(void) {
 	this->addOptionToSaveOutput(v4, "options.smoothchunks", this->smoothChunks);
 	this->addOptionToSaveOutput(v4, "options.chatcolor", this->chatColor);
 	this->addOptionToSaveOutput(v4, "options.chatbgcolor", this->chatBgColor);
+	this->addOptionToSaveOutput(v4, "options.guiscale", this->guiScale);
 	this->addOptionToSaveOutput(v4, OptionStrings::Graphics_HideGUI, this->hideGUI);
 	this->addOptionToSaveOutput(v4, OptionStrings::AUDIO_Sound, this->soundVolume);
 	this->addOptionToSaveOutput(v4, OptionStrings::Last_Game_Version_Major, this->major);
@@ -560,6 +566,9 @@ std::vector<int> Options::getValues(const Options::Option* a2) {
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return Options::NEW_ADDITIONS_LEVELS;
 	}
+	if(a2 == &Options::Option::GUI_SCALE) {
+		return {0, 1, 2, 3};
+	}
 	return {};
 }
 std::string Options::getStringValue(const Options::Option* a2) {
@@ -651,9 +660,16 @@ int32_t Options::getIntValue(const Options::Option* a2) {
 	if(a2 == &Options::Option::NEW_ADDITIONS) {
 		return this->newAdditions;
 	}
+	if(a2 == &Options::Option::GUI_SCALE) {
+		return this->guiScale;
+	}
 	return 0;
 }
 std::string Options::getDescription(const Options::Option* a2, std::string a4) {
+	if(a2 == &Options::Option::GUI_SCALE) {
+		std::string modes[] = {"Auto", "Small", "Normal", "Large"};
+		if(this->guiScale >= 0 && this->guiScale <= 3) return a4 + ": " + modes[this->guiScale];
+	}
 	if(a2 == &Options::Option::CHAT_COLOR) {
 		std::string colors[] = {"White", "Gray", "Yellow", "Green", "Red", "Blue", "Gold", "Aqua", "Purple"};
 		if(this->chatColor >= 0 && this->chatColor <= 8) return a4 + ": " + colors[this->chatColor];

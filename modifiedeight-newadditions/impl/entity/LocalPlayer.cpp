@@ -248,19 +248,35 @@ void LocalPlayer::move(float a2, float a3, float a4) {
         v19 = Mth::floor((float)(a4 / v17) + this->posZ);
         v20 =
             this->level->getTile(v18, (int32_t)(float)(this->posY - 1.0), v19);
-        if (this->isSolidTile(v18, (int32_t)(float)(this->posY - 1.0), v19) &&
+        int tileAheadFeet = this->level->getTile(v18, (int32_t)this->posY, v19);
+        Tile* tFeet = (tileAheadFeet > 0 && tileAheadFeet < 256) ? Tile::tiles[tileAheadFeet] : nullptr;
+        bool isAheadStep = false;
+        if (tFeet) {
+          int rs = tFeet->getRenderShape();
+          if (rs == 10 || rs == 9) isAheadStep = true;
+        }
+        if (v20 > 0 && v20 < 256) {
+          Tile* tGround = Tile::tiles[v20];
+          if (tGround && (tGround->getRenderShape() == 10 || tGround->getRenderShape() == 9)) isAheadStep = true;
+        }
+        if (!isAheadStep &&
+            this->isSolidTile(v18, (int32_t)(float)(this->posY - 1.0), v19) &&
             !this->isSolidTile(v18, (int32_t)this->posY, v19) &&
             !this->isSolidTile(v18, (int32_t)(float)(this->posY + 1.0), v19) &&
             v20 != Tile::fence->blockID && v20 != Tile::fenceGate->blockID &&
             v20 != Tile::stoneSlabHalf->blockID &&
             v20 != Tile::woodSlabHalf->blockID &&
+            (!Tile::dirtSlabHalf || v20 != Tile::dirtSlabHalf->blockID) &&
+            (!Tile::grassSlabHalf || v20 != Tile::grassSlabHalf->blockID) &&
+            (!Tile::rockSlabHalf || v20 != Tile::rockSlabHalf->blockID) &&
+            (!Tile::copperSlabHalf || v20 != Tile::copperSlabHalf->blockID) &&
             v20 != Tile::trapdoor->blockID && v20 != Tile::sign->blockID &&
             v20 != Tile::wallSign->blockID &&
             v20 != Tile::cobbleWall->blockID &&
             v20 != Tile::woolCarpet->blockID && v20 != Tile::web->blockID) {
           v15 = Tile::tiles[v20];
           if (v15) {
-            if (v15->getRenderShape() != 10) {
+            if (v15->getRenderShape() != 10 && v15->getRenderShape() != 9) {
               this->field_DC0 = 1;
             }
           }

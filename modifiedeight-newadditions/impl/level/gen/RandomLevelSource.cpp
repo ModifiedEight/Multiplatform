@@ -663,6 +663,15 @@ void RandomLevelSource::postProcess(struct ChunkSource* a2, int32_t chunkX, int3
 		OreFeature f(Tile::lapisOre->blockID, 6);
 		f.place(this->level, a8, v59, v61, v63);
 	}
+	if (Tile::glowstoneOre) {
+		for (int vgo = 0; vgo < 14; ++vgo) {
+			int32_t gx = chunkXStart + (a8->genrand_int32() & 0xF);
+			int32_t gy = 4 + (a8->genrand_int32() % 68);
+			int32_t gzz = chunkZStart + (a8->genrand_int32() & 0xF);
+			OreFeature f(Tile::glowstoneOre->blockID, 8);
+			f.place(this->level, a8, gx, gy, gzz);
+		}
+	}
 
 	float v = this->treeNoise.getValue((float)chunkXStart * 0.5, (float)chunkZStart * 0.5);
 	int v67 = (int)(float)((float)((float)((float)(a8->nextFloat() * 4.0) + (float)(v * 0.125)) + 4.0) / 3.0);

@@ -18,6 +18,7 @@
 #include <level/biome/EquatorialRainforestBiome.hpp>
 #include <level/biome/MountainBiome.hpp>
 #include <level/biome/IcePeaksBiome.hpp>
+#include <level/biome/MushroomBiome.hpp>
 Biome* Biome::rainForest;
 Biome* Biome::swampland;
 Biome* Biome::seasonalForest;
@@ -34,6 +35,7 @@ Biome* Biome::equatorialRainforest;
 Biome* Biome::birchForest;
 Biome* Biome::mountain;
 Biome* Biome::icePeaks;
+Biome* Biome::mushroom;
 
 std::vector<Biome::MobSpawnerData> Biome::_emptyMobList = {};
 int32_t Biome::defaultTotalEnemyWeight = 0;
@@ -172,6 +174,7 @@ void Biome::initBiomes(void) {
 	Biome::rainForest->creatureVec.emplace_back(Biome::MobSpawnerData(30, 22, 1, 3));
 	Biome::rainForest->waterCreatureVec.emplace_back(Biome::MobSpawnerData(8, 39, 1, 3));
 	Biome::swampland = (new SwampBiome())->clearMobs(1, 0, 0)->setColor(0x7F9B2)->setName("Swampland")->setLeafColor(0x6A7039)->setTemperatureAndDownfall(0.8f, 0.9f);
+	Biome::swampland->monsterVec.emplace_back(Biome::MobSpawnerData(120, 40, 3, 6));
 	Biome::swampland->monsterVec.emplace_back(Biome::MobSpawnerData(120, 37, 4, 8));
 	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(120, 40, 3, 6));
 	Biome::swampland->creatureVec.emplace_back(Biome::MobSpawnerData(100, 37, 4, 8));
@@ -217,6 +220,9 @@ void Biome::initBiomes(void) {
 	Biome::icePeaks->monsterVec.emplace_back(Biome::MobSpawnerData(30, 26, 1, 2));
 	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(45, 14, 2, 4));
 	Biome::icePeaks->creatureVec.emplace_back(Biome::MobSpawnerData(45, 38, 2, 4));
+	Biome::mushroom = (new MushroomBiome())->setColor(0xA07F9B)->setName("Mushrooms")->setLeafColor(0x6A7039)->setTemperatureAndDownfall(0.9f, 1.0f);
+	Biome::mushroom->monsterVec.emplace_back(Biome::MobSpawnerData(100, 37, 2, 6));
+	Biome::mushroom->creatureVec.emplace_back(Biome::MobSpawnerData(100, 37, 2, 6));
 	Biome::recalc();
 }
 
@@ -237,6 +243,7 @@ void Biome::teardownBiomes(void) {
 	if(Biome::birchForest) delete Biome::birchForest; Biome::birchForest = 0;
 	if(Biome::mountain) delete Biome::mountain; Biome::mountain = 0;
 	if(Biome::icePeaks) delete Biome::icePeaks; Biome::icePeaks = 0;
+	if(Biome::mushroom) delete Biome::mushroom; Biome::mushroom = 0;
 }
 
 Biome* Biome::getBiome(float a1, float a2) {
@@ -261,7 +268,7 @@ Biome* Biome::_getBiome(float temp, float rain) {
 		if(newRain <= 0.5 || temp >= 0.7) {
 			if(temp >= 0.5) {
 				if(temp >= 0.85f && newRain >= 0.75f) {
-					v2 = &Biome::jungle;
+					v2 = (newRain >= 0.85f && Biome::mushroom) ? &Biome::mushroom : &Biome::jungle;
 				} else if(temp >= 0.97) {
 					if(newRain >= 0.45) {
 						v2 = &Biome::seasonalForest;

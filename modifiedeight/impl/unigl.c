@@ -1,18 +1,13 @@
 #include <unigl.h>
-#ifdef USEGLES
 #include <math.h>
-/*
- * maybe mojang used
- * https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/glues/glues-1.4.tar.gz
- * ?
-*/
+
 void gluPerspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar) {
-	double v7; // d8
-	double v8; // r0
-	GLfloat v9; // s18
-	GLfloat v10; // s22
-	GLfloat v11; // s14
-	GLfloat v12[16]; // [sp+0h] [bp-68h] BYREF
+	double v7;
+	double v8;
+	GLfloat v9;
+	GLfloat v10;
+	GLfloat v11;
+	GLfloat v12[16];
 
 	v7 = (float)((float)((float)(fovy * 0.5) * 3.1416) / 180.0);
 	v8 = sin(v7);
@@ -35,7 +30,8 @@ void gluPerspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar) {
 		}
 	}
 }
-#else
+
+#ifndef USEGLES
 
 void (*glDeleteBuffers)(GLsizei n, const GLuint* buffers);
 void (*glGenBuffers)(GLsizei n, GLuint *buffers);

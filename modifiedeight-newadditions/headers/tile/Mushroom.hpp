@@ -10,5 +10,6 @@ struct Mushroom: Bush
 	virtual void tick(Level*, int32_t, int32_t, int32_t, Random*);
 	virtual bool_t canSurvive(Level*, int32_t, int32_t, int32_t);
 	virtual bool_t mayPlaceOn(int32_t);
+	virtual void spawnResources(Level*, int32_t, int32_t, int32_t, int32_t, float);
 
 };

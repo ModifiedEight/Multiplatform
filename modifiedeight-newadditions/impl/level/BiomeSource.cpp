@@ -69,10 +69,15 @@ float* BiomeSource::getTemperatureBlock(int32_t a2, int32_t a3, int32_t a4, int3
 
 	this->resizeBuffers(a4 * a5);
 
-	reg = this->rainfallNoise->getRegion(this->rainfallNoises, a2, a3, a4, a5, 0.025f * this->noiseScaleFactor, 0.025f * this->noiseScaleFactor, 0.25);
+	float curScale = this->noiseScaleFactor;
+	if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 1) {
+		curScale = 0.15f;
+	}
+
+	reg = this->rainfallNoise->getRegion(this->rainfallNoises, a2, a3, a4, a5, 0.025f * curScale, 0.025f * curScale, 0.25);
 	detailNoises = this->detailNoises;
 	this->rainfallNoises = reg;
-	v11 = this->detailNoise->getRegion(detailNoises, a2, a3, a4, a5, 0.25f * this->noiseScaleFactor, 0.25f * this->noiseScaleFactor, 0.588);
+	v11 = this->detailNoise->getRegion(detailNoises, a2, a3, a4, a5, 0.25f * curScale, 0.25f * curScale, 0.588);
 	v12 = 0;
 	v13 = 0;
 	this->detailNoises = v11;
@@ -119,16 +124,21 @@ Biome** BiomeSource::getBiomeBlock(Biome** biomes, int32_t a3, int32_t a4, int32
 
 	this->resizeBuffers(a5 * a6);
 
-	reg = this->rainfallNoise->getRegion(this->rainfallNoises, a3, a4, a5, a6, 0.025f * this->noiseScaleFactor, 0.025f * this->noiseScaleFactor, 0.25);
+	float curScale = this->noiseScaleFactor;
+	if (this->level && this->level->getLevelData() && this->level->getLevelData()->getGeneratorVersion() >= 1) {
+		curScale = 0.15f;
+	}
+
+	reg = this->rainfallNoise->getRegion(this->rainfallNoises, a3, a4, a5, a6, 0.025f * curScale, 0.025f * curScale, 0.25);
 	temperatureNoises = this->temperatureNoises;
 	this->rainfallNoises = reg;
-	reg2 = this->perlinNoisePtr2->getRegion(temperatureNoises, a3, a4, a5, a6, 0.05f * this->noiseScaleFactor, 0.05f * this->noiseScaleFactor, 0.3333);
+	reg2 = this->perlinNoisePtr2->getRegion(temperatureNoises, a3, a4, a5, a6, 0.05f * curScale, 0.05f * curScale, 0.3333);
 	v12 = a3;
 	v13 = 0;
 	v14 = 0;
 	detailNoises = this->detailNoises;
 	this->temperatureNoises = reg2;
-	this->detailNoises = this->detailNoise->getRegion(detailNoises, v12, a4, a5, a6, 0.25f * this->noiseScaleFactor, 0.25f * this->noiseScaleFactor, 0.588);
+	this->detailNoises = this->detailNoise->getRegion(detailNoises, v12, a4, a5, a6, 0.25f * curScale, 0.25f * curScale, 0.588);
 	while(v13 < a5) {
 		v17 = 0;
 		while(v17 < a6) {

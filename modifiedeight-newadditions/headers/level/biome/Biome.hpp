@@ -46,6 +46,7 @@ UNK	int8_t field_33 = 0;
 	static Biome* birchForest;
 	static Biome* mountain;
 	static Biome* icePeaks;
+	static Biome* mushroom;
 
 	static std::vector<Biome::MobSpawnerData> _emptyMobList;
 	static int32_t defaultTotalEnemyWeight;

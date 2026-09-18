@@ -114,7 +114,8 @@ void Slider::render(Minecraft* a2, int32_t a3, int32_t a4) {
 			v13 = posX + 4;
 			v14 = 0;
 			v15 = posY + 12;
-			v16 = v10 / (this->field_44 - 1);
+			int32_t denom = this->field_44 > 1 ? (this->field_44 - 1) : 1;
+			v16 = v10 / denom;
 			while(this->field_44 > v14) {
 				++v14;
 				this->fill(v13, v12, v13 + 4, v15, -7303024);
@@ -131,32 +132,43 @@ void Slider::mouseClicked(Minecraft* a2, int32_t a3, int32_t a4, int32_t a5) {
 	}
 }
 void Slider::mouseReleased(Minecraft* a2, int32_t a3, int32_t a4, int32_t a5) {
-	int32_t v5;		// r2
-	float progress; // s13
-	int32_t v7;		// r2
-	float v9;		// s14
-	float v10;		// s15
-	int32_t v11;	// r3
-	int32_t v12;	// s12
+	int32_t v5;
+	float progress;
+	int32_t v7;
+	float v9;
+	float v10;
+	int32_t v11;
+	int32_t v12;
 
 	if(this->field_34 && this->isStepSliderMaybe == 1) {
 		v5 = this->field_44;
 		progress = this->progress;
 		this->field_34 = 0;
+		if(v5 <= 0) {
+			return;
+		}
 		v7 = v5 - 1;
 		v9 = (float)v7;
-		v10 = (float)((float)v7 * progress) + 0.5;
+		v10 = (float)((float)v7 * progress) + 0.5f;
 		v11 = (int32_t)v10;
 		if(v10 < (float)(int32_t)v10) {
 			--v11;
 		}
-		this->field_40 = v11;
-		if(v11 < v7) {
-			v7 = v11;
+		if(v11 < 0) {
+			v11 = 0;
 		}
+		if(v11 > v7) {
+			v11 = v7;
+		}
+		this->field_40 = v11;
+		v7 = v11;
 		v12 = v11;
 		this->field_3C = this->field_28[v7];
-		this->progress = (float)v12 / v9;
+		if(v9 > 0.0f) {
+			this->progress = (float)v12 / v9;
+		} else {
+			this->progress = 0.0f;
+		}
 		this->setOption(a2);
 	} else {
 		this->field_34 = 0;

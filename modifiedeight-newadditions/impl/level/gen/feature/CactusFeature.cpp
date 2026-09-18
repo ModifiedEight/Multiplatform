@@ -29,7 +29,7 @@ bool_t CactusFeature::place(Level* level, Random* random, int32_t x, int32_t y, 
 		if(level->isEmptyTile(v9, v11, v13)) {
 			v14 = random->genrand_int32();
 			v15 = 0;
-			v18 = random->genrand_int32() % (v14 % 3 + 1);
+			v18 = 1 + (random->genrand_int32() % 4);
 			do {
 				if(Tile::cactus->canSurvive(level, v9, v15 + v11, v13)) {
 					level->setTileNoUpdate(v9, v15 + v11, v13, Tile::cactus->blockID);

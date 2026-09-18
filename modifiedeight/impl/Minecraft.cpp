@@ -878,20 +878,27 @@ void Minecraft::setSize(int32_t a2, int32_t a3) {
 		ppm = 10;
 	}
 
-	float gscale;
-	if(this->options.guiScale > 0) {
-		gscale = this->options.guiScale;
+	float autoScale;
+	if(this->field_1C >= 1000) {
+		if(ppm <= 15) autoScale = 4;
+		else autoScale = 6;
+	} else if(this->field_1C >= 800) {
+		autoScale = 3;
+	} else if(this->field_1C >= 400) {
+		autoScale = 2;
 	} else {
-		if(this->field_1C >= 1000) {
-			if(ppm <= 15) gscale = 4;
-			else gscale = 6;
-		} else if(this->field_1C >= 800) {
-			gscale = 3;
-		} else if(this->field_1C >= 400) {
-			gscale = 2;
-		} else {
-			gscale = 1;
-		}
+		autoScale = 1;
+	}
+
+	float gscale = autoScale;
+	if(this->options.guiScale == 1) {
+		gscale = (autoScale >= 3) ? (autoScale - 2) : 1;
+	} else if(this->options.guiScale == 2) {
+		gscale = (autoScale >= 2) ? (autoScale - 1) : 1;
+	} else if(this->options.guiScale == 3) {
+		gscale = autoScale;
+	} else {
+		gscale = autoScale;
 	}
 	Gui::GuiScale = gscale;
 CALCULATE_INVERSE:

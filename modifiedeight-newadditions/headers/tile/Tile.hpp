@@ -75,6 +75,9 @@ struct Tile{
 	static Tile* doublePlant;
 	static Tile* vine;
 	static Tile* waterLily;
+	static Tile* mycelium;
+	static Tile* mushroomBlockBrown;
+	static Tile* mushroomBlockRed;
 	static Tile* mushroom1;
 	static Tile* mushroom2;
 	static Tile* goldBlock;
@@ -170,6 +173,7 @@ struct Tile{
 	static Tile* stonecutterBench;
 	static Tile* slimeBlock;
 	static Tile* sweetBerryBush;
+	static Tile* glowstoneOre;
 	static Tile* musicPlayer;
 	static Tile* glowingObsidian;
 	static Tile* netherReactor;
