@@ -132,16 +132,37 @@ else()
         set(ZLIB_LINK_TARGET ZLIB::ZLIB)
     endif()
 
+    if(WIN32)
+        if(SDL_LIBRARY)
+            set(SDL_LINK_TARGET ${SDL_LIBRARY})
+        else()
+            set(SDL_LINK_TARGET ${SDL_LIBRARIES})
+        endif()
+        set(OPENGL_LINK_TARGET "")
+    else()
+        if(EXISTS "/run/host/usr/lib64/libSDL.so")
+            set(SDL_LINK_TARGET "/run/host/usr/lib64/libSDL.so")
+        elseif(SDL_LIBRARIES)
+            set(SDL_LINK_TARGET ${SDL_LIBRARIES})
+        else()
+            set(SDL_LINK_TARGET SDL)
+        endif()
+        set(OPENGL_LINK_TARGET ${OPENGL_LIBRARIES})
+    endif()
+
     target_link_libraries(modifiedeight
         ${CURL_LINK_TARGET}
         ${ZLIB_LINK_TARGET}
-        ${OPENGL_LIBRARIES}
-        ${SDL_LIBRARIES}
+        ${OPENGL_LINK_TARGET}
+        ${SDL_LINK_TARGET}
         oaes_lib
         RakNetStatic
         jsoncpp_lib
         utf8proc
     )
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(modifiedeight dl)
+    endif()
 
     set_target_properties(modifiedeight PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build"

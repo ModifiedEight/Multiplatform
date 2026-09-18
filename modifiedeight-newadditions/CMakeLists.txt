@@ -116,17 +116,11 @@ else()
         ${SDL_INCLUDE_DIR}
         ${SDL_INCLUDE_DIR}/SDL
     )
-    if(EXISTS "/run/host/usr/lib64/libSDL.so")
-        set(SDL_LINK_TARGET "/run/host/usr/lib64/libSDL.so")
-    else()
-        set(SDL_LINK_TARGET SDL)
-    endif()
-
     if(WIN32)
         target_link_options(modifiedeight-newadditions PRIVATE -static -static-libgcc -static-libstdc++)
         target_link_libraries(modifiedeight-newadditions pthread dsound dxguid opengl32 winmm ws2_32 gdi32 psapi)
     else()
-        target_link_libraries(modifiedeight-newadditions openal)
+        target_link_libraries(modifiedeight-newadditions ${OPENAL_LIBRARY})
     endif()
 
     if(WIN32)
@@ -137,10 +131,34 @@ else()
         set(CURL_LINK_TARGET CURL::libcurl)
     endif()
 
+    if(ZLIB_LIBRARY)
+        set(ZLIB_LINK_TARGET ${ZLIB_LIBRARY})
+    else()
+        set(ZLIB_LINK_TARGET ZLIB::ZLIB)
+    endif()
+
+    if(WIN32)
+        if(SDL_LIBRARY)
+            set(SDL_LINK_TARGET ${SDL_LIBRARY})
+        else()
+            set(SDL_LINK_TARGET ${SDL_LIBRARIES})
+        endif()
+        set(OPENGL_LINK_TARGET "")
+    else()
+        if(EXISTS "/run/host/usr/lib64/libSDL.so")
+            set(SDL_LINK_TARGET "/run/host/usr/lib64/libSDL.so")
+        elseif(SDL_LIBRARIES)
+            set(SDL_LINK_TARGET ${SDL_LIBRARIES})
+        else()
+            set(SDL_LINK_TARGET SDL)
+        endif()
+        set(OPENGL_LINK_TARGET ${OPENGL_LIBRARIES})
+    endif()
+
     target_link_libraries(modifiedeight-newadditions
         ${CURL_LINK_TARGET}
-        z
-        GL
+        ${ZLIB_LINK_TARGET}
+        ${OPENGL_LINK_TARGET}
         ${SDL_LINK_TARGET}
         oaes_lib
         RakNetStatic
