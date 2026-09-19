@@ -6,6 +6,7 @@
 #include <tile/entity/MixedSlabTileEntity.hpp>
 #include <tile/MobHeadTile.hpp>
 #include <tile/entity/MobHeadTileEntity.hpp>
+#include <tile/TrapDoorTile.hpp>
 #include <math/Mth.hpp>
 
 TileItem::TileItem(int32_t id)
@@ -18,7 +19,7 @@ TileItem::~TileItem() {
 }
 bool_t TileItem::useOn(ItemInstance* item, Player* player, Level* level, int32_t x, int32_t y, int32_t z, int32_t side, float faceX, float faceY, float faceZ) {
 	Tile* thisTile = (this->blockID >= 0 && this->blockID < 256) ? Tile::tiles[this->blockID] : nullptr;
-	if (thisTile && Tile::mixedSlab && this->blockID != Tile::mixedSlab->blockID && !thisTile->isLiquidTile() && (thisTile->getRenderShape() == 0 || thisTile->isCubeShaped() || thisTile->isSolidRender()) && item && item->count > 0) {
+	if (thisTile && Tile::mixedSlab && this->blockID != Tile::mixedSlab->blockID && !dynamic_cast<TrapDoorTile*>(thisTile) && !thisTile->isLiquidTile() && (thisTile->getRenderShape() == 0 || thisTile->isCubeShaped() || thisTile->isSolidRender()) && item && item->count > 0) {
 		int32_t targetTile = level->getTile(x, y, z);
 		if (targetTile == Tile::mixedSlab->blockID) {
 			MixedSlabTileEntity* te = (MixedSlabTileEntity*)level->getTileEntity(x, y, z);

@@ -17,9 +17,11 @@ static const int32_t GH = 166;
 
 VillagerTradeScreen::VillagerTradeScreen(Player* p, Villager* v)
 	: player(p), villager(v), selectedTrade(0), scrollOffset(0), guiX(0), guiY(0), lastSourceSlot(-1) {
+	if (this->villager) this->villager->tradingPlayer = p;
 }
 
 VillagerTradeScreen::~VillagerTradeScreen() {
+	if (this->villager) this->villager->tradingPlayer = nullptr;
 }
 
 void VillagerTradeScreen::init() {

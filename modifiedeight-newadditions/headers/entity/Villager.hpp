@@ -19,11 +19,14 @@ struct Villager : PathfinderMob {
 	bool_t hasBed;
 	int32_t sleepTimer;
 	int32_t profession;
+	struct Player* tradingPlayer;
 
 	Villager(Level*);
 
 	void initTrades();
 	void convertToZombieVillager();
+	void setProfession(int32_t);
+	int32_t getProfession() const;
 
 	virtual ~Villager();
 	virtual int32_t getEntityTypeId() const;
@@ -40,7 +43,8 @@ struct Villager : PathfinderMob {
 	virtual bool_t interactWithPlayer(Player*);
 	virtual bool_t interactPreventDefault() { return 1; }
 	virtual void push(Entity*);
+	virtual void finalizeMobSpawn();
 	virtual void readAdditionalSaveData(CompoundTag*);
 	virtual void addAdditonalSaveData(CompoundTag*);
+	virtual std::string* getTexture();
 };
-

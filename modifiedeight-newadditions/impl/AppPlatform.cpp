@@ -1033,6 +1033,8 @@ TextureData AppPlatform::loadTexture(const std::string &a3, bool_t a4) {
       this->loadImage(data, "terrain.png", a4);
     } else if (a3 == "items-opaque.png" || a3 == "gui/items.png") {
       this->loadImage(data, "gui/items.png", a4);
+    } else if (a3.rfind("mob/villager/", 0) == 0) {
+      this->loadImage(data, "mob/villager.png", a4);
     }
   }
 

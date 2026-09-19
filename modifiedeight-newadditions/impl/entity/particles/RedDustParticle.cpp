@@ -48,9 +48,15 @@ void RedDustParticle::init(float a2, float a3, float a4, float a5, float a6, flo
 	float v13;	 // s15
 
 	v8 = this->motionX * 0.1;
-	this->rColMul = 1.0;
-	this->bColMul = 0.0;
-	this->gColMul = 0.0;
+	if(a5 != 0.0f || a6 != 0.0f || a7 != 0.0f) {
+		this->rColMul = a5;
+		this->gColMul = a6;
+		this->bColMul = a7;
+	} else {
+		this->rColMul = 1.0;
+		this->gColMul = 0.0;
+		this->bColMul = 0.0;
+	}
 	v10 = a8;
 	if(!a8) {
 		v10 = 1;

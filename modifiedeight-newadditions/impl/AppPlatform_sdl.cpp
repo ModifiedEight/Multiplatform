@@ -188,6 +188,12 @@ static void performPickBlock(Minecraft *mc) {
 #include <sound/SoundSystemDirectSound.hpp>
 #endif
 std::string AppPlatform_sdl::getImagePath(const std::string &name, bool_t t) {
+  if (name.rfind("images/", 0) == 0) {
+    return "assets/" + name;
+  }
+  if (name.rfind("assets/images/", 0) == 0) {
+    return name;
+  }
   return "assets/images/" + name;
 }
 

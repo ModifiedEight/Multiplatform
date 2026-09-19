@@ -17,9 +17,11 @@
 #include <entity/LocalPlayer.hpp>
 #include <nbt/CompoundTag.hpp>
 #include <cmath>
+#include <cstdlib>
 
 Villager::Villager(Level* level)
 	: PathfinderMob(level) {
+	this->synchedEntityData.define<int32_t>(16, 0);
 	this->zombieHitCount = 0;
 	this->tradeCount = 0;
 	this->houseX = 0;
@@ -27,16 +29,10 @@ Villager::Villager(Level* level)
 	this->houseZ = 0;
 	this->hasBed = 0;
 	this->sleepTimer = 0;
-	this->profession = this->random.genrand_int32() % 5;
+	this->tradingPlayer = nullptr;
+	int32_t initProf = level ? (level->random.genrand_int32() % 5) : (rand() % 5);
+	this->setProfession(initProf);
 	this->entityRenderId = VILLAGER;
-	switch (this->profession % 5) {
-		case 0: this->skin = "mob/villager/farmer.png"; break;
-		case 1: this->skin = "mob/villager/librarian.png"; break;
-		case 2: this->skin = "mob/villager/priest.png"; break;
-		case 3: this->skin = "mob/villager/smith.png"; break;
-		case 4: this->skin = "mob/villager/butcher.png"; break;
-		default: this->skin = "mob/villager/villager.png"; break;
-	}
 
 	this->getNavigation()->setCanOpenDoors(1);
 	this->getNavigation()->setAvoidWater(1);
@@ -49,6 +45,30 @@ Villager::Villager(Level* level)
 	this->initTrades();
 }
 
+void Villager::setProfession(int32_t p) {
+	this->profession = ((p % 5) + 5) % 5;
+	this->synchedEntityData.set<int32_t>(16, this->profession);
+	switch (this->profession) {
+		case 0: this->skin = "mob/villager/farmer.png"; break;
+		case 1: this->skin = "mob/villager/librarian.png"; break;
+		case 2: this->skin = "mob/villager/priest.png"; break;
+		case 3: this->skin = "mob/villager/smith.png"; break;
+		case 4: this->skin = "mob/villager/butcher.png"; break;
+		default: this->skin = "mob/villager/villager.png"; break;
+	}
+}
+
+int32_t Villager::getProfession() const {
+	int32_t p = const_cast<SynchedEntityData&>(this->synchedEntityData).getInt(16);
+	return ((p % 5) + 5) % 5;
+}
+
+void Villager::finalizeMobSpawn() {
+	Mob::finalizeMobSpawn();
+	int32_t p = this->level ? (this->level->random.genrand_int32() % 5) : (rand() % 5);
+	this->setProfession(p);
+	this->initTrades();
+}
 
 void Villager::initTrades() {
 	struct TradeOption { int32_t inId, inCnt, inMeta, outId, outCnt, outMeta; };
@@ -90,7 +110,7 @@ void Villager::initTrades() {
 	};
 
 	TradeOption* table;
-	switch (this->profession % 5) {
+	switch (this->getProfession()) {
 		case 1: table = librarianTrades; break;
 		case 2: table = priestTrades;    break;
 		case 3: table = smithTrades;     break;
@@ -189,6 +209,17 @@ void Villager::aiStep() {
 			}
 		}
 
+		if (this->tradingPlayer) {
+			if (this->tradingPlayer->isDead || this->distanceTo(this->tradingPlayer) > 7.0f) {
+				this->tradingPlayer = nullptr;
+			} else {
+				this->getNavigation()->stop();
+				this->motionX = 0.0f;
+				this->motionZ = 0.0f;
+				this->lookAt(this->tradingPlayer, 30.0f, 30.0f);
+			}
+		}
+
 		if (!this->level->isDay()) {
 			if (!this->hasBed && ((this->entityId + this->level->gameTickCounter) % 80 == 0)) {
 				int vx = (int)floor(this->posX);
@@ -230,25 +261,7 @@ void Villager::aiStep() {
 		} else {
 			this->setSneaking(false);
 			this->sleepTimer = 0;
-			Player* nearbyPlayer = this->level->getNearestPlayer(this, 6.0f);
-			if (nearbyPlayer && !nearbyPlayer->isDead) {
-				float dx = nearbyPlayer->posX - this->posX;
-				float dz = nearbyPlayer->posZ - this->posZ;
-				float dy = (nearbyPlayer->posY + 1.2f) - (this->posY + 1.2f);
-				float d = sqrtf(dx * dx + dz * dz);
-				if (d > 0.05f) {
-					float targetYaw = (float)(atan2(dz, dx) * 180.0 / 3.141592653589793) - 90.0f;
-					float targetPitch = (float)(-(atan2(dy, d) * 180.0 / 3.141592653589793));
-					this->yaw = targetYaw;
-					this->pitch = targetPitch;
-					this->lookAt(nearbyPlayer, 30.0f, 30.0f);
-				}
-				if (d < 3.0f) {
-					this->getNavigation()->stop();
-					this->motionX = 0.0f;
-					this->motionZ = 0.0f;
-				}
-			} else if (this->getNavigation()->isDone() && (this->random.genrand_int32() % 80 == 0)) {
+			if (!this->tradingPlayer && this->getNavigation()->isDone() && (this->random.genrand_int32() % 80 == 0)) {
 				float centerBaseX = this->hasBed ? (float)this->houseX : this->posX;
 				float centerBaseZ = this->hasBed ? (float)this->houseZ : this->posZ;
 				float wanderX = centerBaseX + (float)((this->random.genrand_int32() % 25) - 12);
@@ -308,15 +321,7 @@ void Villager::readAdditionalSaveData(CompoundTag* tag) {
 	this->houseZ = tag->getInt("HouseZ");
 	this->hasBed = tag->getByte("HasBed") != 0;
 	if (tag->contains("Profession")) {
-		this->profession = tag->getInt("Profession");
-	}
-	switch (this->profession % 5) {
-		case 0: this->skin = "mob/villager/farmer.png"; break;
-		case 1: this->skin = "mob/villager/librarian.png"; break;
-		case 2: this->skin = "mob/villager/priest.png"; break;
-		case 3: this->skin = "mob/villager/smith.png"; break;
-		case 4: this->skin = "mob/villager/butcher.png"; break;
-		default: this->skin = "mob/villager/villager.png"; break;
+		this->setProfession(tag->getInt("Profession"));
 	}
 	if (tag->contains("TradeCount")) {
 		this->tradeCount = tag->getInt("TradeCount");
@@ -348,7 +353,7 @@ void Villager::addAdditonalSaveData(CompoundTag* tag) {
 	tag->putInt("HouseY", this->houseY);
 	tag->putInt("HouseZ", this->houseZ);
 	tag->putByte("HasBed", this->hasBed ? 1 : 0);
-	tag->putInt("Profession", this->profession);
+	tag->putInt("Profession", this->getProfession());
 	tag->putInt("TradeCount", this->tradeCount);
 	for (int32_t i = 0; i < this->tradeCount; ++i) {
 		char keyBuf[32];
@@ -365,4 +370,16 @@ void Villager::addAdditonalSaveData(CompoundTag* tag) {
 		snprintf(keyBuf, sizeof(keyBuf), "TradeOutMeta%d", i);
 		tag->putInt(keyBuf, this->trades[i].outputMeta);
 	}
+}
+
+std::string* Villager::getTexture() {
+	switch (this->getProfession()) {
+		case 0: this->skin = "mob/villager/farmer.png"; break;
+		case 1: this->skin = "mob/villager/librarian.png"; break;
+		case 2: this->skin = "mob/villager/priest.png"; break;
+		case 3: this->skin = "mob/villager/smith.png"; break;
+		case 4: this->skin = "mob/villager/butcher.png"; break;
+		default: this->skin = "mob/villager/villager.png"; break;
+	}
+	return &this->skin;
 }

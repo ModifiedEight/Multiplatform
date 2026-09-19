@@ -11,6 +11,7 @@
 #include <tile/Tile.hpp>
 #include <entity/Player.hpp>
 #include <tile/material/Material.hpp>
+#include <tile/entity/MixedSlabTileEntity.hpp>
 #include <Options.hpp>
 
 int32_t RenderChunk::updates = 0;
@@ -160,14 +161,28 @@ void RenderChunk::rebuild(void) {
 									this->tessellator->offset((float)-this->xPos, (float)-this->yPos, (float)-this->zPos);
 									id = v19;
 								}
-								blockRenderLayer = idd->getRenderLayer();
-								if(blockRenderLayer <= layer) {
-									if(blockRenderLayer == layer) {
-										renderedAnyBlocks |= v32.tesselateInWorld(idd, x, y, z);
+								if (Tile::mixedSlab && id == Tile::mixedSlab->blockID) {
+									MixedSlabTileEntity* mte = (MixedSlabTileEntity*)v30.getTileEntity(x, y, z);
+									int bLayer = (mte && mte->bottomTileId > 0 && mte->bottomTileId < 256 && Tile::tiles[mte->bottomTileId]) ? Tile::tiles[mte->bottomTileId]->getRenderLayer() : 0;
+									int tLayer = (mte && mte->topTileId > 0 && mte->topTileId < 256 && Tile::tiles[mte->topTileId]) ? Tile::tiles[mte->topTileId]->getRenderLayer() : 0;
+									if (bLayer == layer || tLayer == layer) {
+										renderedAnyBlocks |= v32.tesselateMixedSlabInWorld(idd, x, y, z, layer);
+									}
+									if (bLayer > layer || tLayer > layer) {
+										v25 = 1;
+										if (bLayer > layer) v29[bLayer] = 1;
+										if (tLayer > layer) v29[tLayer] = 1;
 									}
 								} else {
-									v25 = 1;
-									v29[blockRenderLayer] = 1;
+									blockRenderLayer = idd->getRenderLayer();
+									if(blockRenderLayer <= layer) {
+										if(blockRenderLayer == layer) {
+											renderedAnyBlocks |= v32.tesselateInWorld(idd, x, y, z);
+										}
+									} else {
+										v25 = 1;
+										v29[blockRenderLayer] = 1;
+									}
 								}
 								if(Tile::seagrass && id == Tile::seagrass->blockID) {
 									if(layer == 2) {

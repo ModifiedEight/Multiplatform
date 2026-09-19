@@ -5431,13 +5431,17 @@ bool_t TileRenderer::tesselateLeverInWorld(Tile* tile, int32_t x, int32_t y, int
 	return 1;
 }
 
-bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y, int32_t z) {
+bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y, int32_t z, int32_t renderLayer) {
 	MixedSlabTileEntity* te = (MixedSlabTileEntity*)this->levelSource->getTileEntity(x, y, z);
 	if (!te) return 0;
 
 	Tile* bTile = (te->bottomTileId > 0 && te->bottomTileId < 256) ? Tile::tiles[te->bottomTileId] : nullptr;
 	Tile* tTile = (te->topTileId > 0 && te->topTileId < 256) ? Tile::tiles[te->topTileId] : nullptr;
 	if (!bTile && !tTile) return 0;
+
+	bool_t renderB = bTile && (renderLayer < 0 || bTile->getRenderLayer() == renderLayer);
+	bool_t renderT = tTile && (renderLayer < 0 || tTile->getRenderLayer() == renderLayer);
+	if (!renderB && !renderT) return 0;
 
 	uint32_t globalColor = tile->getColor(this->levelSource, x, y, z) & 0xFFFFFF;
 
@@ -5497,7 +5501,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 	float r0, g0, b0;
 
 	if (mode == 1) {
-		if (bTile) {
+		if (renderB) {
 			tile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.5f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
@@ -5520,7 +5524,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				const TextureUVCoordinateSet* tex = bTile->getTexture(2, te->bottomAux);
 				if (tex) this->renderNorth(tile, fx, fy, fz, *tex);
 			}
-			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
+			if (this->disableCulling || !tTile || !tTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x, y, z + 1, 3)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.8f;
 				getBColor(3, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
@@ -5542,7 +5546,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
 		}
-		if (tTile) {
+		if (renderT) {
 			tile->setShape(0.0f, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
@@ -5558,7 +5562,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				const TextureUVCoordinateSet* tex = tTile->getTexture(1, te->topAux);
 				if (tex) this->renderFaceUp(tile, fx, fy, fz, *tex);
 			}
-			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
+			if (this->disableCulling || !bTile || !bTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x, y, z - 1, 2)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.8f;
 				getTColor(2, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
@@ -5588,7 +5592,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			}
 		}
 	} else if (mode == 2) {
-		if (bTile) {
+		if (renderB) {
 			tile->setShape(0.0f, 0.0f, 0.0f, 0.5f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
@@ -5625,7 +5629,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				const TextureUVCoordinateSet* tex = bTile->getTexture(4, te->bottomAux);
 				if (tex) this->renderWest(tile, fx, fy, fz, *tex);
 			}
-			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
+			if (this->disableCulling || !tTile || !tTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x + 1, y, z, 5)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.6f;
 				getBColor(5, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
@@ -5633,7 +5637,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
 		}
-		if (tTile) {
+		if (renderT) {
 			tile->setShape(0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
@@ -5663,7 +5667,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				const TextureUVCoordinateSet* tex = tTile->getTexture(3, te->topAux);
 				if (tex) this->renderSouth(tile, fx, fy, fz, *tex);
 			}
-			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
+			if (this->disableCulling || !bTile || !bTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x - 1, y, z, 4)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.6f;
 				getTColor(4, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
@@ -5679,7 +5683,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 			}
 		}
 	} else {
-		if (bTile) {
+		if (renderB) {
 			tile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1.0f);
 			if (this->disableCulling || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y - 1, z) * 0.5f;
@@ -5688,7 +5692,7 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				const TextureUVCoordinateSet* tex = bTile->getTexture(0, te->bottomAux);
 				if (tex) this->renderFaceDown(tile, fx, fy, fz, *tex);
 			}
-			if (this->disableCulling || !tTile || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
+			if (this->disableCulling || !tTile || !tTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x, y + 1, z, 1)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z);
 				getBColor(1, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
@@ -5724,9 +5728,9 @@ bool_t TileRenderer::tesselateMixedSlabInWorld(Tile* tile, int32_t x, int32_t y,
 				if (tex) this->renderEast(tile, fx, fy, fz, *tex);
 			}
 		}
-		if (tTile) {
+		if (renderT) {
 			tile->setShape(0.0f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f);
-			if (this->disableCulling || !bTile || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
+			if (this->disableCulling || !bTile || !bTile->isSolidRender() || tile->shouldRenderFace(this->levelSource, x, y - 1, z, 0)) {
 				float br = tile->getBrightness(this->levelSource, x, y, z) * 0.5f;
 				getTColor(0, r0, g0, b0);
 				Tesselator::instance.color(br * r0, br * g0, br * b0);
